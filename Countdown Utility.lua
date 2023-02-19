@@ -1,24 +1,24 @@
 --[[
 
     Authors:    Ziffix, Cha
-    Version:    1.1.5
+    Version:    1.1.6
     Date:       23/2/19
 
 ]]
 
 
--- Services
+-- SERVICES
 local httpService = game:GetService("HttpService")
 
 
--- Variables
+-- VARIABLES
 local countdown = {}
 local countdownPrototype = {}
 
 local countdownPrivate = {}
 
 
--- Functions
+-- FUNCTIONS
 
 --[[
     @param    condition   boolean   | The result of the condition
@@ -84,8 +84,6 @@ local function _countdownStart(self)
 end
 
 
--- Constructor
-
 --[[
     @param    duration    number      | The duration of the countdown
     @return               countdown   | The generated countdown object
@@ -113,8 +111,6 @@ function countdown.new(duration: number)
     return self
 end
 
-
--- Methods
 
 --[[
     @return   void
@@ -210,7 +206,7 @@ function countdownPrototype:destroy()
 end
 
 
--- Setup
+-- SETUP
 countdownPrototype.__index = countdownPrototype
 countdownPrototype.__newindex = function() end
 countdownPrototype.__metatable = "This metatable is locked."
