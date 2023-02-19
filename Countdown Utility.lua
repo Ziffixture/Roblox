@@ -129,7 +129,7 @@ end
     @param    callback    function    | The function to be ran at the given interval
     @return               string      | The GUID representing the task
 
-    Compiles interval and callback data into interval repository.
+    Compiles interval and callback data into intervalTask repository.
 ]]
 function countdownPrototype:addTask(interval: number, callback: (number) -> ())
     _assertLevel(interval, "Argument #1 missing or nil.", 2)
