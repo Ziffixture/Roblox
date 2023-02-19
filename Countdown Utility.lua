@@ -1,7 +1,7 @@
 --[[
 
     Authors:    Ziffix, Cha
-    Version:    1.1.3
+    Version:    1.1.4
     Date:       23/2/19
 
 ]]
@@ -66,12 +66,12 @@ local function _countdownStart(self)
         private.secondsLeft = secondsLeft
 
         for _, taskInfo in private.intervalTasks do
-            if secondsLeft % taskInfo.intervalSeconds ~= 0 then
+            if secondsLeft % taskInfo.Interval ~= 0 then
                 continue
             end
 
             if secondsLeft ~= 0 then
-                task.spawn(taskInfo.handle)
+                task.spawn(taskInfo.Task)
             end
         end
     end
