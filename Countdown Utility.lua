@@ -1,6 +1,6 @@
 --[[
 Authors:    Ziffix, Cha
-Version:    1.2.0 (Semi-stable)
+Version:    1.2.1 (Stable)
 Date:       23/2/19
 ]]
 
@@ -93,7 +93,7 @@ function countdown.new(duration: number): Countdown
     _assertLevel(duration, "Argument #1 missing or nil.", 2)
     _assertLevel(duration % 1 == 0, "Expected integer, got decimal.", 2)
 
-    local self = setmetatable({}, countdownPrototype)
+    local self = {}
     local private = {}
 
     private.active = false
@@ -110,7 +110,7 @@ function countdown.new(duration: number): Countdown
 
     countdownPrivate[self] = private
 
-    return self
+    return setmetatable(self, countdownPrototype)
 end
 
 
