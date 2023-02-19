@@ -123,6 +123,8 @@ end
     Begins synchronous countdown process.
 ]]
 function countdownPrototype:start()
+    _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
+    
     task.spawn(_countdownStart, self)
 end
 
