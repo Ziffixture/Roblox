@@ -1,7 +1,7 @@
 --[[
 
     Authors:    Ziffix, Cha
-    Version:    1.1.7
+    Version:    1.1.9 (Semi-stable)
     Date:       23/2/19
 
 ]]
@@ -53,6 +53,10 @@ local function _countdownStart(self)
     for secondsLeft = private.duration - 1, 1, -1 do
         task.wait(1)
 
+        if private.active == false then
+            coroutine.yield()    
+        end
+        
         -- Countdown object was destroyed
         if private.tick == nil then
             return
@@ -94,6 +98,8 @@ function countdown.new(duration: number)
     local self = setmetatable({}, countdownPrototype)
     local private = {}
 
+    private.active = false
+    private.thread = nil
     private.secondsLeft = duration
     private.intervalTasks = {}
 
@@ -115,9 +121,10 @@ end
     Begins synchronous countdown process.
 ]]
 function countdownPrototype:start()
-    _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
     
-    task.spawn(_countdownStart, self)
+    private.active = true
+    private.thread = task.spawn(_countdownStart, self)
 end
 
 
@@ -175,6 +182,56 @@ end
 
 
 --[[
+    @return   void
+
+    Pauses the countdown.
+]]
+function countdownPrototype:pause()
+    local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
+    
+    if coroutine.status(private.thread) == "suspended" then
+        warn("Countdown is already paused")
+        
+        return
+    end
+    
+    private.active = false
+end
+
+
+--[[
+    @return   void
+
+    Resumes the countdown.
+]]
+function countdownPrototype:resume()
+    local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
+    
+    if coroutine.status(private.thread) == "running" then
+        warn("Countdown is already active")
+        
+        return
+    end
+    
+    private.active = true
+    
+    coroutine.resume(private.thread)
+end
+
+
+--[[
+    @return   boolean   | The state of the cooldown proccess
+
+    Returns a boolean detailing whether or not the countdown is active.
+]]
+function countdownPrototype:isPaused(): boolean
+    local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
+    
+    return private.active
+end
+
+
+--[[
     @return   number    | The seconds remaining in the countdown
 
     Returns the seconds remaining in the countdown.
@@ -194,6 +251,10 @@ end
 function countdownPrototype:destroy()    
     local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
 
+    if coroutine.status(private.thread) == "suspended" then
+        coroutine.close(private.thread) 
+    end
+    
     private.tick:Destroy()
     private.finished:Destroy()
 
