@@ -26,8 +26,7 @@ local countdownPrivate = {}
     @param    level = 1   number?   | The level at which to raise the error
     @return               void
 
-    Checks if the given number is an integer. Raises an error at
-    the given level if not.
+    Implements assert with error's level argument.
 ]]
 local function _assertLevel(condition: boolean, message: string, level: number?)
     assert(condition, "Argument #1 missing or nil.")
