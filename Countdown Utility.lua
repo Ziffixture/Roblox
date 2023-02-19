@@ -54,7 +54,9 @@ local function _countdownStart(self)
         task.wait(1)
 
         if private.active == false then
-            coroutine.yield()    
+            coroutine.yield()
+            
+            task.wait(time() - private.threadPaused)
         end
         
         -- Countdown object was destroyed
@@ -100,6 +102,7 @@ function countdown.new(duration: number)
 
     private.active = false
     private.thread = nil
+    private.threadPaused = 0
     private.secondsLeft = duration
     private.intervalTasks = {}
 
@@ -196,6 +199,7 @@ function countdownPrototype:pause()
     end
     
     private.active = false
+    private.threadPaused = time()
 end
 
 
