@@ -69,10 +69,8 @@ local function _countdownStart(self)
             if secondsLeft % taskInfo.Interval ~= 0 then
                 continue
             end
-
-            if secondsLeft ~= 0 then
-                task.spawn(taskInfo.Task)
-            end
+            
+            task.spawn(taskInfo.Task)
         end
     end
 
