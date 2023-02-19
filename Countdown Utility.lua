@@ -107,8 +107,8 @@ function countdown.new(duration: number): Countdown
     private.tick = Instance.new("BindableEvent")
     private.finished = Instance.new("BindableEvent")
 
-    self.Tick = private.tick.Event
-    self.Finished = private.finished.Event
+    self.tick = private.tick.Event
+    self.finished = private.finished.Event
 
     countdownPrivate[self] = private
 
