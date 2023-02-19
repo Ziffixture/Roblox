@@ -1,7 +1,7 @@
 --[[
 
     Authors: Ziffix, Cha
-    Version: 1.1.1
+    Version: 1.1.2
     Date:    23/2/18
 
 ]]
@@ -21,23 +21,25 @@ local countdownPrivate = {}
 -- Functions
 
 --[[
-    @param    number      number    | The input number
+    @param    condition   boolean   | The result of the condition
+    @param    message     string    | The error message to be raised
     @param    level = 1   number?   | The level at which to raise the error
     @return               void
 
     Checks if the given number is an integer. Raises an error at
     the given level if not.
 ]]
-local function _checkInteger(number, level)
-    assert(number, "Argument #1 missing or nil.")
+local function _assertLevel(condition: boolean, message: string, level: number)
+    assert(condition, "Argument #1 missing or nil.")
+    assert(message, "Argument #2 missing or nil.")
 
     level = (level or 0) + 1
 
-    if number % 1 == 0 then
-        return
+    if condition then
+        return condition
     end
 
-    error("Expected integer, got decimal.", level)
+    error(message, level)
 end
 
 
@@ -48,7 +50,7 @@ end
     Handles core countdown process.
 ]]
 local function _countdownStart(self)
-    assert(self, "Argument #1 missing or nil.")
+    _assertLevel(self, "Argument #1 missing or nil.", 2)
 
     local private = countdownPrivate[self]
 
@@ -91,9 +93,9 @@ end
 
     Generates a countdown object.
 ]]
-function countdown.new(duration)
-    assert(duration, "Argument #1 missing or nil.")
-    _checkInteger(duration, 2)
+function countdown.new(duration: number)
+    _assertLevel(duration, "Argument #1 missing or nil.", 2)
+    _assertLevel(duration % 1 == 0, "Expected integer, got decimal.", 2)
 
     local self = setmetatable({}, countdownPrototype)
     local private = {}
@@ -132,12 +134,12 @@ end
 
     Compiles interval and callback data into interval repository.
 ]]
-function countdownPrototype:addTask(interval, callback)
-    assert(interval, "Argument #1 missing or nil.")
-    assert(callback, "Argument #2 missing or nil.")
-    _checkInteger(interval, 2)
+function countdownPrototype:addTask(interval: number, callback: (number) -> ())
+    _assertLevel(interval, "Argument #1 missing or nil.", 2)
+    _assertLevel(callback, "Argument #2 missing or nil.", 2)
+    _assertLevel(interval % 1 == 0, "Expected integer, got decimal.", 2)
 
-    local private = cooldownPrivate[self]
+    local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
 
     local taskInfo = {
 
@@ -160,7 +162,9 @@ end
     Removes the associated task from the interval repository.
 ]]
 function countdownPrototype:removeTask(taskId)
-    assert(interval, "Argument #1 missing or nil.")
+    _assertLevel(taskId, "Argument #1 missing or nil.", 2)
+    
+    local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
 
     for index, taskInfo in private.intervalTasks do
         if taskInfo.id ~= taskId then
@@ -182,7 +186,7 @@ end
     Returns the seconds remaining in the countdown.
 ]]
 function countdownPrototype:getSecondsLeft()
-    local private = countdownPrivate[self]
+    local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
 
     return private.secondsLeft
 end
@@ -193,8 +197,8 @@ end
 
     Cleans up object data.
 ]]
-function countdownPrototype:destroy()
-    local private = cooldownPrivate[self]
+function countdownPrototype:destroy()    
+    local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
 
     private.tick:Destroy()
     private.finished:Destroy()
