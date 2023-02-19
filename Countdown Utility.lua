@@ -7,18 +7,15 @@
 ]]
 
 
--- SERVICES
+
 local httpService = game:GetService("HttpService")
 
-
--- VARIABLES
 local countdown = {}
 local countdownPrototype = {}
 
 local countdownPrivate = {}
 
 
--- FUNCTIONS
 
 --[[
     @param    condition   boolean   | The result of the condition
@@ -206,7 +203,7 @@ function countdownPrototype:destroy()
 end
 
 
--- SETUP
+
 countdownPrototype.__index = countdownPrototype
 countdownPrototype.__newindex = function() end
 countdownPrototype.__metatable = "This metatable is locked."
