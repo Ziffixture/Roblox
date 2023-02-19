@@ -1,8 +1,8 @@
 --[[
 
-    Authors: Ziffix, Cha
-    Version: 1.1.2
-    Date:    23/2/18
+    Authors:    Ziffix, Cha
+    Version:    1.1.3
+    Date:       23/2/18
 
 ]]
 
@@ -163,7 +163,7 @@ end
 
     Removes the associated task from the interval repository.
 ]]
-function countdownPrototype:removeTask(taskId)
+function countdownPrototype:removeTask(taskId: string)
     _assertLevel(taskId, "Argument #1 missing or nil.", 2)
     
     local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
