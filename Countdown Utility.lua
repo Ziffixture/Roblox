@@ -1,7 +1,7 @@
 --[[
 
     Authors:    Ziffix, Cha
-    Version:    1.1.6
+    Version:    1.1.7
     Date:       23/2/19
 
 ]]
@@ -128,7 +128,7 @@ end
 
     Compiles interval and callback data into intervalTask repository.
 ]]
-function countdownPrototype:addTask(interval: number, callback: (number) -> ())
+function countdownPrototype:addTask(interval: number, callback: (number) -> ()): string
     _assertLevel(interval, "Argument #1 missing or nil.", 2)
     _assertLevel(callback, "Argument #2 missing or nil.", 2)
     _assertLevel(interval % 1 == 0, "Expected integer, got decimal.", 2)
@@ -179,7 +179,7 @@ end
 
     Returns the seconds remaining in the countdown.
 ]]
-function countdownPrototype:getSecondsLeft()
+function countdownPrototype:getSecondsLeft(): number
     local private = _assertLevel(cooldownPrivate[self], "Cooldown object is destroyed", 2)
 
     return private.secondsLeft
