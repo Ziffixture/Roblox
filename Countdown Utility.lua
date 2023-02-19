@@ -1,7 +1,7 @@
 --[[
 
     Authors:    Ziffix, Cha
-    Version:    1.1.4
+    Version:    1.1.5
     Date:       23/2/19
 
 ]]
@@ -29,7 +29,7 @@ local countdownPrivate = {}
     Checks if the given number is an integer. Raises an error at
     the given level if not.
 ]]
-local function _assertLevel(condition: boolean, message: string, level: number)
+local function _assertLevel(condition: boolean, message: string, level: number?)
     assert(condition, "Argument #1 missing or nil.")
     assert(message, "Argument #2 missing or nil.")
 
