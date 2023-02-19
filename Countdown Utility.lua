@@ -1,10 +1,7 @@
---!strict
 --[[
-
 Authors:    Ziffix, Cha
 Version:    1.1.9 (Semi-stable)
 Date:       23/2/19
-
 ]]
 
 
