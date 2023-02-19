@@ -1,6 +1,6 @@
 --[[
 Authors:    Ziffix, Cha
-Version:    1.2.1 (Stable)
+Version:    1.2.2 (Semi-stable)
 Date:       23/2/19
 ]]
 
