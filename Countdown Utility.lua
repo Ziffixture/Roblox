@@ -1,6 +1,6 @@
 --[[
 Authors:    Ziffix, Cha
-Version:    1.2.2 (Semi-stable)
+Version:    1.2.1 (Stable)
 Date:       23/2/19
 ]]
 
@@ -24,16 +24,16 @@ local countdownPrivate = {}
 Implements assert with error's level argument.
 ]]
 local function _assertLevel(condition: any, message: string, level: number?)
-	assert(condition, "Argument #1 missing or nil.")
-	assert(message, "Argument #2 missing or nil.")
+    assert(condition, "Argument #1 missing or nil.")
+    assert(message, "Argument #2 missing or nil.")
 
-	level = (level or 0) + 1
+    level = (level or 0) + 1
 
-	if condition then
-		return condition
-	end
+    if condition then
+        return condition
+    end
 
-	error(message, level)
+    error(message, level)
 end
 
 
@@ -44,48 +44,48 @@ end
 Handles core countdown process.
 ]]
 local function _countdownStart(self)
-	_assertLevel(self, "Argument #1 missing or nil.", 2)
+    _assertLevel(self, "Argument #1 missing or nil.", 2)
 
-	local private = countdownPrivate[self]
+    local private = countdownPrivate[self]
 
-	for secondsLeft = private.duration - 1, 0, -1 do
-		task.wait(1)
-		
-		if secondsLeft == 0 then
-			break
-		end
+    for secondsLeft = private.duration - 1, 0, -1 do
+        task.wait(1)
 
-		if private.active == false then
-			coroutine.yield()
-		end
+        if secondsLeft == 0 then
+            break
+        end
 
-		-- Countdown object was destroyed
-		if private.tick == nil then
-			return
-		end
+        if private.active == false then
+            coroutine.yield()
+        end
 
-		private.tick:Fire(secondsLeft)
-		private.secondsLeft = secondsLeft
-		
-		for _ in private.taskRemovalQueue do
-			table.remove(private.tasks, table.remove(private.taskRemovalQueue, 1))
-		end
-		
-		for _, taskInfo in private.tasks do
-			if secondsLeft % taskInfo.Interval ~= 0 then
-				continue
-			end
+        -- Countdown object was destroyed
+        if private.tick == nil then
+            return
+        end
 
-			task.spawn(taskInfo.Task, secondsLeft)
-		end
-	end
+        private.tick:Fire(secondsLeft)
+        private.secondsLeft = secondsLeft
 
-	-- Countdown object was destroyed
-	if private.finished == nil then
-		return
-	end
+        for _ in private.taskRemovalQueue do
+            table.remove(private.tasks, table.remove(private.taskRemovalQueue, 1))
+        end
 
-	private.finished:Fire()
+        for _, taskInfo in private.tasks do
+            if secondsLeft % taskInfo.Interval ~= 0 then
+                continue
+            end
+
+            task.spawn(taskInfo.Task, secondsLeft)
+        end
+    end
+
+    -- Countdown object was destroyed
+    if private.finished == nil then
+        return
+    end
+
+    private.finished:Fire()
 end
 
 
@@ -96,31 +96,31 @@ end
 Generates a countdown object.
 ]]
 function countdown.new(duration: number): Countdown
-	_assertLevel(duration, "Argument #1 missing or nil.", 2)
-	_assertLevel(duration % 1 == 0, "Expected integer, got decimal.", 2)
+    _assertLevel(duration, "Argument #1 missing or nil.", 2)
+    _assertLevel(duration % 1 == 0, "Expected integer, got decimal.", 2)
 
-	local self = {}
-	local private = {}
+    local self = {}
+    local private = {}
 
-	private.active = false
-	private.thread = nil
-	private.threadPaused = 0
-	
-	private.duration = duration
-	private.secondsLeft = duration
-	
-	private.tasks = {}
-	private.taskRemovalQueue = {}
+    private.active = false
+    private.thread = nil
+    private.threadPaused = 0
 
-	private.tick = Instance.new("BindableEvent")
-	private.finished = Instance.new("BindableEvent")
+    private.duration = duration
+    private.secondsLeft = duration
 
-	self.tick = private.tick.Event
-	self.finished = private.finished.Event
+    private.tasks = {}
+    private.taskRemovalQueue = {}
 
-	countdownPrivate[self] = private
+    private.tick = Instance.new("BindableEvent")
+    private.finished = Instance.new("BindableEvent")
 
-	return setmetatable(self, countdownPrototype)
+    self.tick = private.tick.Event
+    self.finished = private.finished.Event
+
+    countdownPrivate[self] = private
+
+    return setmetatable(self, countdownPrototype)
 end
 
 
@@ -130,10 +130,10 @@ end
 Begins synchronous countdown process.
 ]]
 function countdownPrototype:start()
-	local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
 
-	private.active = true
-	private.thread = task.spawn(_countdownStart, self)
+    private.active = true
+    private.thread = task.spawn(_countdownStart, self)
 end
 
 
@@ -145,23 +145,23 @@ end
 Compiles interval and callback data into intervalTask repository.
 ]]
 function countdownPrototype:addTask(interval: number, callback: (number) -> ()): string
-	_assertLevel(interval, "Argument #1 missing or nil.", 2)
-	_assertLevel(callback, "Argument #2 missing or nil.", 2)
-	_assertLevel(interval % 1 == 0, "Expected integer, got decimal.", 2)
+    _assertLevel(interval, "Argument #1 missing or nil.", 2)
+    _assertLevel(callback, "Argument #2 missing or nil.", 2)
+    _assertLevel(interval % 1 == 0, "Expected integer, got decimal.", 2)
 
-	local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
 
-	local taskInfo = {
+    local taskInfo = {
 
-		Interval = interval,
-		Task = callback,
-		Id = httpService:GenerateGUID()
+        Interval = interval,
+        Task = callback,
+        Id = httpService:GenerateGUID()
 
-	}
+    }
 
-	table.insert(private.tasks, taskInfo)
+    table.insert(private.tasks, taskInfo)
 
-	return taskInfo.Id
+    return taskInfo.Id
 end
 
 
@@ -172,21 +172,21 @@ end
 Queues the associated task to be removed from the task repository.
 ]]
 function countdownPrototype:removeTask(taskId: string)
-	_assertLevel(taskId, "Argument #1 missing or nil.", 2)
+    _assertLevel(taskId, "Argument #1 missing or nil.", 2)
 
-	local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
 
-	for index, taskInfo in private.tasks do
-		if taskInfo.Id ~= taskId then
-			continue
-		end
+    for index, taskInfo in private.tasks do
+        if taskInfo.Id ~= taskId then
+            continue
+        end
 
-		table.insert(private.taskRemovalQueue, index)
+        table.insert(private.taskRemovalQueue, index)
 
-		return
-	end
+        return
+    end
 
-	error("Could not find a task by the given ID.", 2)
+    error("Could not find a task by the given ID.", 2)
 end
 
 
@@ -196,16 +196,16 @@ end
 Pauses the countdown.
 ]]
 function countdownPrototype:pause()
-	local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
 
-	if coroutine.status(private.thread) == "suspended" then
-		warn("Countdown is already paused")
+    if coroutine.status(private.thread) == "suspended" then
+        warn("Countdown is already paused")
 
-		return
-	end
+        return
+    end
 
-	private.active = false
-	private.threadPaused = time()
+    private.active = false
+    private.threadPaused = time()
 end
 
 
@@ -215,17 +215,17 @@ end
 Resumes the countdown.
 ]]
 function countdownPrototype:resume()
-	local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
 
-	if coroutine.status(private.thread) == "running" then
-		warn("Countdown is already active")
+    if coroutine.status(private.thread) == "running" then
+        warn("Countdown is already active")
 
-		return
-	end
+        return
+    end
 
-	private.active = true
+    private.active = true
 
-	coroutine.resume(private.thread)
+    coroutine.resume(private.thread)
 end
 
 
@@ -235,9 +235,9 @@ end
 Returns a boolean detailing whether or not the countdown is active.
 ]]
 function countdownPrototype:isPaused(): boolean
-	local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
 
-	return private.active
+    return private.active
 end
 
 
@@ -247,9 +247,9 @@ end
 Returns the seconds remaining in the countdown.
 ]]
 function countdownPrototype:getSecondsLeft(): number
-	local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
 
-	return private.secondsLeft
+    return private.secondsLeft
 end
 
 
@@ -259,9 +259,9 @@ end
 Returns the duration of the countdown.
 ]]
 function countdownPrototype:getDuration(): number
-	local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
 
-	return private.duration
+    return private.duration
 end
 
 
@@ -271,18 +271,18 @@ end
 Cleans up object data.
 ]]
 function countdownPrototype:destroy()
-	local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
 
-	if coroutine.status(private.thread) == "suspended" then
-		coroutine.close(private.thread)
-	end
+    if coroutine.status(private.thread) == "suspended" then
+        coroutine.close(private.thread)
+    end
 
-	private.tick:Destroy()
-	private.finished:Destroy()
+    private.tick:Destroy()
+    private.finished:Destroy()
 
-	table.clear(private.tasks)
+    table.clear(private.tasks)
 
-	countdownPrivate[self] = nil
+    countdownPrivate[self] = nil
 end
 
 
