@@ -1,6 +1,6 @@
 --[[
 Authors:    Ziffix, Cha
-Version:    1.2.2 (Semi-stable)
+Version:    1.2.3 (Stable)
 Date:       23/2/19
 ]]
 
@@ -57,6 +57,11 @@ local function _countdownStart(self)
 
         if private.active == false then
             coroutine.yield()
+            
+            local delta = time() - private.threadPaused
+            if delta < 1 then
+                task.wait(delta)
+            end
         end
 
         -- Countdown object was destroyed
@@ -104,6 +109,7 @@ function countdown.new(duration: number): Countdown
 
     private.active = false
     private.thread = nil
+    private.threadPaused = 0
 
     private.duration = duration
     private.secondsLeft = duration
