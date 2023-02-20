@@ -104,7 +104,6 @@ function countdown.new(duration: number): Countdown
 
     private.active = false
     private.thread = nil
-    private.threadPaused = 0
 
     private.duration = duration
     private.secondsLeft = duration
