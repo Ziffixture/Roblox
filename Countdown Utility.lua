@@ -144,7 +144,7 @@ end
 --[[
 @return   void
 
-Pauses countdown process.
+Pauses the countdown process.
 ]]
 function countdownPrototype:Pause()
     local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
@@ -162,7 +162,7 @@ end
 --[[
 @return   void
 
-Pauses countdown process.
+Resumes the countdown process.
 ]]
 function countdownPrototype:Resume()
     local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
