@@ -224,7 +224,6 @@ end
 
 
 countdownPrototype.__index = countdownPrototype
-countdownPrototype.__newindex = function() end
 countdownPrototype.__metatable = "This metatable is locked."
 
 export type Countdown = typeof(countdown.new(0))
