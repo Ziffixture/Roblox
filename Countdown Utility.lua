@@ -70,8 +70,8 @@ local function _countdownStart(self)
             return
         end
         
-        private.tick:Fire(secondsLeft)
-        private.secondsLeft = secondsLeft
+        private.Tick:Fire(secondsLeft)
+        private.SecondsLeft = secondsLeft
 
         for _ in private.TaskRemovalQueue do
             table.remove(private.Tasks, table.remove(private.TaskRemovalQueue, 1))
