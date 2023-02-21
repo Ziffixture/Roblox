@@ -48,14 +48,13 @@ local function _analyzePartsForPlayers(parts: {BasePart}): {[Player]: boolean}
  
     for _, part in parts do
         local character = part.Parent
+  
         local humanoid = character:FindFirstChildOfClass("Humanoid")
-    
         if humanoid == nil or humanoid:GetState() == Enum.HumanoidStateType.Dead then
             continue
         end
     
         local player = players:GetPlayerFromCharacter(character)
-    
         if player == nil then
             continue
         end
