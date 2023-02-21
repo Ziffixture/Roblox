@@ -1,7 +1,7 @@
 --[[
 Authors:    Ziffix
-Version:    1.3.0 (Stable)
-Date:       23/2/20
+Version:    1.3.0 (Untested)
+Date:       23/2/21
 ]]
 
 
