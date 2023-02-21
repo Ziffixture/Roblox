@@ -38,7 +38,7 @@ end
 
 
 --[[
-@param    countdown    countdown   | The countdown object
+@param    countdown    Countdown   | The countdown object
 @return                void
 
 Handles core countdown process.
