@@ -55,9 +55,11 @@ local function _countdownStart(self)
         while secondsElapsed < 1 do
             secondsElapsed += task.wait()
             
-            if private.active == false then
-                coroutine.yield()
+            if private.active then
+                continue
             end
+            
+            coroutine.yield()
         end
         
         secondsElapsed = 0
