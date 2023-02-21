@@ -20,6 +20,7 @@ local playerTrackerPrivate = {}
 @param    message     string    | The error message to be raised
 @param    level = 1   number?   | The level at which to raise the error
 @return               void
+
 Implements assert with error's level argument.
 ]]
 local function _assertLevel(condition: any, message: string, level: number?)
@@ -144,7 +145,7 @@ function playerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
         self:Destroy()
     end)
  
-    return setmetatable(self, playerTrackerPrototype)
+    return table.freeze(setmetatable(self, playerTrackerPrototype))
 end
  
 
@@ -152,7 +153,7 @@ end
 --[[
 @return   void
 
-Generates a PlayerTracker object.
+Begins updating the PlayerTracker object every RunService.Heartbeat.
 ]]
 function playerTrackerPrototype:StartTracking()
     local private = playerTrackerPrototype[self]
@@ -168,30 +169,33 @@ function playerTrackerPrototype:StartTracking()
     local trackingSpace = private.TrackingSpace
     local trackingParameters = private.TrackingParameters
  
-    private.TrackingConnection = RunService.Heartbeat:Connect(function()
+    private.TrackingConnection = runService.Heartbeat:Connect(function()
         _updatePlayerTracker(
             self,
             workspace:GetPartBoundsInBox(trackingSpace.CFrame, trackingSpace.Size, trackingParameters)
         )
     end)
 end
- 
+
+
+--[[
+@return   void
+
+Ceases updating the PlayerTracker.
+]]
 function playerTrackerPrototype:StopTracking()
-    local TrackerData = PlayerTrackerData[self]
+    local private = playerTrackerPrivate[self]
     
-    TrackerData.SpaceTrackingConnection:Disconnect()
-    TrackerData.IsTracking = false
+    private.TrackingConnection:Disconnect()
+    private.IsTracking = false
 end
+
  
-function playerTrackerPrototype:Destroy()
-    if (PlayerTrackerData[self] ~= nil) then
-        self:StopTracking()
-        
-        PlayerTrackerData[self] = nil
-    end
-end
- 
- 
+--[[
+@return   Array<Player>
+
+Returns an array of the players currently in the tracking space.
+]]
 function playerTrackerPrototype:GetPlayers()
     local Players = {}
  
@@ -201,12 +205,63 @@ function playerTrackerPrototype:GetPlayers()
  
     return Players
 end
- 
+
+
+--[[
+@return   number
+
+Returns the current population of the tracking space.
+]]
 function playerTrackerPrototype:GetPopulation()
-    return PlayerTrackerData[self].Population
+    local private = playerTrackerPrivate[self]
+ 
+    return private.Population
 end
+
+
+--[[
+@return   number
+
+Returns the capacity of the tracking space.
+]]
+function playerTrackerPrototype:GetCapacity()
+    local private = playerTrackerPrivate[self]
  
+    return private.Capacity
+end
+
+
+--[[
+@return   boolean  | The state of the tracking process
+
+Returns a boolean detailing whether or not the tracking process is active.
+]]
+function playerTrackerPrototype:IsTracking(): boolean
+    local private = playerTrackerPrivate[self]
  
+    return private.IsTracking
+end
+
+
+--[[
+@return   void
+
+Cleans up object data.
+]]
+function playerTrackerPrototype:Destroy()
+    local private = playerTrackerPrivate[self]
+ 
+    private.PlayerLeft:Destroy()
+    private.PlayerEntered:Destroy()
+    private.PopulationChanged:Destroy()
+ 
+    self:StopTracking()
+    
+    playerTrackerPrivate[self] = nil
+end
+
+
+
 playerTrackerPrototype.__index = playerTrackerPrototype
 playerTrackerPrototype.__metatable = "This metatable is locked."
 
