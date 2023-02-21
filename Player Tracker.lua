@@ -75,7 +75,7 @@ Updates the PlayerTracker's internal map of Players, and population.
 local function _updatePlayerTracker(playerTracker: PlayerTracker, parts: {BasePart})
     local private = playerTrackerPrivate[playerTracker]
  
-    local currentPlayers = private.Players
+    local currentPlayers = private.PlayerMap
     local currentPopulation = private.Population
     local capacity = private.Capacity
  
@@ -126,7 +126,7 @@ function playerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
     private.TrackingParameters = TrackingParameters
     private.TrackingConnection = nil
  
-    private.Players = {}
+    private.PlayerMap = {}
     private.Population = 0
     private.Capacity = capacity
   
@@ -195,14 +195,15 @@ end
 
 Returns an array of the players currently in the tracking space.
 ]]
-function playerTrackerPrototype:GetPlayers()
-    local Players = {}
+function playerTrackerPrototype:GetPlayers(): {Player}
+    local private = playerTrackerPrivate[self]
+    local players = {}
  
-    for Player in PlayerTrackerData[self].Players do
-        table.insert(Players, Player)
+    for players in private.PlayerMap do
+        table.insert(players, player)
     end
  
-    return Players
+    return players
 end
 
 
@@ -211,7 +212,7 @@ end
 
 Returns the current population of the tracking space.
 ]]
-function playerTrackerPrototype:GetPopulation()
+function playerTrackerPrototype:GetPopulation(): number
     local private = playerTrackerPrivate[self]
  
     return private.Population
@@ -223,10 +224,23 @@ end
 
 Returns the capacity of the tracking space.
 ]]
-function playerTrackerPrototype:GetCapacity()
+function playerTrackerPrototype:GetCapacity(): number
     local private = playerTrackerPrivate[self]
  
     return private.Capacity
+end
+
+
+--[[
+@param    capacity  number  | The new capacity of the tracking space 
+@return             void
+
+Updates the capacity of the tracking space.
+]]
+function playerTrackerPrototype:SetCapacity(newCapacity: number)
+    local private = playerTrackerPrivate[self]
+ 
+    private.Capacity = newCapacity
 end
 
 
