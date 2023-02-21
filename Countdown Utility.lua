@@ -96,7 +96,7 @@ end
 
 --[[
 @param    duration    number      | The duration of the countdown
-@return               countdown   | The generated countdown object
+@return               countdown   | The generated Countdown object
 
 Generates a countdown object.
 ]]
