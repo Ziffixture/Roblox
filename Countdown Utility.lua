@@ -49,9 +49,9 @@ local function _countdownStart(self)
     local private = countdownPrivate[self]
     
     local secondsElapsed = 0
-    local secondsLeft = private.duration - 1
+    local secondsLeft = private.duration
     
-    while true do  
+    while secondsLeft > 0 do  
         while secondsElapsed < 1 do
             secondsElapsed += task.wait()
             
@@ -61,6 +61,7 @@ local function _countdownStart(self)
         end
         
         secondsElapsed = 0
+        secondsLeft -= 1
         
         -- Countdown object was destroyed
         if private.tick == nil then
@@ -81,12 +82,6 @@ local function _countdownStart(self)
 
             task.spawn(taskInfo.task, secondsLeft)
         end
-        
-        if secondsLeft == 0 then
-            break
-        end
-        
-        secondsLeft -= 1
     end
 
     -- Countdown object was destroyed
