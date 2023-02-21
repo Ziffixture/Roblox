@@ -1,6 +1,6 @@
 --[[
 Authors:    Ziffix, Cha
-Version:    1.2.0 (Stable)
+Version:    1.2.1 (Stable)
 Date:       23/2/19
 ]]
 
@@ -92,8 +92,8 @@ end
 Generates a countdown object.
 ]]
 function countdown.new(duration: number): Countdown
-    _assertLevel(duration, "Argument #1 missing or nil.", 2)
-    _assertLevel(duration % 1 == 0, "Expected integer, got decimal.", 2)
+    _assertLevel(duration, "Argument #1 missing or nil.", 1)
+    _assertLevel(duration % 1 == 0, "Expected integer, got decimal.", 1)
 
     local self = {}
     local private = {}
