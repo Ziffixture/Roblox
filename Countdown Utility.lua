@@ -38,15 +38,15 @@ end
 
 
 --[[
-@param    self    countdown   | The countdown object
-@return           void
+@param    countdown    countdown   | The countdown object
+@return                void
 
 Handles core countdown process.
 ]]
-local function _countdownStart(self)
-    _assertLevel(self, "Argument #1 missing or nil.", 1)
+local function _countdownStart(countdown: Countdown)
+    _assertLevel(countdown, "Argument #1 missing or nil.", 1)
 
-    local private = countdownPrivate[self]
+    local private = countdownPrivate[countdown]
     
     local secondsElapsed = 0
     local secondsLeft = private.Duration
