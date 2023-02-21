@@ -75,11 +75,11 @@ local function _countdownStart(self)
         end
 
         for _, taskInfo in private.tasks do
-            if secondsLeft % taskInfo.Interval ~= 0 then
+            if secondsLeft % taskInfo.interval ~= 0 then
                 continue
             end
 
-            task.spawn(taskInfo.Task, secondsLeft)
+            task.spawn(taskInfo.task, secondsLeft)
         end
         
         if secondsLeft == 0 then
@@ -199,15 +199,15 @@ function countdownPrototype:addTask(interval: number, callback: (number) -> ()):
 
     local taskInfo = {
 
-        Interval = interval,
-        Task = callback,
-        Id = httpService:GenerateGUID()
+        interval = interval,
+        task = callback,
+        id = httpService:GenerateGUID()
 
     }
 
     table.insert(private.tasks, taskInfo)
 
-    return taskInfo.Id
+    return taskInfo.id
 end
 
 
@@ -223,7 +223,7 @@ function countdownPrototype:removeTask(taskId: string)
     local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
 
     for index, taskInfo in private.tasks do
-        if taskInfo.Id ~= taskId then
+        if taskInfo.id ~= taskId then
             continue
         end
 
