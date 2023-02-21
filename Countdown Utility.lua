@@ -16,7 +16,7 @@ local countdownPrivate = {}
 
 
 --[[
-@param    condition   boolean   | The result of the condition
+@param    condition   any       | The result of the condition
 @param    message     string    | The error message to be raised
 @param    level = 1   number?   | The level at which to raise the error
 @return               void
