@@ -10,7 +10,6 @@ local httpService = game:GetService("HttpService")
 
 local countdown = {}
 local countdownPrototype = {}
-
 local countdownPrivate = {}
 
 
