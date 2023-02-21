@@ -188,9 +188,9 @@ end
 @param    callback    function    | The function to be ran at the given interval
 @return               string      | The GUID representing the task
 
-Compiles interval and callback data into intervalTask repository.
+Compiles interval and callback data into task repository.
 ]]
-function countdownPrototype:addTask(interval: number, callback: (number) -> ()): string
+function countdownPrototype:addTask(interval: number, task: (number) -> ()): string
     _assertLevel(interval, "Argument #1 missing or nil.", 1)
     _assertLevel(callback, "Argument #2 missing or nil.", 1)
     _assertLevel(interval % 1 == 0, "Expected integer, got decimal.", 1)
@@ -200,7 +200,7 @@ function countdownPrototype:addTask(interval: number, callback: (number) -> ()):
     local taskInfo = {
 
         interval = interval,
-        task = callback,
+        task = task,
         id = httpService:GenerateGUID()
 
     }
