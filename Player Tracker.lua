@@ -144,7 +144,7 @@ function playerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
         self:Destroy()
     end)
  
-    return table.freeze(setmetatable(self, playerTrackerPrototype))
+    return setmetatable(self, playerTrackerPrototype)
 end
  
 
@@ -277,5 +277,7 @@ end
 
 playerTrackerPrototype.__index = playerTrackerPrototype
 playerTrackerPrototype.__metatable = "This metatable is locked."
+
+export type PlayerTracker = typeof(playerTracker.new(Instance.new("Part"), 0, OverlapParams.new()))
 
 return PlayerTracker
