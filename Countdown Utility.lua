@@ -44,7 +44,7 @@ end
 Handles core countdown process.
 ]]
 local function _countdownStart(self)
-    _assertLevel(self, "Argument #1 missing or nil.", 2)
+    _assertLevel(self, "Argument #1 missing or nil.", 1)
 
     local private = countdownPrivate[self]
 
@@ -122,7 +122,7 @@ end
 Begins synchronous countdown process.
 ]]
 function countdownPrototype:start()
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
     
     task.spawn(_countdownStart, self)
 end
@@ -136,11 +136,11 @@ end
 Compiles interval and callback data into intervalTask repository.
 ]]
 function countdownPrototype:addTask(interval: number, callback: (number) -> ()): string
-    _assertLevel(interval, "Argument #1 missing or nil.", 2)
-    _assertLevel(callback, "Argument #2 missing or nil.", 2)
-    _assertLevel(interval % 1 == 0, "Expected integer, got decimal.", 2)
+    _assertLevel(interval, "Argument #1 missing or nil.", 1)
+    _assertLevel(callback, "Argument #2 missing or nil.", 1)
+    _assertLevel(interval % 1 == 0, "Expected integer, got decimal.", 1)
 
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
 
     local taskInfo = {
 
@@ -163,9 +163,9 @@ end
 Queues the associated task to be removed from the task repository.
 ]]
 function countdownPrototype:removeTask(taskId: string)
-    _assertLevel(taskId, "Argument #1 missing or nil.", 2)
+    _assertLevel(taskId, "Argument #1 missing or nil.", 1)
 
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
 
     for index, taskInfo in private.tasks do
         if taskInfo.Id ~= taskId then
@@ -187,7 +187,7 @@ end
 Returns the seconds remaining in the countdown.
 ]]
 function countdownPrototype:getSecondsLeft(): number
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
 
     return private.secondsLeft
 end
@@ -199,7 +199,7 @@ end
 Returns the duration of the countdown.
 ]]
 function countdownPrototype:getDuration(): number
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
 
     return private.duration
 end
@@ -211,7 +211,7 @@ end
 Cleans up object data.
 ]]
 function countdownPrototype:destroy()
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
 
     private.tick:Destroy()
     private.finished:Destroy()
