@@ -1,6 +1,6 @@
 --[[
 Authors:    Ziffix, Cha
-Version:    1.2.4 (Untested)
+Version:    1.2.5 (Untested)
 Date:       23/2/20
 ]]
 
@@ -81,7 +81,7 @@ local function _countdownStart(countdown: Countdown)
                 continue
             end
 
-            task.spawn(taskInfo.Task, secondsLeft)
+            task.spawn(taskInfo.Task, secondsLeft, table.unpack(taskInfo.Arguments))
         end
     end
 
@@ -186,9 +186,9 @@ end
 
 Compiles interval and callback data into task repository.
 ]]
-function countdownPrototype:AddTask(interval: number, task: (number) -> ()): string
+function countdownPrototype:AddTask(interval: number, task: (number?, ...any) -> (), ...): string
     _assertLevel(interval, "Argument #1 missing or nil.", 1)
-    _assertLevel(callback, "Argument #2 missing or nil.", 1)
+    _assertLevel(task, "Argument #2 missing or nil.", 1)
     _assertLevel(interval % 1 == 0, "Expected integer, got decimal.", 1)
 
     local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
@@ -197,7 +197,8 @@ function countdownPrototype:AddTask(interval: number, task: (number) -> ()): str
 
         Interval = interval,
         Task = task,
-        Id = httpService:GenerateGUID()
+        Id = httpService:GenerateGUID(),
+        Arguments = {...}
 
     }
 
