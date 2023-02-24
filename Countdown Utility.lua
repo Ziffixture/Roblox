@@ -24,7 +24,7 @@ Implements assert with error's level argument.
 ]]
 local function _assertLevel(condition: any, message: string, level: number?)
     assert(condition == nil, "Argument #1 missing or nil.")
-    assert(message, "Argument #2 missing or nil.")
+    assert(message == nil, "Argument #2 missing or nil.")
 
     level = (level or 0) + 1
 
@@ -43,7 +43,7 @@ end
 Handles core countdown process.
 ]]
 local function _countdownStart(countdown: Countdown)
-    _assertLevel(countdown, "Argument #1 missing or nil.", 1)
+    _assertLevel(countdown == nil, "Argument #1 missing or nil.", 1)
 
     local private = countdownPrivate[countdown]
     
@@ -101,7 +101,7 @@ end
 Generates a countdown object.
 ]]
 function countdown.new(duration: number): Countdown
-    _assertLevel(duration, "Argument #1 missing or nil.", 1)
+    _assertLevel(duration == nil, "Argument #1 missing or nil.", 1)
     _assertLevel(duration % 1 == 0, "Expected integer, got decimal.", 1)
 
     local self = {}
@@ -134,7 +134,7 @@ end
 Begins synchronous countdown process.
 ]]
 function countdownPrototype:Start()
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
+    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
     
     private.Active = true
     private.Thread = task.spawn(_countdownStart, self)
@@ -147,7 +147,7 @@ end
 Pauses the countdown process.
 ]]
 function countdownPrototype:Pause()
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
+    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
     
     if private.Active == false then
         warn("Countdown process is already paused.")
@@ -165,7 +165,7 @@ end
 Resumes the countdown process.
 ]]
 function countdownPrototype:Resume()
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
+    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
     
     if private.Active then
         warn("Countdown process is already active.")
@@ -187,11 +187,11 @@ end
 Compiles interval and callback data into task repository.
 ]]
 function countdownPrototype:AddTask(interval: number, task: (number?, ...any) -> (), ...): string
-    _assertLevel(interval, "Argument #1 missing or nil.", 1)
-    _assertLevel(task, "Argument #2 missing or nil.", 1)
+    _assertLevel(interval == nil, "Argument #1 missing or nil.", 1)
+    _assertLevel(task == nil, "Argument #2 missing or nil.", 1)
     _assertLevel(interval % 1 == 0, "Expected integer, got decimal.", 1)
 
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
+    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
 
     local taskInfo = {
 
@@ -215,9 +215,9 @@ end
 Queues the associated task to be removed from the task repository.
 ]]
 function countdownPrototype:RemoveTask(taskId: string)
-    _assertLevel(taskId, "Argument #1 missing or nil.", 1)
+    _assertLevel(taskId == nil, "Argument #1 missing or nil.", 1)
 
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
+    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
 
     for index, taskInfo in private.Tasks do
         if taskInfo.Id ~= taskId then
@@ -239,7 +239,7 @@ end
 Returns the duration of the countdown.
 ]]
 function countdownPrototype:GetDuration(): number
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
+    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
 
     return private.Duration
 end
@@ -251,7 +251,7 @@ end
 Returns the seconds remaining in the countdown.
 ]]
 function countdownPrototype:GetSecondsLeft(): number
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
+    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
 
     return private.SecondsLeft
 end
@@ -263,8 +263,8 @@ end
 Returns a boolean detailing whether or not the countdown process is active.
 ]]
 function countdownPrototype:IsPaused(): boolean
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
-
+    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
+    
     return private.Active
 end
 
@@ -275,7 +275,7 @@ end
 Cleans up object data.
 ]]
 function countdownPrototype:Destroy()
-    local private = _assertLevel(countdownPrivate[self], "Cooldown object is destroyed", 1)
+    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
 
     private.Tick:Destroy()
     private.Finished:Destroy()
