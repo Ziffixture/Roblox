@@ -1,7 +1,7 @@
 --[[
 Authors:    Ziffix, Cha
-Version:    1.2.5 (Untested)
-Date:       23/2/20
+Version:    1.2.6 (Stable)
+Date:       23/2/24
 ]]
 
 
@@ -23,7 +23,7 @@ local countdownPrivate = {}
 Implements assert with error's level argument.
 ]]
 local function _assertLevel(condition: any, message: string, level: number?)
-    assert(condition, "Argument #1 missing or nil.")
+    assert(condition == nil, "Argument #1 missing or nil.")
     assert(message, "Argument #2 missing or nil.")
 
     level = (level or 0) + 1
