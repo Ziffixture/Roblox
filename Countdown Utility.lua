@@ -57,7 +57,7 @@ end
 
 Handles core countdown process.
 ]]
-local function _countdownStart(private)
+local function _countdownMain(private)
     local secondsElapsed = 0
     local secondsLeft = private.Duration
     
@@ -148,7 +148,7 @@ function countdownPrototype:Start()
     local private = _getPrivate(self)
     
     private.Active = true
-    private.Thread = task.spawn(_countdownStart, pivate)
+    private.Thread = task.spawn(_countdownMain, private)
 end
 
 
