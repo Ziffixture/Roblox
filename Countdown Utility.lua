@@ -37,16 +37,27 @@ end
 
 
 --[[
+@param    countdownObject   Countdown               | The countdown object
+@return                     Dict<String, Any>
+
+Returns the private data associated with the given countdown object.
+]]
+local function _getPrivate(countdownObject: Countdown): {[string]: any}
+    _assertLevel(countdownObject == nil, "Argument #1 missing or nil.", 1)
+
+    local private = _assertLevel(countdownPrivate[countdownObject], "Countdown object is destroyed", 2)
+    
+    return private
+end
+
+
+--[[
 @param    countdown    Countdown   | The countdown object
 @return                void
 
 Handles core countdown process.
 ]]
-local function _countdownStart(countdown: Countdown)
-    _assertLevel(countdown == nil, "Argument #1 missing or nil.", 1)
-
-    local private = countdownPrivate[countdown]
-    
+local function _countdownStart(private)
     local secondsElapsed = 0
     local secondsLeft = private.Duration
     
@@ -134,10 +145,10 @@ end
 Begins synchronous countdown process.
 ]]
 function countdownPrototype:Start()
-    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
+    local private = _getPrivate(self)
     
     private.Active = true
-    private.Thread = task.spawn(_countdownStart, self)
+    private.Thread = task.spawn(_countdownStart, pivate)
 end
 
 
@@ -147,7 +158,7 @@ end
 Pauses the countdown process.
 ]]
 function countdownPrototype:Pause()
-    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
+    local private = _getPrivate(self)
     
     if private.Active == false then
         warn("Countdown process is already paused.")
@@ -165,7 +176,7 @@ end
 Resumes the countdown process.
 ]]
 function countdownPrototype:Resume()
-    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
+    local private = _getPrivate(self)
     
     if private.Active then
         warn("Countdown process is already active.")
@@ -191,7 +202,7 @@ function countdownPrototype:AddTask(interval: number, task: (number?, ...any) ->
     _assertLevel(task == nil, "Argument #2 missing or nil.", 1)
     _assertLevel(interval % 1 == 0, "Expected integer, got decimal.", 1)
 
-    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
+    local private = _getPrivate(self)
 
     local taskInfo = {
 
@@ -217,7 +228,7 @@ Queues the associated task to be removed from the task repository.
 function countdownPrototype:RemoveTask(taskId: string)
     _assertLevel(taskId == nil, "Argument #1 missing or nil.", 1)
 
-    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
+    local private = _getPrivate(self)
 
     for index, taskInfo in private.Tasks do
         if taskInfo.Id ~= taskId then
@@ -239,7 +250,7 @@ end
 Returns the duration of the countdown.
 ]]
 function countdownPrototype:GetDuration(): number
-    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
+    local private = _getPrivate(self)
 
     return private.Duration
 end
@@ -251,7 +262,7 @@ end
 Returns the seconds remaining in the countdown.
 ]]
 function countdownPrototype:GetSecondsLeft(): number
-    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
+    local private = _getPrivate(self)
 
     return private.SecondsLeft
 end
@@ -263,7 +274,7 @@ end
 Returns a boolean detailing whether or not the countdown process is active.
 ]]
 function countdownPrototype:IsPaused(): boolean
-    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
+    local private = _getPrivate(self)
     
     return private.Active
 end
@@ -275,7 +286,7 @@ end
 Cleans up object data.
 ]]
 function countdownPrototype:Destroy()
-    local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
+    local private = _getPrivate(self)
 
     if coroutine.status(private.Thread) == "suspended" then
         coroutine.close(private.Thread)    
