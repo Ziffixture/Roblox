@@ -277,6 +277,10 @@ Cleans up object data.
 function countdownPrototype:Destroy()
     local private = _assertLevel(countdownPrivate[self] == nil, "Cooldown object is destroyed", 1)
 
+    if coroutine.status(private.Thread) == "suspended" then
+        coroutine.close(private.Thread)    
+    end
+    
     private.Tick:Destroy()
     private.Finished:Destroy()
 
