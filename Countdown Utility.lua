@@ -142,7 +142,7 @@ end
 --[[
 @return   void
 
-Begins synchronous countdown process.
+Begins asynchronous countdown process.
 ]]
 function countdownPrototype:Start()
     local private = _getPrivate(self)
