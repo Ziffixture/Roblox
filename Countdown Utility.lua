@@ -6,9 +6,10 @@ Date:       23/2/24
 
 
 
-local httpService = game:GetService("HttpService")
+local HttpService = game:GetService("HttpService")
 
-local countdown = {}
+local Countdown = {}
+
 local countdownPrototype = {}
 local countdownPrivate = {}
 
@@ -42,10 +43,10 @@ end
 
 Returns the private data associated with the given countdown object.
 ]]
-local function _getPrivate(countdownObject: Countdown): {[string]: any}
-    _assertLevel(countdownObject == nil, "Argument #1 missing or nil.", 1)
+local function _getPrivate(countdown: Countdown): {[string]: any}
+    _assertLevel(countdown == nil, "Argument #1 missing or nil.", 1)
 
-    local private = _assertLevel(countdownPrivate[countdownObject], "Countdown object is destroyed", 2)
+    local private = _assertLevel(countdownPrivate[countdown], "Countdown object is destroyed", 2)
     
     return private
 end
@@ -208,7 +209,7 @@ function countdownPrototype:AddTask(interval: number, task: (number?, ...any) ->
 
         Interval = interval,
         Task = task,
-        Id = httpService:GenerateGUID(),
+        Id = HttpService:GenerateGUID(),
         Arguments = {...}
 
     }
@@ -305,6 +306,22 @@ end
 countdownPrototype.__index = countdownPrototype
 countdownPrototype.__metatable = "This metatable is locked."
 
-export type Countdown = typeof(countdown.new(0))
+export type Countdown = {
+    
+    Start: (self) -> (),
+    Pause: (self) -> (),
+    Resume: (self) -> ()
+    
+    AddTask: (self, number, (number?, ...any) -> (), ...) -> string,
+    RemoveTask: (self, string) -> (),
+    
+    GetDuration: (self) -> number,
+    GetSecondsLeft: (self) -> number,
+    
+    IsPaused: (self) -> boolean,
+    
+    Destroy: (self) -> ()
+    
+}
 
 return countdown
