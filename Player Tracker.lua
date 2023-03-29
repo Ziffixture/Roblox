@@ -1,15 +1,16 @@
 --[[
 Authors:    Ziffix
 Version:    1.3.0 (Untested)
-Date:       23/2/21
+Date:       23/3/28
 ]]
 
 
 
-local runService = game:GetService("RunService")
-local players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
  
-local playerTracker = {}
+local PlayerTracker = {}
+
 local playerTrackerPrototype = {}
 local playerTrackerPrivate = {}
  
@@ -24,8 +25,8 @@ local playerTrackerPrivate = {}
 Implements assert with error's level argument.
 ]]
 local function _assertLevel(condition: any, message: string, level: number?)
-    assert(condition, "Argument #1 missing or nil.")
-    assert(message, "Argument #2 missing or nil.")
+    assert(condition == nil, "Argument #1 missing or nil.")
+    assert(message == nil, "Argument #2 missing or nil.")
 
     level = (level or 0) + 1
 
@@ -38,12 +39,28 @@ end
 
 
 --[[
+@param    countdownObject   Countdown               | The countdown object
+@return                     Dict<String, Any>
+Returns the private data associated with the given countdown object.
+]]
+local function _getPrivate(playerTracker: PlayerTracker): {[string]: any}
+    _assertLevel(countdownObject == nil, "Argument #1 missing or nil.", 1)
+
+    local private = _assertLevel(playerTrackerPrivate[playerTracker], "PlayerTracker object was destroyed", 2)
+    
+    return private
+end
+
+
+--[[
 @param    parts   Array<BasePart>               | The array of BaseParts to scan
 @return           Dictionary<Player, boolean>   | A dictionary of the players found
 
 Processes array of BaseParts for affiliated Player instances. Filters out dead players.
 ]]
 local function _analyzePartsForPlayers(parts: {BasePart}): {[Player]: boolean}
+    _assertLevel(parts == nil, "Argument #1 missing or nil.", 1)
+ 
     local playersFound = {}
  
     for _, part in parts do
@@ -73,7 +90,10 @@ end
 Updates the PlayerTracker's internal map of Players, and population.
 ]]
 local function _updatePlayerTracker(playerTracker: PlayerTracker, parts: {BasePart})
-    local private = playerTrackerPrivate[playerTracker]
+    _assertLevel(playerTracker == nil, "Argument #1 missing or nil.", 1)
+    _assertLevel(parts == nil, "Argument #2 missing or nil.", 1)
+ 
+    local private = _getPrivate(playerTracker)
  
     local currentPlayers = private.PlayerMap
     local currentPopulation = private.Population
@@ -117,7 +137,9 @@ end
 
 Generates a PlayerTracker object.
 ]]
-function playerTracker.new(trackingSpace: BasePart, capacity: number?, trackingParameters: OverlapParams?): PlayerTracker
+function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingParameters: OverlapParams?): PlayerTracker
+    _assertLevel(trackingSpace == nil, "Argument #1 missing or nil.", 1)
+ 
     local self = {}
     local private = {}
         
@@ -155,7 +177,7 @@ end
 Begins updating the PlayerTracker object every RunService.Heartbeat.
 ]]
 function playerTrackerPrototype:StartTracking()
-    local private = playerTrackerPrototype[self]
+    local private = _getPrivate(self)
  
     if private.IsTracking then
         warn("PlayerTracker is already tracking.")
@@ -183,7 +205,7 @@ end
 Ceases updating the PlayerTracker.
 ]]
 function playerTrackerPrototype:StopTracking()
-    local private = playerTrackerPrivate[self]
+    local private = _getPrivate(self)
     
     private.TrackingConnection:Disconnect()
     private.IsTracking = false
@@ -196,7 +218,7 @@ end
 Returns an array of the players currently in the tracking space.
 ]]
 function playerTrackerPrototype:GetPlayers(): {Player}
-    local private = playerTrackerPrivate[self]
+    local private = _getPrivate(self)
     local players = {}
  
     for players in private.PlayerMap do
@@ -213,7 +235,7 @@ end
 Returns the current population of the tracking space.
 ]]
 function playerTrackerPrototype:GetPopulation(): number
-    local private = playerTrackerPrivate[self]
+    local private = _getPrivate(self)
  
     return private.Population
 end
@@ -225,7 +247,7 @@ end
 Returns the capacity of the tracking space.
 ]]
 function playerTrackerPrototype:GetCapacity(): number
-    local private = playerTrackerPrivate[self]
+    local private = _getPrivate(self)
  
     return private.Capacity
 end
@@ -238,7 +260,9 @@ end
 Updates the capacity of the tracking space.
 ]]
 function playerTrackerPrototype:SetCapacity(newCapacity: number)
-    local private = playerTrackerPrivate[self]
+    _assertLevel(newCapacity == nil, "Argument #1 missing or nil.", 1)
+ 
+    local private = _getPrivate(self)
  
     private.Capacity = newCapacity
 end
@@ -250,7 +274,7 @@ end
 Returns a boolean detailing whether or not the tracking process is active.
 ]]
 function playerTrackerPrototype:IsTracking(): boolean
-    local private = playerTrackerPrivate[self]
+    local private = _getPrivate(self)
  
     return private.IsTracking
 end
@@ -262,7 +286,7 @@ end
 Cleans up object data.
 ]]
 function playerTrackerPrototype:Destroy()
-    local private = playerTrackerPrivate[self]
+    local private = _getPrivate(self)
  
     private.PlayerLeft:Destroy()
     private.PlayerEntered:Destroy()
@@ -278,6 +302,21 @@ end
 playerTrackerPrototype.__index = playerTrackerPrototype
 playerTrackerPrototype.__metatable = "This metatable is locked."
 
-export type PlayerTracker = typeof(playerTracker.new(Instance.new("Part"), 0, OverlapParams.new()))
+export type PlayerTracker = {
+
+   StartTracking: (self) -> (),
+   StopTracking: (self) -> (),
+ 
+   GetPlayers: (self) -> {Player},
+   GetPopulation: (self) -> number,
+   GetCapacity: (self) -> number,
+ 
+   SetCapacity: (self, number) -> (),
+ 
+   IsTracking: (self) -> boolean,
+ 
+   Destroy: (self) -> ()
+
+}
 
 return PlayerTracker
