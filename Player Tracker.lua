@@ -71,7 +71,7 @@ local function _analyzePartsForPlayers(parts: {BasePart}): {[Player]: boolean}
             continue
         end
     
-        local player = players:GetPlayerFromCharacter(character)
+        local player = Players:GetPlayerFromCharacter(character)
         if player == nil then
             continue
         end
@@ -190,7 +190,7 @@ function playerTrackerPrototype:StartTracking()
     local trackingSpace = private.TrackingSpace
     local trackingParameters = private.TrackingParameters
  
-    private.TrackingConnection = runService.Heartbeat:Connect(function()
+    private.TrackingConnection = RunService.Heartbeat:Connect(function()
         _updatePlayerTracker(
             self,
             workspace:GetPartBoundsInBox(trackingSpace.CFrame, trackingSpace.Size, trackingParameters)
