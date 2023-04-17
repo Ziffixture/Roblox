@@ -39,9 +39,9 @@ end
 
 
 --[[
-@param    countdownObject   Countdown               | The countdown object
+@param    playerTracker     PlayerTracker        | The PlayerTracker object
 @return                     Dict<String, Any>
-Returns the private data associated with the given countdown object.
+Returns the private data associated with the given PlayerTracker object.
 ]]
 local function _getPrivate(playerTracker: PlayerTracker): {[string]: any}
     _assertLevel(countdownObject == nil, "Argument #1 missing or nil.", 1)
