@@ -41,6 +41,7 @@ end
 --[[
 @param    playerTracker     PlayerTracker        | The PlayerTracker object
 @return                     Dict<String, Any>
+
 Returns the private data associated with the given PlayerTracker object.
 ]]
 local function _getPrivate(playerTracker: PlayerTracker): {[string]: any}
