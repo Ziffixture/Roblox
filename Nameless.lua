@@ -124,9 +124,8 @@ end
 @param        rank        number	| The target rank.
 @return       N/A         boolean | Whether or not the function executed successfully.
 	
-Calls the API endpoint in an attempt to update the
-player's role in the group based off on the given
-rank.
+Calls the API endpoint in an attempt to update the player's 
+role in the group based off on the given rank.
 ]]
 local function updateRank(player: Player, rank: number): boolean
     if table.find(blacklist, player.UserId) then
