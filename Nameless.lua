@@ -2,6 +2,12 @@
 Author:     Ziffix
 Version:    1.2.0
 Date:	    4/19/23
+Notes:
+
+WARNING!!!
+
+This code is a potential source of data regression; it is not
+designed to cease functioning in case of data retrival failure.
 ]]
 
 
@@ -59,7 +65,7 @@ local function onPlayerAdded(player: Player)
         made regardless in order to promote an update in
         the user's cache.
         ]]
-        currentRank[player] = -1
+        currentRank[player] = 0
     
         return
     end
