@@ -1,7 +1,7 @@
 --[[
 Author:     Ziffix
-Version:    1.2.4
-Date:	    4/21/23
+Version:    1.2.6 (Untested)
+Date:	    4/22/23
 ]]
 
 
@@ -21,7 +21,7 @@ local Players = game:GetService("Players")
 
 
 local API_AUTHORIZATION_TOKEN = ""
-local API_URL = ""
+local API_ENDPOINT = ""
 
 local GROUP_ID = 0
 local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve group data: %s"
@@ -40,7 +40,7 @@ local blacklist = {
 
 
 --[[
-@param       player       Player  | The Player instance of the newly connnected client.
+@param       player	  Player  | The Player instance of the newly connnected client.
 @return      N/A          void    | N/A
 
 Initializes an entry in the currentRank cache associated
@@ -128,6 +128,8 @@ Calls the API endpoint in an attempt to update the player's
 role in the group based off on the given rank.
 ]]
 local function updateRank(player: Player, rank: number): boolean
+
+	
     if table.find(blacklist, player.UserId) then
         return true
     end
@@ -137,7 +139,11 @@ local function updateRank(player: Player, rank: number): boolean
     end
   
     local role = "Unknown"
-	
+
+    --[[
+    If available, the groupRoles cache is used to 
+    reduce redundant calls to the API endpoint.
+    ]]
     if groupRoles then
 	role = _getRole(rank)
 		
@@ -152,7 +158,7 @@ local function updateRank(player: Player, rank: number): boolean
     }
 
     local packet = {
-        Url = API_URL,
+        Url = API_ENDPOINT,
         Method = "POST",
         Headers = {
             ["Content-Type"] = "application/json",
