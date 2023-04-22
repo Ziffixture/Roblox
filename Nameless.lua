@@ -1,13 +1,7 @@
 --[[
 Author:     Ziffix
-Version:    1.2.0
-Date:	    4/19/23
-Notes:
-
-WARNING!!!
-
-This code is a potential source of data regression; it is not
-designed to cease functioning in case of data retrival failure.
+Version:    1.2.2
+Date:	    4/21/23
 ]]
 
 
@@ -61,7 +55,7 @@ local function onPlayerAdded(player: Player)
         warn(GROUP_RANK_RETRIEVAL_FAILURE:format(player.Name, response))
     
         --[[
-        Due to the check on line 187, the entry must be
+        Due to the check on line 181, the entry must be
         made regardless in order to promote an update in
         the user's cache.
         ]]
@@ -86,7 +80,7 @@ local function onPlayerRemoving(player: Player)
 end
 
 --[[
-@return      N/A      RoleInfo?   | A dictionary containing the role's name and rank data.
+@return      N/A      RoleInfo?  | A dictionary containing the role's name and rank data.
 
 Retrieves the "Roles" table returned by GroupService:GetGroupInfoAsync.
 ]]
@@ -106,11 +100,11 @@ end
 
 
 --[[
-@param       rank     number      | An arbitary rank.
-@return      N/A      RoleInfo    | A dictionary containing the role's name and rank data.
+@param       rank     number    | An arbitary rank.
+@return      N/A      RoleInfo  | A dictionary containing the role's name and rank data.
 
-Retrieves the first role which is inferior or equivalent
-to the given rank.
+Retrieves the role directly linked to the given rank
+or the last role which is inferior to the given rank.
 ]]
 local function _getRole(rank: number): RoleInfo
     for index, info in groupRoles do
@@ -126,9 +120,9 @@ end
 
 
 --[[
-@param        player      Player	| The target player.
-@param        rank        number	| The target rank.
-@return       N/A         boolean 	| Whether or not the function executed successfully.
+@param        player      Player   | The target player.
+@param        rank        number   | The target rank.
+@return       N/A         boolean  | Whether or not the function executed successfully.
 	
 Calls the API endpoint in an attempt to update the player's 
 role in the group based off on the given rank.
@@ -180,7 +174,7 @@ local function updateRank(player: Player, rank: number): boolean
     end
 
     --[[
-    Ensures that the entry isn't re-initialized if
+    Ensures that the entry isn't resurrected if
     the player had disconnected in the time the
     thread was suspended.
     ]]
