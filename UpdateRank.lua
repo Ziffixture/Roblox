@@ -55,7 +55,7 @@ local function onPlayerAdded(player: Player)
         warn(GROUP_RANK_RETRIEVAL_FAILURE:format(player.Name, response))
     
         --[[
-        Due to the check on line 185, the entry must be
+        Due to the check on line 189, the entry must be
         made regardless in order to promote an update in
         the user's cache.
         ]]
@@ -128,8 +128,6 @@ Calls the API endpoint in an attempt to update the player's
 role in the group based off on the given rank.
 ]]
 local function updateRank(player: Player, rank: number): boolean
-
-	
     if table.find(blacklist, player.UserId) then
         return true
     end
