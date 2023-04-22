@@ -35,8 +35,8 @@ local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retriev
 local GROUP_ROLE_UPDATE_FAILURE = "A problem occurred while trying to update %s's role to \"%s\": %s"
 local GROUP_RANK_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve %s's current rank: %s"
 
-local groupRoles = nil
-local currentRank = {}
+local groupRolesCache = nil
+local userRankCache = {}
 
 
 
@@ -44,7 +44,7 @@ local currentRank = {}
 @param       player	  Player  | The Player instance of the newly connnected client.
 @return      N/A          void    | N/A
 
-Initializes an entry in the currentRank cache associated
+Initializes an entry in the userRankCache cache associated
 with the given Player instance.
 ]]
 local function onPlayerAdded(player: Player)
@@ -60,12 +60,12 @@ local function onPlayerAdded(player: Player)
         made regardless in order to promote an update in
         the user's cache.
         ]]
-        currentRank[player] = 0
+        userRankCache[player] = 0
     
         return
     end
   
-    currentRank[player] = response
+    userRankCache[player] = response
 end
 
 
@@ -73,11 +73,11 @@ end
 @param       player       Player  | The Player instance of disconnecting client.
 @return      N/A          void    | N/A
 
-Removes the entry in the currentRank cache associated
+Removes the entry in the userRankCache cache associated
 with the given Player instance.
 ]]
 local function onPlayerRemoving(player: Player)
-    currentRank[player] = nil
+    userRankCache[player] = nil
 end
 
 --[[
@@ -85,7 +85,7 @@ end
 
 Retrieves the "Roles" table returned by GroupService:GetGroupInfoAsync.
 ]]
-local function _getGroupRoleInfo(): RoleInfo?
+local function _getGroupRoles(): RoleInfo?
     local success, response = pcall(function()
         return GroupService:GetGroupInfoAsync(GROUP_ID)
     end)
@@ -108,7 +108,7 @@ Retrieves the role directly linked to the given rank
 or the last role which is inferior to the given rank.
 ]]
 local function _getRole(rank: number): RoleInfo
-    for index, info in groupRoles do
+    for index, info in groupRolesCache do
         if info.Rank == rank then
             return info
         end
@@ -140,13 +140,13 @@ local function updateRank(player: Player, rank: number): boolean
     local role = "Unknown"
 
     --[[
-    If available, applies the groupRoles cache to 
+    If available, applies the groupRolesCache to 
     reduce redundant calls made to the API endpoint.
     ]]
-    if groupRoles then
+    if groupRolesCache then
 	role = _getRole(rank)
 		
-	if role.Rank == currentRank[player] then
+	if role.Rank == userRankCache[player] then
 	    return true		
 	end
     end
@@ -187,8 +187,8 @@ local function updateRank(player: Player, rank: number): boolean
     the player had disconnected in the time the
     thread was suspended.
     ]]
-    if currentRank[player] then
-        currentRank[player] = role.Rank
+    if userRankCache[player] then
+        userRankCache[player] = role.Rank
     end
   
     return true
@@ -196,7 +196,7 @@ end
 
 
 
-groupRoles = _getGroupRoleInfo()
+groupRolesCache = _getGroupRoles()
 
 Players.PlayerAdded:Connect(onPlayerAdded)
 Players.PlayerRemoving:Connect(onPlayerRemoving)
