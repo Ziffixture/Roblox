@@ -124,8 +124,8 @@ end
 @param        rank        number   | The target rank.
 @return       N/A         boolean  | Whether or not the function executed successfully.
 	
-Calls the API endpoint in an attempt to update the player's 
-role in the group based off on the given rank.
+Attempts to update the player's group role by calling 
+the API endpoint with the given rank.
 ]]
 local function updateRank(player: Player, rank: number): boolean
     if table.find(blacklist, player.UserId) then
@@ -139,8 +139,8 @@ local function updateRank(player: Player, rank: number): boolean
     local role = "Unknown"
 
     --[[
-    If available, the groupRoles cache is used to 
-    reduce redundant calls to the API endpoint.
+    If available, applies the groupRoles cache to 
+    reduce redundant calls made to the API endpoint.
     ]]
     if groupRoles then
 	role = _getRole(rank)
