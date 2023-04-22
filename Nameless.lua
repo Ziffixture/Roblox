@@ -1,6 +1,6 @@
 --[[
 Author:     Ziffix
-Version:    1.2.2
+Version:    1.2.4
 Date:	    4/21/23
 ]]
 
@@ -55,7 +55,7 @@ local function onPlayerAdded(player: Player)
         warn(GROUP_RANK_RETRIEVAL_FAILURE:format(player.Name, response))
     
         --[[
-        Due to the check on line 181, the entry must be
+        Due to the check on line 185, the entry must be
         made regardless in order to promote an update in
         the user's cache.
         ]]
@@ -136,10 +136,14 @@ local function updateRank(player: Player, rank: number): boolean
         return true
     end
   
-    local role = _getRole(rank)
-  
-    if role.Rank == currentRank[player] then
-        return true
+    local role = "Unknown"
+	
+    if groupRoles then
+	role = _getRole(rank)
+		
+	if role.Rank == currentRank[player] then
+	    return true		
+	end
     end
 
     local body = {
