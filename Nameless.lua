@@ -61,7 +61,7 @@ local function onPlayerAdded(player: Player)
         warn(GROUP_RANK_RETRIEVAL_FAILURE:format(player.Name, response))
     
         --[[
-        Due to the check on line 181, the entry must be
+        Due to the check on line 187, the entry must be
         made regardless in order to promote an update in
         the user's cache.
         ]]
