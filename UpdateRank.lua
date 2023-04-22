@@ -20,22 +20,23 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 
 
+local UPDATE_BLACKLIST = {
+    -- user ID,
+    -- user ID,
+}
+
 local API_AUTHORIZATION_TOKEN = ""
 local API_ENDPOINT = ""
 
 local GROUP_ID = 0
+local GROUP_RANK_CAP = 254 -- Should not exceed 254
+
 local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve group data: %s"
 local GROUP_ROLE_UPDATE_FAILURE = "A problem occurred while trying to update %s's role to \"%s\": %s"
 local GROUP_RANK_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve %s's current rank: %s"
-local GROUP_RANK_CAP = 254 -- Should not exceed 254
 
 local groupRoles = nil
 local currentRank = {}
-
-local blacklist = {
-    -- user ID,
-    -- user ID,
-}
 
 
 
@@ -55,7 +56,7 @@ local function onPlayerAdded(player: Player)
         warn(GROUP_RANK_RETRIEVAL_FAILURE:format(player.Name, response))
     
         --[[
-        Due to the check on line 189, the entry must be
+        Due to the check on line 190, the entry must be
         made regardless in order to promote an update in
         the user's cache.
         ]]
@@ -128,7 +129,7 @@ Attempts to update the player's group role by calling
 the API endpoint with the given rank.
 ]]
 local function updateRank(player: Player, rank: number): boolean
-    if table.find(blacklist, player.UserId) then
+    if table.find(UPDATE_BLACKLIST, player.UserId) then
         return true
     end
   
