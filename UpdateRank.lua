@@ -114,7 +114,7 @@ local function _getRole(rank: number): RoleInfo
         end
     
         if info.Rank > rank then
-            return groupRoles[index - 1]
+            return groupRolesCache[index - 1]
         end
     end
 end
