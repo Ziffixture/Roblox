@@ -1,16 +1,14 @@
 --[[
 Author:     Ziffix
-Version:    1.2.6 (Untested)
+Version:    1.2.7 (Untested)
 Date:	    4/22/23
 ]]
 
 
 
 type RoleInfo = {
- 
     Name: string,
     Rank: string,
-  
 }
 
 
