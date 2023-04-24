@@ -1,6 +1,6 @@
 --[[
 Author:     Ziffix
-Version:    1.3.1 (Untested)
+Version:    1.3.3 (Untested)
 Date:	    4/22/23
 ]]
 
@@ -132,7 +132,7 @@ end
 Checks if the given rank is a positive integer within 
 the range of [1, 255].
 ]]
-local function isValidGroupRank(rank: number): boolean
+local function _isValidGroupRank(rank: number): boolean
     return rank > 0 and rank < 256 and rank % 1 == 0
 end
 
@@ -148,7 +148,7 @@ and for the groupRolesCache to be initialized.
 ]]
 local function _getRightmostRoleInfo(rank: number): RoleInfo
     _assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
-    _assertLevel(isValidGroupRank(rank), "Expected positive integer in range [1, 255], got " .. rank, 1)
+    _assertLevel(_isValidGroupRank(rank), "Expected positive integer in range [1, 255], got " .. rank, 1)
     _assertLevel(groupRolesCache, "groupRolesCache has not been initialized; consider adding a check before calling this function.", 1)
 	
     for index, info in groupRolesCache do
