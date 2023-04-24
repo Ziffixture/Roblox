@@ -179,7 +179,7 @@ local function updateRank(player: Player, rank: number): boolean
         return true
     end
   
-    if not isValidGroupRank(rank) then
+    if not _isValidGroupRank(rank) then
 	return true	
     end
 	
