@@ -78,7 +78,7 @@ local function _initializeRankInCache(player: Player)
         warn(GROUP_RANK_RETRIEVAL_FAILURE:format(player.Name, response))
     
         --[[
-        Due to the check on line 226, the entry must be
+        Due to the check on line 242, the entry must be
         made regardless in order to promote an update in
         the user's cache.
         ]]
@@ -126,16 +126,30 @@ end
 
 
 --[[
+@param       rank     number   | The rank to verify.
+@return      N/A      boolean  | Whether or not the rank is valid.
+
+Checks if the given rank is a positive integer within 
+the range of [1, 255].
+]]
+local function isValidGroupRank(rank: number): boolean
+    return rank > 0 and rank < 256 and rank % 1 == 0
+end
+
+
+--[[
 @param       rank     number    | A valid group rank.
 @return      N/A      RoleInfo  | A dictionary containing the role's name and rank data.
 
-Retrieves the role directly linked to the given rank or 
-the last role which is inferior to the given rank. Requires
-the given rank to be a positive integer above 0.
+Retrieves the role directly linked to the given rank or the 
+last role which is inferior to the given rank. Requires the 
+given rank be be a valid group rank (see isValidGroupRank),
+and for the groupRolesCache to be initialized.
 ]]
 local function _getRightmostRoleInfo(rank: number): RoleInfo
     _assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
-    _assertLevel(rank > 0, "Rank must be a positive integer above 0.", 1)
+    _assertLevel(isValidGroupRank(rank), "Expected positive integer in range [1, 255], got " .. rank, 1)
+    _assertLevel(groupRolesCache, "groupRolesCache has not been initialized; consider adding a check before calling this function.", 1)
 	
     for index, info in groupRolesCache do
         if info.Rank == rank then
@@ -155,18 +169,20 @@ end
 @return       N/A         boolean  | Whether or not the function executed successfully.
 	
 Attempts to update the player's group role by calling 
-the API endpoint with the given rank. Requires the given 
-rank to be a positive integer above 0.
+the API endpoint with the given rank.
 ]]
 local function updateRank(player: Player, rank: number): boolean
     _assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
     _assertLevel(rank ~= nil, "Argument #2 missing or nil.", 1)
-    _assertLevel(rank > 0, "Rank must be a positive integer above 0.", 1)
 	
     if table.find(UPDATE_BLACKLIST, player.UserId) then
         return true
     end
   
+    if not isValidGroupRank(rank) then
+	return true	
+    end
+	
     if rank > GROUP_RANK_CAP then
         return true
     end
