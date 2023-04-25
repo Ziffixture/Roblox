@@ -1,6 +1,6 @@
 --[[
 Author:     Ziffix
-Version:    1.3.3 (Untested)
+Version:    1.3.4 (Untested)
 Date:	    4/22/23
 ]]
 
@@ -46,7 +46,7 @@ local userRankCache = {}
 
 Implements assert with error's level argument.
 ]]
-local function _assertLevel(condition: any, message: string, level: number?)
+local function assertLevel(condition: any, message: string, level: number?)
     assert(condition ~= nil, "Argument #1 missing or nil.")
     assert(message ~= nil, "Argument #2 missing or nil.")
 
@@ -67,8 +67,8 @@ end
 Initializes an entry in the userRankCache cache associated
 with the given Player instance.
 ]]
-local function _initializeRankInCache(player: Player)
-    _assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
+local function initializeRankInCache(player: Player)
+    assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
 	
     local success, response = pcall(function()
         return player:GetRankInGroup(GROUP_ID)
@@ -98,8 +98,8 @@ end
 Removes the entry in the userRankCache cache associated
 with the given Player instance.
 ]]
-local function _removeRankFromCache(player: Player)
-    _assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
+local function removeRankFromCache(player: Player)
+    assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
 	
     userRankCache[player] = nil
 end
@@ -110,7 +110,7 @@ end
 
 Retrieves the "Roles" table returned by GroupService:GetGroupInfoAsync.
 ]]
-local function _getGroupRoles(): RoleInfo?
+local function getGroupRoles(): RoleInfo?
     local success, response = pcall(function()
         return GroupService:GetGroupInfoAsync(GROUP_ID)
     end)
@@ -132,7 +132,7 @@ end
 Checks if the given rank is a positive integer within 
 the range of [1, 255].
 ]]
-local function _isValidGroupRank(rank: number): boolean
+local function isValidGroupRank(rank: number): boolean
     return rank > 0 and rank < 256 and rank % 1 == 0
 end
 
@@ -146,10 +146,10 @@ last role which is inferior to the given rank. Requires the
 given rank be be a valid group rank (see isValidGroupRank),
 and for the groupRolesCache to be initialized.
 ]]
-local function _getRightmostRoleInfo(rank: number): RoleInfo
-    _assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
-    _assertLevel(_isValidGroupRank(rank), "Expected positive integer in range [1, 255], got " .. rank, 1)
-    _assertLevel(groupRolesCache, "groupRolesCache has not been initialized; consider adding a check before calling this function.", 1)
+local function getRightmostRoleInfo(rank: number): RoleInfo
+    assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
+    assertLevel(isValidGroupRank(rank), "Expected positive integer in range [1, 255], got " .. rank, 1)
+    assertLevel(groupRolesCache, "groupRolesCache has not been initialized; consider adding a check before calling this function.", 1)
 	
     for index, info in groupRolesCache do
         if info.Rank == rank then
@@ -172,14 +172,14 @@ Attempts to update the player's group role by calling
 the API endpoint with the given rank.
 ]]
 local function updateRank(player: Player, rank: number): boolean
-    _assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
-    _assertLevel(rank ~= nil, "Argument #2 missing or nil.", 1)
+    assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
+    assertLevel(rank ~= nil, "Argument #2 missing or nil.", 1)
 	
     if table.find(UPDATE_BLACKLIST, player.UserId) then
         return true
     end
   
-    if not _isValidGroupRank(rank) then
+    if not isValidGroupRank(rank) then
 	return true	
     end
 	
@@ -194,7 +194,7 @@ local function updateRank(player: Player, rank: number): boolean
     and reduce redundant calls made to the API endpoint.
     ]]
     if groupRolesCache then
-	local info = _getRightmostRoleInfo(rank)
+	local info = getRightmostRoleInfo(rank)
 		
 	if info.Rank == userRankCache[player] then
 	    return true		
@@ -248,9 +248,11 @@ end
 
 
 
-groupRolesCache = _getGroupRoles()
+groupRolesCache = getGroupRoles()
 
-Players.PlayerAdded:Connect(_initializeRankInCache)
-Players.PlayerRemoving:Connect(_removeRankFromCache)
+Players.PlayerAdded:Connect(initializeRankInCache)
+Players.PlayerRemoving:Connect(removeRankFromCache)
 
-return updateRank
+return {
+    updateRank = updateRank,
+}
