@@ -190,8 +190,8 @@ local function updateRank(player: Player, rank: number): boolean
     local role = "Unknown"
 
     --[[
-    If available, applies the groupRolesCache to 
-    reduce redundant calls made to the API endpoint.
+    If available, applies the groupRolesCache to compensate for level-jumping
+    and reduce redundant calls made to the API endpoint.
     ]]
     if groupRolesCache then
 	local info = _getRightmostRoleInfo(rank)
