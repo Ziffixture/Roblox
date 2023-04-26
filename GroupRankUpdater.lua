@@ -166,7 +166,7 @@ end
 --[[
 @param        player      Player   | The target player.
 @param        rank        number   | The target rank.
-@return       N/A         boolean  | Whether or not the function executed successfully.
+@return       N/A         boolean  | Whether or not the rank was updated successfully.
 	
 Attempts to update the player's group role by calling 
 the API endpoint with the given rank.
