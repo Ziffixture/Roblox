@@ -1,6 +1,6 @@
 --[[
 Author:     Ziffix
-Version:    1.3.4 (Untested)
+Version:    1.4.0 (Untested)
 Date:	    4/22/23
 ]]
 
@@ -18,20 +18,20 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 
 
-local UPDATE_BLACKLIST = {
-    -- user ID,
-    -- user ID,
-}
-
 local API_AUTHORIZATION_TOKEN = ""
 local API_ENDPOINT = ""
 
 local GROUP_ID = 0
 local GROUP_RANK_CAP = 254 -- Should not exceed 254
+local GROUP_ROLE_UPDATE_STATUS = {
+    Success = "Success",
+    Rejected = "Rejected",
+    Failed = "Failed",
+}
 
-local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve group data: %s"
-local GROUP_ROLE_UPDATE_FAILURE = "A problem occurred while trying to update %s's role to \"%s\": %s"
-local GROUP_RANK_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve %s's current rank: %s"
+local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve group data; %s"
+local GROUP_ROLE_UPDATE_FAILURE = "A problem occurred while trying to update %s's role to \"%s\" (rank %d); %s"
+local GROUP_RANK_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve %s's current rank; %s"
 
 local groupRolesCache = nil
 local userRankCache = {}
@@ -61,13 +61,13 @@ end
 
 
 --[[
-@param       player	  Player  | The Player instance of the newly connnected client.
-@return      N/A          void    | N/A
+@param       player	  Player   | The Player instance of the newly connnected client.
+@return      N/A          number?  | The current group rank of the given player.
 
-Initializes an entry in the userRankCache cache associated
-with the given Player instance.
+Attempts to initialize an entry in the userRankCache cache 
+associated with the given Player instance.
 ]]
-local function initializeRankInCache(player: Player)
+local function initializeRankInCache(player: Player): number?
     assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
 	
     local success, response = pcall(function()
@@ -77,17 +77,12 @@ local function initializeRankInCache(player: Player)
     if not success then
         warn(GROUP_RANK_RETRIEVAL_FAILURE:format(player.Name, response))
     
-        --[[
-        Due to the check on line 242, the entry must be
-        made regardless in order to promote an update in
-        the user's cache.
-        ]]
-        userRankCache[player] = 0
-    
         return
     end
   
     userRankCache[player] = response
+	
+    return response
 end
 
 
@@ -102,6 +97,20 @@ local function removeRankFromCache(player: Player)
     assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
 	
     userRankCache[player] = nil
+end
+
+
+--[[
+@param       player       Player  | The Player whose rank to retrieve.
+@return      N/A      	  number  | The last recorded rank of the given player.
+
+Attempts to retrieve the user's rank from the userRankCache. If the entry
+failed to 
+]]
+local function getRankInCache(player: Player): number?
+    assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
+	
+    return userRankCache[player] or initializeRankInCache(player)
 end
 
 
@@ -133,6 +142,8 @@ Checks if the given rank is a positive integer within
 the range of [1, 255].
 ]]
 local function isValidGroupRank(rank: number): boolean
+    assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
+	
     return rank > 0 and rank < 256 and rank % 1 == 0
 end
 
@@ -166,41 +177,43 @@ end
 --[[
 @param        player      Player   | The target player.
 @param        rank        number   | The target rank.
-@return       N/A         boolean  | Whether or not the rank was updated successfully.
+@return       N/A         string   | The status of the update procedure.
 	
 Attempts to update the player's group role by calling 
 the API endpoint with the given rank.
 ]]
-local function updateRank(player: Player, rank: number): boolean
+local function updateRank(player: Player, rank: number): "Success" | "Rejected" | "Failed"
     assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
     assertLevel(rank ~= nil, "Argument #2 missing or nil.", 1)
-	
-    if table.find(UPDATE_BLACKLIST, player.UserId) then
-        return true
-    end
-  
+
     if not isValidGroupRank(rank) then
-	return true	
+	return GROUP_ROLE_UPDATE_STATUS.Rejected	
     end
 	
-    if rank > GROUP_RANK_CAP then
-        return true
+    local currentRank = getRankInCache(player)
+	
+    if not currentRank then
+        return GROUP_ROLE_UPDATE_STATUS.Failed
     end
-  
-    local role = "Unknown"
+	
+    if currentRank >= GROUP_RANK_CAP or rank > GROUP_RANK_CAP then
+	return GROUP_ROLE_UPDATE_STATUS.Rejected	
+    end
+	
+    local role = "Unkown"
 
     --[[
     If available, applies the groupRolesCache to compensate for level-jumping
     and reduce redundant calls made to the API endpoint.
     ]]
     if groupRolesCache then
-	local info = getRightmostRoleInfo(rank)
+        local info = getRightmostRoleInfo(rank)
 		
-	if info.Rank == userRankCache[player] then
-	    return true		
-	end
+    	if info.Rank == userRankCache[player] then
+	    return GROUP_ROLE_UPDATE_STATUS.Rejected
+    	end
 	
-	role = info.Name
+    	role = info.Name
     end
 
     local body = {
@@ -225,13 +238,13 @@ local function updateRank(player: Player, rank: number): boolean
     if not success then
         warn(GROUP_ROLE_UPDATE_FAILURE:format(player.Name, role, response))
 		
-        return false
+        return GROUP_ROLE_UPDATE_STATUS.Failed
     end
 
     if not response.Success then
         warn(GROUP_ROLE_UPDATE_FAILURE:format(player.Name, role, "HTTP " .. response.StatusCode .. " " .. response.StatusMessage))
 		
-        return false
+        return GROUP_ROLE_UPDATE_STATUS.Failed
     end
 
     --[[
@@ -243,7 +256,7 @@ local function updateRank(player: Player, rank: number): boolean
         userRankCache[player] = role.Rank
     end
   
-    return true
+    return GROUP_ROLE_UPDATE_STATUS.Success
 end
 
 
@@ -253,6 +266,7 @@ groupRolesCache = getGroupRoles()
 Players.PlayerAdded:Connect(initializeRankInCache)
 Players.PlayerRemoving:Connect(removeRankFromCache)
 
-return {
+return table.freeze({
+    UpdateStatus = GROUP_ROLE_UPDATE_STATUS,
     UpdateRank = updateRank,
-}
+})
