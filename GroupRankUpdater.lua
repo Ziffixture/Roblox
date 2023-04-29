@@ -254,5 +254,5 @@ Players.PlayerAdded:Connect(initializeRankInCache)
 Players.PlayerRemoving:Connect(removeRankFromCache)
 
 return {
-    updateRank = updateRank,
+    UpdateRank = updateRank,
 }
