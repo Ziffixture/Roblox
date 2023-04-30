@@ -13,25 +13,25 @@ type RoleInfo = {
 
 
 
-local GroupService			 = game:GetService("GroupService")
-local HttpService			 = game:GetService("HttpService")
-local Players				 = game:GetService("Players")
+local GroupService = game:GetService("GroupService")
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
 
 
-local Configuration			 = require(script.Configuration)
+local Configuration = require(script.Configuration)
 
-local API_AUTHORIZATION_TOKEN 		 = Configuration.API_AUTHORIZATION_TOKEN
-local API_ENDPOINT 			 = Configuration.API_ENDPOINT
+local API_AUTHORIZATION_TOKEN = Configuration.API_AUTHORIZATION_TOKEN
+local API_ENDPOINT = Configuration.API_ENDPOINT
 
-local GROUP_ID 				 = Configuration.GROUP_ID
-local GROUP_RANK_CAP 			 = Configuration.GROUP_RANK_CAP
+local GROUP_ID = Configuration.GROUP_ID
+local GROUP_RANK_CAP = Configuration.GROUP_RANK_CAP
 
-local GROUP_RANK_RETRIEVAL_FAILURE	 = "A problem occurred while trying to retrieve %s's current rank; %s"
-local GROUP_ROLE_RETRIEVAL_FAILURE	 = "A problem occurred while trying to retrieve group data; %s"
-local GROUP_ROLE_UPDATE_FAILURE		 = "A problem occurred while trying to update %s's role to \"%s\"; %s"
+local GROUP_RANK_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve %s's current rank; %s"
+local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve group data; %s"
+local GROUP_ROLE_UPDATE_FAILURE	= "A problem occurred while trying to update %s's role to \"%s\"; %s"
 
-local groupRolesCache			 = nil
-local userRankCache 			 = {}
+local groupRolesCache = nil
+local userRankCache = {}
 
 
 
