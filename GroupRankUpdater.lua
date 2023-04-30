@@ -45,7 +45,7 @@ local function assertLevel(condition: any, message: string, level: number?): any
     assert(condition ~= nil, "Argument #1 missing or nil.")
     assert(message ~= nil, "Argument #2 missing or nil.")
 
-    -- Lifts error out of this function.
+    -- Lifts the error out of this function.
     level = (level or 1) + 1
 
     if condition then
@@ -61,7 +61,7 @@ end
 @return      N/A          number?  | The current group rank of the given player.
 
 Attempts to initialize an entry in the userRankCache cache associated 
-with the given Player instance.
+under the given Player instance.
 ]]
 local function initializeRankInCache(player: Player): number?
     assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
