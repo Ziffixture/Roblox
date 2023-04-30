@@ -188,12 +188,7 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
     if not isValidGroupRank(rank) then
 	return GROUP_ROLE_UPDATE_STATUS.Rejected	
     end
-	
-    --[[
-    Enforces the barrier between obtainable roles and executive roles; prevents
-    the demotion of executive users and the promotion of subordinates.
-    ]]
-    --------------------------------------------------------------
+
     local currentRank = getRankInCache(player)
 	
     if not currentRank then
@@ -203,7 +198,6 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
     if currentRank >= GROUP_RANK_CAP or rank > GROUP_RANK_CAP then
 	return GROUP_ROLE_UPDATE_STATUS.Rejected	
     end
-    --------------------------------------------------------------
 	
     local roleInfo = "Unkown"
 
@@ -253,12 +247,11 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
     end
 
     --[[
-    Ensures that the entry isn't resurrected if
-    the player had disconnected in the time the
-    thread was suspended.
+    Ensures that the entry isn't resurrected if the player had 
+    disconnected in the time the thread was suspended.
     ]]
     if userRankCache[player] then
-        userRankCache[player] = role.Rank
+        userRankCache[player] = rank -- Trusted to correlate to a valid role if no failures occured.
     end
   
     return GROUP_ROLE_UPDATE_STATUS.Success
