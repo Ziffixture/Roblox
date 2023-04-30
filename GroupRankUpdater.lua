@@ -23,15 +23,15 @@ local API_ENDPOINT = ""
 
 local GROUP_ID = 0
 local GROUP_RANK_CAP = 254 -- Should not exceed 254
+
+local GROUP_RANK_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve %s's current rank; %s"
+local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve group data; %s"
+local GROUP_ROLE_UPDATE_FAILURE = "A problem occurred while trying to update %s's role to \"%s\"; %s"
 local GROUP_ROLE_UPDATE_STATUS = {
     Success = "Success",
     Rejected = "Rejected",
     Failed = "Failed",
 }
-
-local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve group data; %s"
-local GROUP_ROLE_UPDATE_FAILURE = "A problem occurred while trying to update %s's role to \"%s\"; %s"
-local GROUP_RANK_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve %s's current rank; %s"
 
 local groupRolesCache = nil
 local userRankCache = {}
