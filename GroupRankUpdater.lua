@@ -265,7 +265,7 @@ groupRolesCache = getGroupRoles()
 Players.PlayerAdded:Connect(initializeRankInCache)
 Players.PlayerRemoving:Connect(removeRankFromCache)
 
-return table.freeze({
-    UpdateStatus = GROUP_ROLE_UPDATE_STATUS,
+return {
+    UpdateStatus = table.freeze(GROUP_ROLE_UPDATE_STATUS),
     UpdateRank = updateRank,
-})
+}
