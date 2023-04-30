@@ -176,7 +176,7 @@ end
 Attempts to update the player's group role by calling 
 the API endpoint with the given rank.
 ]]
-local function updateRank(player: Player, rank: number): "Success" | "Rejected" | "Failed"
+local function updateRank(player: Player, rank: number): "Failed" | "Rejected" | "Success"
     assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
     assertLevel(rank ~= nil, "Argument #2 missing or nil.", 1)
 
