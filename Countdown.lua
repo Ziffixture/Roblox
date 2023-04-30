@@ -1,7 +1,7 @@
 --[[
 Authors:    Ziffix, Cha
 Version:    1.2.6 (Stable)
-Date:       2/24/23
+Date:       23/4/29
 ]]
 
 
@@ -18,16 +18,17 @@ local countdownPrivate = {}
 --[[
 @param    condition   any       | The result of the condition
 @param    message     string    | The error message to be raised
-@param    level = 1   number?   | The level at which to raise the error
+@param    level = 2   number?   | The level at which to raise the error
 @return               void
 
 Implements assert with error's level argument.
 ]]
 local function _assertLevel(condition: any, message: string, level: number?)
-    assert(condition == nil, "Argument #1 missing or nil.")
-    assert(message == nil, "Argument #2 missing or nil.")
+    assert(condition ~= nil, "Argument #1 missing or nil.")
+    assert(message ~= nil, "Argument #2 missing or nil.")
 
-    level = (level or 0) + 1
+    -- Lifts the error out of this function.
+    level = (level or 1) + 1
 
     if condition then
         return condition
