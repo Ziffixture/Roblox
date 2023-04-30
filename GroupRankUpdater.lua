@@ -27,11 +27,6 @@ local GROUP_RANK_CAP = 254 -- Should not exceed 254
 local GROUP_RANK_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve %s's current rank; %s"
 local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve group data; %s"
 local GROUP_ROLE_UPDATE_FAILURE = "A problem occurred while trying to update %s's role to \"%s\"; %s"
-local GROUP_ROLE_UPDATE_STATUS = {
-    Success = "Success",
-    Rejected = "Rejected",
-    Failed = "Failed",
-}
 
 local groupRolesCache = nil
 local userRankCache = {}
@@ -186,17 +181,17 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
     assertLevel(rank ~= nil, "Argument #2 missing or nil.", 1)
 
     if not isValidGroupRank(rank) then
-	return GROUP_ROLE_UPDATE_STATUS.Rejected	
+	return "Rejected"	
     end
 
     local currentRank = getRankInCache(player)
 	
     if not currentRank then
-        return GROUP_ROLE_UPDATE_STATUS.Failed
+        return "Failed"
     end
 
     if currentRank >= GROUP_RANK_CAP or rank > GROUP_RANK_CAP then
-	return GROUP_ROLE_UPDATE_STATUS.Rejected	
+	return "Rejected"	
     end
 	
     local role = "Unkown"
@@ -209,7 +204,7 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
         local info = getRightmostRoleInfo(rank)
 		
     	if info.Rank == userRankCache[player] then
-	    return GROUP_ROLE_UPDATE_STATUS.Rejected
+	    return "Rejected"
     	end
 	
     	role = info.Name
@@ -237,13 +232,13 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
     if not success then
         warn(GROUP_ROLE_UPDATE_FAILURE:format(player.Name, role, response))
 		
-        return GROUP_ROLE_UPDATE_STATUS.Failed
+        return "Failed"
     end
 
     if not response.Success then
         warn(GROUP_ROLE_UPDATE_FAILURE:format(player.Name, role, "HTTP " .. response.StatusCode .. " " .. response.StatusMessage))
 		
-        return GROUP_ROLE_UPDATE_STATUS.Failed
+        return "Failed"
     end
 
     --[[
@@ -254,7 +249,7 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
         userRankCache[player] = rank -- Trusted to correlate to a valid role if no failures occured.
     end
   
-    return GROUP_ROLE_UPDATE_STATUS.Success
+    return "Success"
 end
 
 
@@ -265,6 +260,5 @@ Players.PlayerAdded:Connect(initializeRankInCache)
 Players.PlayerRemoving:Connect(removeRankFromCache)
 
 return {
-    UpdateStatus = table.freeze(GROUP_ROLE_UPDATE_STATUS),
     UpdateRank = updateRank,
 }
