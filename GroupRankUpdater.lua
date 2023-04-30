@@ -111,6 +111,19 @@ end
 
 
 --[[
+@param       rank     number   | The rank to verify.
+@return      N/A      boolean  | Whether or not the rank is valid.
+
+Checks if the given rank is a positive integer within the range of [1, 255].
+]]
+local function isValidGroupRank(rank: number): boolean
+    assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
+	
+    return rank > 0 and rank < 256 and rank % 1 == 0
+end
+
+
+--[[
 @return      N/A      RoleInfo?  | A dictionary containing the role's name and rank data.
 
 Retrieves the "Roles" table returned by GroupService:GetGroupInfoAsync.
@@ -127,19 +140,6 @@ local function getGroupRoles(): RoleInfo?
     end
   
     return response.Roles
-end
-
-
---[[
-@param       rank     number   | The rank to verify.
-@return      N/A      boolean  | Whether or not the rank is valid.
-
-Checks if the given rank is a positive integer within the range of [1, 255].
-]]
-local function isValidGroupRank(rank: number): boolean
-    assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
-	
-    return rank > 0 and rank < 256 and rank % 1 == 0
 end
 
 
