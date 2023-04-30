@@ -8,7 +8,7 @@ Date:	    23/04/29
 
 type RoleInfo = {
     Name: string,
-    Rank: string,
+    Rank: number,
 }
 
 
@@ -188,7 +188,12 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
     if not isValidGroupRank(rank) then
 	return GROUP_ROLE_UPDATE_STATUS.Rejected	
     end
-
+	
+    --[[
+    Enforces the barrier between obtainable roles and executive roles; prevents
+    the demotion of executive users and the promotion of subordinates.
+    ]]
+    --------------------------------------------------------------
     local currentRank = getRankInCache(player)
 	
     if not currentRank then
@@ -198,6 +203,7 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
     if currentRank >= GROUP_RANK_CAP or rank > GROUP_RANK_CAP then
 	return GROUP_ROLE_UPDATE_STATUS.Rejected	
     end
+    --------------------------------------------------------------
 	
     local roleInfo = "Unkown"
 
