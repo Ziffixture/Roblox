@@ -30,7 +30,7 @@ local GROUP_ROLE_UPDATE_STATUS = {
 }
 
 local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve group data; %s"
-local GROUP_ROLE_UPDATE_FAILURE = "A problem occurred while trying to update %s's role to \"%s\" (rank %d); %s"
+local GROUP_ROLE_UPDATE_FAILURE = "A problem occurred while trying to update %s's role to \"%s\"; %s"
 local GROUP_RANK_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve %s's current rank; %s"
 
 local groupRolesCache = nil
@@ -199,7 +199,7 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
 	return GROUP_ROLE_UPDATE_STATUS.Rejected	
     end
 	
-    local role = "Unkown"
+    local roleInfo = "Unkown"
 
     --[[
     If available, applies the groupRolesCache to compensate for level-jumping
