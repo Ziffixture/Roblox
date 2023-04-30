@@ -199,7 +199,7 @@ local function updateRank(player: Player, rank: number): "Success" | "Rejected" 
 	return GROUP_ROLE_UPDATE_STATUS.Rejected	
     end
 	
-    local roleInfo = "Unkown"
+    local role = "Unkown"
 
     --[[
     If available, applies the groupRolesCache to compensate for level-jumping
