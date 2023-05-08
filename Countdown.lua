@@ -85,8 +85,8 @@ local function _countdownMain(private)
         private.Tick:Fire(secondsLeft)
         private.SecondsLeft = secondsLeft
 
-        for _ in private.TaskRemovalQueue do
-            table.remove(private.Tasks, table.remove(private.TaskRemovalQueue, 1))
+        for index = #private.TaskRemovalQueue, 1, -1 do
+            table.remove(private.Tasks, table.remove(private.TaskRemovalQueue, index))
         end
 
         for _, taskInfo in private.Tasks do
@@ -238,6 +238,7 @@ function countdownPrototype:RemoveTask(taskId: string)
         end
 
         table.insert(private.TaskRemovalQueue, index)
+        table.sort(private.TaskRemovalQueue)
 
         return
     end
