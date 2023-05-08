@@ -209,7 +209,7 @@ function countdownPrototype:AddTask(interval: number, task: (number?, ...any) ->
 
     local taskInfo = {
         Interval = interval,
-        Task = task,
+        Task = coroutine.create(task),
         Id = HttpService:GenerateGUID(),
         Arguments = {...},
     }
