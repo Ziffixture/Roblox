@@ -1,12 +1,9 @@
 --[[
 Authors:    Ziffix
-Version:    1.3.0 (Stable)
+Version:    1.3.0 (Untable)
 Date:       23/05/07
 ]]
 
-
-
-local HttpService = game:GetService("HttpService")
 
 
 local Countdown = {}
@@ -51,6 +48,28 @@ local function _getPrivate(countdown: Countdown): {[string]: any}
     local private = _assertLevel(countdownPrivate[countdown], "Countdown object is destroyed", 2)
     
     return private
+end
+
+
+--[[
+@param     callback    function<any, any>    | The function to be threaded
+@return    N/A         thread                | N/A
+
+Threads a function that wraps around the given callback in such a
+way that the thread cannot die.
+]]
+local function _immortalThread(callback: (...any) -> any): thread
+    local thread = coroutine.create(function(...)
+        local arguments = {...}
+            
+        while true do
+            callback(table.unpack(arguments))
+                
+            arguments = {coroutine.yield()}
+        end
+    end)
+    
+    return thread
 end
 
 
@@ -209,8 +228,8 @@ function countdownPrototype:AddTask(interval: number, task: (number?, ...any) ->
 
     local taskInfo = {
         Interval = interval,
-        Task = coroutine.create(task),
-        Id = HttpService:GenerateGUID(),
+        Task = _immortalThread(task),
+        Id = #private.Tasks,
         Arguments = {...},
     }
 
@@ -231,28 +250,22 @@ function countdownPrototype:RemoveTask(taskId: string)
 
     local private = _getPrivate(self)
 
-    for taskIndex, taskInfo in private.Tasks do
-        if taskInfo.Id ~= taskId then
-            continue
-        end
-
-        --[[
-        With private.TaskRemovalQueue being read from left -> right, private.TaskRemovalQueue
-        is set to maintain a descending order of values to avoid index discoordination when 
-        removing the targeted tasks.
-        ]]
-        local insertionIndex = 1
+    --[[
+    With private.TaskRemovalQueue being read from left -> right, private.TaskRemovalQueue
+    is set to maintain a descending order of values to avoid index discoordination when 
+    removing the targeted tasks.
+    ]]
+    local insertionIndex = 1
         
-        for _, queuedIndex in private.TaskRemovalQueue do
-            if queuedIndex > index then
-                insertionIndex += 1
-            end
+    for _, queuedIndex in private.TaskRemovalQueue do
+        if queuedIndex > taskId then
+            insertionIndex += 1
         end
-        
-        table.insert(private.TaskRemovalQueue, insertionIndex, taskIndex)
-
-        return
     end
+        
+    table.insert(private.TaskRemovalQueue, insertionIndex, taskId)
+
+    return
 
     error("Could not find a task by the given ID.", 2)
 end
