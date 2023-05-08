@@ -87,7 +87,7 @@ local function _countdownMain(private)
         private.SecondsLeft = secondsLeft
 
         for _ in private.TaskRemovalQueue do
-             table.remove(private.Tasks, table.remove(private.TaskRemovalQueue, 1))    
+            table.remove(private.Tasks, table.remove(private.TaskRemovalQueue, 1))    
         end
 
         for _, taskInfo in private.Tasks do
@@ -95,7 +95,7 @@ local function _countdownMain(private)
                 continue
             end
 
-            task.spawn(taskInfo.Task, secondsLeft, table.unpack(taskInfo.Arguments))
+            coroutine.resume(taskInfo.Task, secondsLeft, table.unpack(taskInfo.Arguments))
         end
     end
 
