@@ -85,8 +85,8 @@ local function _countdownMain(private)
         private.Tick:Fire(secondsLeft)
         private.SecondsLeft = secondsLeft
 
-        for index = #private.TaskRemovalQueue, 1, -1 do
-            table.remove(private.Tasks, table.remove(private.TaskRemovalQueue, index))
+        for _ in private.TaskRemovalQueue do
+             table.remove(private.Tasks, table.remove(private.TaskRemovalQueue, 1))    
         end
 
         for _, taskInfo in private.Tasks do
@@ -236,9 +236,9 @@ function countdownPrototype:RemoveTask(taskId: string)
         end
 
         --[[
-        Maintains private.TaskRemovalQueue in descending order to avoid holes in
-        both private.TaskRemovalQueue and private.Tasks when removing the targeted
-        tasks. Opted for descending order due to the probability of removing older tasks.
+        With private.TaskRemovalQueue being read from left -> right, private.TaskRemovalQueue
+        is set to maintain a descending order of values to avoid index discoordination when 
+        removing the targeted tasks.
         ]]
         local insertionIndex = 1
         
