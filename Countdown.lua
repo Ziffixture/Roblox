@@ -1,6 +1,6 @@
 --[[
 Authors:    Ziffix
-Version:    1.3.0 (Untable)
+Version:    1.3.0 (Untested)
 Date:       23/05/07
 ]]
 
