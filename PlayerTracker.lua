@@ -306,18 +306,18 @@ playerTrackerPrototype.__metatable = "This metatable is locked."
 
 export type PlayerTracker = {
 
-   StartTracking: (self) -> (),
-   StopTracking: (self) -> (),
+   StartTracking: (PlayerTracker) -> (),
+   StopTracking: (PlayerTracker) -> (),
  
-   GetPlayers: (self) -> {Player},
-   GetPopulation: (self) -> number,
-   GetCapacity: (self) -> number,
+   GetPlayers: (PlayerTracker) -> {Player},
+   GetPopulation: (PlayerTracker) -> number,
+   GetCapacity: (PlayerTracker) -> number,
  
-   SetCapacity: (self, number) -> (),
+   SetCapacity: (PlayerTracker, number) -> (),
  
-   IsTracking: (self) -> boolean,
+   IsTracking: (PlayerTracker) -> boolean,
  
-   Destroy: (self) -> ()
+   Destroy: (PlayerTracker) -> ()
 
 }
 
