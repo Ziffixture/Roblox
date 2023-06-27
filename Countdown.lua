@@ -334,19 +334,19 @@ countdownPrototype.__metatable = "This metatable is locked."
 
 export type Countdown = {
     
-    Start: (self) -> (),
-    Pause: (self) -> (),
-    Resume: (self) -> ()
+    Start: (Countdown) -> (),
+    Pause: (Countdown) -> (),
+    Resume: (Countdown) -> ()
     
-    AddTask: (self, number, (number?, ...any) -> (), ...) -> string,
-    RemoveTask: (self, string) -> (),
+    AddTask: (Countdown, number, (number?, ...any) -> (), ...) -> string,
+    RemoveTask: (Countdown, string) -> (),
     
-    GetDuration: (self) -> number,
-    GetSecondsLeft: (self) -> number,
+    GetDuration: (Countdown) -> number,
+    GetSecondsLeft: (Countdown) -> number,
     
-    IsPaused: (self) -> boolean,
+    IsPaused: (Countdown) -> boolean,
     
-    Destroy: (self) -> ()
+    Destroy: (Countdown) -> ()
     
 }
 
