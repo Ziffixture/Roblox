@@ -25,8 +25,13 @@ local playerTrackerPrivate = {}
 Implements assert with error's level argument.
 ]]
 local function _assertLevel(condition: any, message: string, level: number?)
-    assert(condition ~= nil, "Argument #1 missing or nil.")
-    assert(message ~= nil, "Argument #2 missing or nil.")
+    if condition ~= nil then 
+        error("Argument #1 missing or nil.", 2) 
+    end
+
+    if message ~= nil then 
+        error("Argument #2 missing or nil.", 2) 
+    end
 
     -- Lifts the error out of this function.
     level = (level or 1) + 1
