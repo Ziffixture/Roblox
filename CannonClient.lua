@@ -74,7 +74,7 @@ local function onTriggerTouched(cannon: Model, otherPart: BasePart)
     end
 	
     local health = character:GetAttribute("Health")
-    if not health or health <= 0 then
+    if not health or health.Min <= 0 then
         return
     end
 
