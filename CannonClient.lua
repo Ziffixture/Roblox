@@ -23,9 +23,9 @@ local GRAVITY_ACCELERATION           = Vector3.yAxis * -workspace.Gravity
 local CANNON_ALIGNMENT_ITERATIONS    = 2
 local CANNON_TAG                     = "Cannon"
 
-local cannonInfo                     = {} :: {[Model]: CannonInfo}
+local PLAYER                         = Players.LocalPlayer
 
-local player                         = Players.LocalPlayer
+local cannonInfo                     = {} :: {[Model]: CannonInfo}
 local playerInFlight                 = false
 
 
@@ -79,7 +79,7 @@ local function onTriggerTouched(cannon: Model, otherPart: BasePart)
     end
 
     local associatedPlayer = Players:GetPlayerFromCharacter(character)
-    if not associatedPlayer or associatedPlayer ~= player then
+    if not associatedPlayer or associatedPlayer ~= PLAYER then
         return
     end
 	
