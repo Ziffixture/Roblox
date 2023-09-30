@@ -68,9 +68,13 @@ local function onTriggerTouched(cannon: Model, otherPart: BasePart)
         return
     end
 	
-    local character = otherPart.Parent
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid or humanoid.Health == 0 then
+    local character = otherPart:FindFirstAncestorOfClass("Model")
+    if not character then
+        return
+    end
+	
+    local health = character:GetAttribute("Health")
+    if not health or health <= 0 then
         return
     end
 
