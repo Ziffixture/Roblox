@@ -1,11 +1,11 @@
 --[[
 Author:     Ziffix (74087102)
-Date:       23/09/27
-Version:    1.0.0s
+Date:       23/09/29
+Version:    1.0.0 (Stable)
 
 Notes:
 
-Implements cannon physics using projectile motion modelling,
+Implements cannon physics using projectile motion modelling with manual CFrame-ing,
 https://devforum.roblox.com/t/modeling-a-projectiles-motion/176677
 ]]
 
@@ -44,15 +44,15 @@ end
 
 
 --[[
-@param     origin         Vector3  | The origin of the parabolic trajectory.
-@param     destination    Vector3  | The end of the parabolic trajectory.
-@param     duration       number   | The time it takes to travel the parabolic trajectory.
-@return                   Vector3  
+@param     origin             Vector3  | The origin of the parabolic trajectory.
+@param     initialVelocity    Vector3  | The initial velocity outlining the parabolic trajectory.
+@param     timePosition       number   | The time position within the parabolic trajectory.
+@return                       Vector3  
 
-Calculates the initial velocity required to travel a parabolic trajectory.
+Calculates the position in the parabolic trajectory at a given time.
 ]]
-local function getPosition(origin: Vector3, initialVelocity: Vector3, duration: number): Vector3
-    return 0.5 * GRAVITY_ACCELERATION * duration ^ 2 + initialVelocity * duration + origin
+local function getPositionAtTime(origin: Vector3, initialVelocity: Vector3, timePosition: number): Vector3
+    return 0.5 * GRAVITY_ACCELERATION * timePosition ^ 2 + initialVelocity * timePosition + origin
 end
 
 
@@ -98,7 +98,7 @@ local function onTriggerTouched(cannon: Model, otherPart: BasePart)
 	
     local secondsElapsed = 0
     while secondsElapsed < info.TravelTime do
-        marble:Teleport(CFrame.new(getPosition(info.LaunchOrigin.Position, info.InitialVelocity, secondsElapsed)))
+        marble:Teleport(CFrame.new(getPositionAtTime(info.LaunchOrigin.Position, info.InitialVelocity, secondsElapsed)))
 		
         secondsElapsed += RunService.RenderStepped:Wait()
     end
