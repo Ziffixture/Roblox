@@ -176,7 +176,7 @@ end
 --[[
 @return              void
 
-Beings an initialization process for all cannons that are and are to be.
+Begins an initialization process for all cannons that are and are to be.
 ]]
 local function initializeCannons()
     for _, cannon in CollectionService:GetTagged(CANNON_TAG) do
