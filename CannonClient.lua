@@ -148,7 +148,7 @@ local function initializeCannon(cannon: Model)
     cannon's orientation. Fortunately, this adjustment converges quickly, requiring only a few iterations.
     ]]
     if CANNON_ALIGNMENT_ITERATIONS <= 0 then
-    error("At least one alignment needs to be performed")
+        error("At least one alignment needs to be performed.")
     end
 	
     for _ = CANNON_ALIGNMENT_ITERATIONS, 1, -1 do
