@@ -44,14 +44,14 @@ end
 
 
 --[[
+@param     timePosition       number   | The time position within the parabolic trajectory.
 @param     origin             Vector3  | The origin of the parabolic trajectory.
 @param     initialVelocity    Vector3  | The initial velocity outlining the parabolic trajectory.
-@param     timePosition       number   | The time position within the parabolic trajectory.
 @return                       Vector3  
 
 Calculates the position in the parabolic trajectory at a given time.
 ]]
-local function getPositionAtTime(origin: Vector3, initialVelocity: Vector3, timePosition: number): Vector3
+local function getPositionAtTime(timePosition: number, origin: Vector3, initialVelocity: Vector3): Vector3
     return 0.5 * GRAVITY_ACCELERATION * timePosition ^ 2 + initialVelocity * timePosition + origin
 end
 
@@ -102,12 +102,12 @@ local function onTriggerTouched(cannon: Model, otherPart: BasePart)
 	
     local secondsElapsed = 0
     while secondsElapsed < info.TravelTime do
-        marble:Teleport(CFrame.new(getPositionAtTime(info.LaunchOrigin.Position, info.InitialVelocity, secondsElapsed)))
+        marble:Teleport(CFrame.new(getPositionAtTime(secondsElapsed, info.LaunchOrigin.Position, info.InitialVelocity)))
 		
         secondsElapsed += RunService.RenderStepped:Wait()
     end
 
-    playerInFlight = true
+    playerInFlight = false
     marble:SetControlsEnabled(true)
     marble:SetPhysicsEnabled(true)
 end
