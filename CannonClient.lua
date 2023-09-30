@@ -163,6 +163,8 @@ local function initializeCannon(cannon: Model)
         barrel:PivotTo(CFrame.lookAt(barrelPosition, originPosition + initialVelocity))
 	
         info.InitialVelocity = initialVelocity
+
+        task.wait()
     end
 	
     trigger.Touched:Connect(function(otherPart)
@@ -178,10 +180,12 @@ Beings an initialization process for all cannons that are and are to be.
 ]]
 local function initializeCannons()
     for _, cannon in CollectionService:GetTagged(CANNON_TAG) do
-        initializeCannon(cannon)
+        task.spawn(initializeCannon, cannon)
     end
 	
-    CollectionService:GetInstanceAddedSignal(CANNON_TAG):Connect(initializeCannon)
+    CollectionService:GetInstanceAddedSignal(CANNON_TAG):Connect(function(cannon)
+        task.spawn(initializeCannon, cannon)
+    end)
 end
 
 
