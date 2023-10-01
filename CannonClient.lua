@@ -149,7 +149,8 @@ local function initializeCannon(cannon: Model)
     --[[
     After aligning the cannon with the initial velocity, the trajectory's starting point shifts, 
     altering the entire path. Consequently, we must recalculate both the trajectory and the 
-    cannon's orientation. Fortunately, these adjustments converge quickly, requiring only a few iterations.
+    cannon's orientation. Fortunately, these adjustments converge quickly, requiring only a 
+    small number of iterations.
     ]]
     if CANNON_ALIGNMENT_ITERATIONS <= 0 then
         error("At least one alignment needs to be performed.")
