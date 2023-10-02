@@ -102,9 +102,9 @@ local function onTriggerTouched(cannon: Model, otherPart: BasePart)
 	
     local secondsElapsed = 0
     while secondsElapsed < info.TravelTime do
-        marble:Teleport(CFrame.new(getPositionAtTime(secondsElapsed, info.LaunchOrigin.Position, info.InitialVelocity)))
+        character:PivotTo(CFrame.new(getPositionAtTime(secondsElapsed, info.LaunchOrigin.Position, info.InitialVelocity)))
 		
-        secondsElapsed += RunService.RenderStepped:Wait()
+        secondsElapsed += RunService.PostSimulation:Wait()
     end
 
     playerInFlight = false
