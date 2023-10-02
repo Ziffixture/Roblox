@@ -1,7 +1,7 @@
 --[[
 Author:     Ziffix (74087102)
 Date:       23/09/29
-Version:    1.0.0 (Stable)
+Version:    1.0.2 (Stable)
 
 Notes:
 
@@ -53,6 +53,24 @@ Calculates the position in the parabolic trajectory at a given time.
 ]]
 local function getPositionAtTime(timePosition: number, origin: Vector3, initialVelocity: Vector3): Vector3
     return 0.5 * GRAVITY_ACCELERATION * timePosition ^ 2 + initialVelocity * timePosition + origin
+end
+
+
+--[[
+@param     instance    Instance  | The instance to read the attribute from
+@param     name        string    | The name of the attribute to read
+@return                T?
+@throws 
+
+Wraps Instance:GetAttribute to raise an error if the attribute is not found.
+]]
+local function getAttribute<T>(instance: Instance, name: string): T?
+    local value = instance:GetAttribute(name)
+    if value == nil then
+        error("Instance \"" .. instance.Name .. "\" missing attribute \"" .. name .. "\".")
+    end
+    
+    return value :: T
 end
 
 
@@ -120,12 +138,8 @@ local function initializeCannon(cannon: Model)
     local launchOrigin = barrel:WaitForChild("LaunchOrigin")
     local launchEnd = cannon:WaitForChild("LaunchEnd")
 	
-    local travelTime = cannon:GetAttribute("TravelTime")
-    if not travelTime then
-        warn("Cannon \"" .. cannon.Name .. "\" does not have a set travel time.")
-		
-        return
-    end
+    local flightTime = getAttribute<number>(cannon, "FlightTime")
+    local freezeOnLanding = getAttribute<boolean>(cannon, "FreezeOnLanding")
       
     local info = {
         Barrel             = barrel,
@@ -134,7 +148,8 @@ local function initializeCannon(cannon: Model)
         LaunchOrigin       = launchOrigin,
         LaunchEnd          = launchEnd,
 		
-        TravelTime         = travelTime,
+        FlightTime         = flightTime,
+	FreezeOnLanding    = freezeOnLanding,
         InitialVelocity    = Vector3.zero,
     }
 	
@@ -153,7 +168,7 @@ local function initializeCannon(cannon: Model)
     for _ = CANNON_ALIGNMENT_ITERATIONS, 1, -1 do
         local barrelPosition = barrel:GetPivot().Position
         local originPosition = launchOrigin.Position
-        local initialVelocity = getInitialVelocity(originPosition, launchEnd.Position, travelTime)
+        local initialVelocity = getInitialVelocity(originPosition, launchEnd.Position, flightTime)
 		
         barrel:PivotTo(CFrame.lookAt(barrelPosition, originPosition + initialVelocity))
 	
@@ -194,6 +209,7 @@ type CannonInfo = {
     LaunchOrigin       : BasePart,
     LaunchEnd          : BasePart,
 	
-    TravelTime         : number,
+    FlightTime         : number,
+    FreezeOnLanding    : boolean,
     InitialVelocity    : Vector3,
 }
