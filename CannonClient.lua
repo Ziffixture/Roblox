@@ -85,12 +85,6 @@ local function onTriggerTouched(cannon: Model, otherPart: BasePart)
 	
     local marble = Marble.get(character)
     if not marble then
-        --[[
-        Ziffix 23/09/29: It's a known issue for this to occur often. Might as well contribute to the
-        debug epidemic.
-        ]]
-        warn(debug.traceback("Could not retrieve " .. PLAYER.Name .. "'s marble."))
-		
         return
     end
 	
