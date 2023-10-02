@@ -113,7 +113,7 @@ local function onTriggerTouched(cannon: Model, otherPart: BasePart)
     marble:SetPhysicsEnabled(false)
 	
     local secondsElapsed = 0
-    while secondsElapsed < info.TravelTime do
+    while secondsElapsed < info.FlightTime do
         character:PivotTo(CFrame.new(getPositionAtTime(secondsElapsed, info.LaunchOrigin.Position, info.InitialVelocity)))
 		
         secondsElapsed += RunService.PostSimulation:Wait()
@@ -138,8 +138,8 @@ local function initializeCannon(cannon: Model)
     local launchOrigin = barrel:WaitForChild("LaunchOrigin")
     local launchEnd = cannon:WaitForChild("LaunchEnd")
 	
-    local flightTime = getAttribute<number>(cannon, "FlightTime")
-    local freezeOnLanding = getAttribute<boolean>(cannon, "FreezeOnLanding")
+    local flightTime = getAttribute(cannon, "FlightTime")
+    local freezeOnLanding = getAttribute(cannon, "FreezeOnLanding")
       
     local info = {
         Barrel             = barrel,
