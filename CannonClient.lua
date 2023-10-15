@@ -44,10 +44,10 @@ end
 
 
 --[[
-@param     timePosition       number   | The time position within the parabolic trajectory.
-@param     origin             Vector3  | The origin of the parabolic trajectory.
-@param     initialVelocity    Vector3  | The initial velocity outlining the parabolic trajectory.
-@return                       Vector3  
+@param     number     timePosition       | The time position within the parabolic trajectory.
+@param     Vector3    origin             | The origin of the parabolic trajectory.
+@param     Vector3    initialVelocity    | The initial velocity outlining the parabolic trajectory.
+@return    Vector3  
 
 Calculates the position in the parabolic trajectory at a given time.
 ]]
@@ -57,9 +57,9 @@ end
 
 
 --[[
-@param     instance    Instance  | The instance to read the attribute from
-@param     name        string    | The name of the attribute to read
-@return                T?
+@param     Instance    instance    | The instance to read the attribute from.
+@param     string      name        | The name of the attribute to read.
+@return    T?
 @throws 
 
 Wraps Instance:GetAttribute to raise an error if the attribute is not found.
@@ -75,8 +75,8 @@ end
 
 
 --[[
-@param     otherPart    Vector3  | The origin of the parabolic trajectory.
-@return                 void       
+@param     Vector3    otherPart    | The origin of the parabolic trajectory.
+@return    void       
 
 Filters for a collision with the LocalPlayer's marble instance and ejects
 the player out of the cannon.
@@ -126,8 +126,8 @@ end
 
 
 --[[
-@param     cannon    Model  | The cannon instance
-@return              void
+@param     Model    cannon    | The cannon instance.
+@return    void
 
 Initializes the given cannon.
 ]]
@@ -184,7 +184,7 @@ end
 
 
 --[[
-@return              void
+@return    void
 
 Begins an initialization process for all cannons that are and are to be.
 ]]
