@@ -149,7 +149,7 @@ local function initializeCannon(cannon: Model)
         LaunchEnd          = launchEnd,
 		
         FlightTime         = flightTime,
-	FreezeOnLanding    = freezeOnLanding,
+        FreezeOnLanding    = freezeOnLanding,
         InitialVelocity    = Vector3.zero,
     }
 	
