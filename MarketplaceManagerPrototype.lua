@@ -54,7 +54,8 @@ end
 --[[
 @param     Player     player          | The player who observed the game-pass.
 @param     number     gamePassId      | The asset ID of the game-pass.
-@return    boolean    wasPurchased    | Whether or not the game-pass was purchased.
+@param     boolean    wasPurchased    | Whether or not the game-pass was purchased.
+@return    void
 
 If purchased, invokes the associated game-pass' handler function with the player who purchased the game-pass.
 ]]
