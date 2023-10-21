@@ -8,22 +8,22 @@ Version    1.2.0
 
 --!strict
 
-local MarketplaceService = game:GetService("MarketplaceService")
-local RunService         = game:GetService("RunService")
-local Players            = game:GetService("Players")
+local MarketplaceService    = game:GetService("MarketplaceService")
+local RunService            = game:GetService("RunService")
+local Players               = game:GetService("Players")
 
 
-local ASSETS       = script:WaitForChild("Assets")
-local ASSET_LOOKUP = {} :: AssetLookup -- Initialized by the "boostrapAssets" function.
+local ASSETS                = script:WaitForChild("Assets")
+local ASSET_LOOKUP          = {} :: AssetLookup -- Initialized by the "boostrapAssets" function.
 
-local NOT_PROCESSED_YET = Enum.ProductPurchaseDecision.NotProcessedYet
-local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
-
-
-local MarketplaceManager = {}
+local NOT_PROCESSED_YET     = Enum.ProductPurchaseDecision.NotProcessedYet
+local PURCHASE_GRANTED      = Enum.ProductPurchaseDecision.PurchaseGranted
 
 
-local gamePassOwnerCache = {} :: GamePassOwnerCache
+local MarketplaceManager    = {}
+
+
+local gamePassOwnerCache    = {} :: GamePassOwnerCache
 
 
 
