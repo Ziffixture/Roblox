@@ -23,7 +23,7 @@ local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
 local MarketplaceManager = {}
 
 
-local gamePassOwnerCache = {}
+local gamePassOwnerCache = {} :: GamePassOwnerCache
 
 
 
@@ -71,7 +71,7 @@ local function onGamePassPurchaseFinished(player: Player, gamePassId: number, wa
 		return
 	end
 
-	gamePassOwnerCache[player.UserId] = true
+	gamePassOwnerCache[player] = true
 	gamePass.Handler(player)
 end
 
@@ -126,7 +126,7 @@ end
 Clears the given player from the "gamePassOwnerCache".
 ]]
 local function onPlayerRemoving(player: Player)
-	gamePassOwnerCache[player.UserId] = nil
+	gamePassOwnerCache[player] = nil
 end
 
 
@@ -145,14 +145,18 @@ function MarketplaceManager.userOwnsGamePassAsync(userId: number, gamePassId: nu
 		return MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId)
 	end
 
-	if not gamePassOwnerCache[userId] then
-		gamePassOwnerCache[userId] = MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId)
+	if not gamePassOwnerCache[player] then
+		gamePassOwnerCache[player] = MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId)
 	end
 
-	return gamePassOwnerCache[userId]
+	return gamePassOwnerCache[player]
 end
 
 
+
+type GamePassOwnerCache = {
+	[Player]: true
+}
 
 type AssetData = {
 	Id      : number,
