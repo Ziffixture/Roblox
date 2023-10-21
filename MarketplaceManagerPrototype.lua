@@ -89,7 +89,7 @@ local function onDeveloperProductPurchaseFinished(receipt: DeveloperProductRecei
 
 	local developerProduct = ASSET_LOOKUP.DeveloperProduct[receipt.ProductId]
 	if not developerProduct then
-		warn("Unregistered developer product " .. receipt.ProductId)
+		warn(`Unregistered developer product {receipt.ProductId}.)
 
 		return NOT_PROCESSED_YET
 	end
