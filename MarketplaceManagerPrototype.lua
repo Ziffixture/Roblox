@@ -135,9 +135,10 @@ end
 @return    boolean    
 @throws
 
-Calls the game-pass handler function of all game-passes owned by the given player.
+Acts as a wrapper function to MarketplaceService:UserOwnsGamePassAsync, where Roblox's static cache is
+replaced with a dynamic cache.
 ]]
-function MarketplaceManager.userOwnsGamePass(userId: number, gamePassId: number): boolean
+function MarketplaceManager.userOwnsGamePassAsync(userId: number, gamePassId: number): boolean
 	local player = Players:GetPlayerByUserId(userId)
 	if not player then
 		return MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId)
