@@ -163,7 +163,7 @@ type AssetLookup = {
 	DeveloperProduct : {AssetData},
 }
 
--- As per documentation of 23/10/20.
+-- In accordance with https://create.roblox.com/docs/reference/engine/classes/MarketplaceService#ProcessReceipt (23/10/20)
 type DeveloperProductReceipt = {
 	PurchaseId            : number,
 	PlayerId              : number,
