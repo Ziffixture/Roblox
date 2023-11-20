@@ -162,7 +162,7 @@ function countdown.new(duration: number): Countdown
 
     countdownPrivate[self] = private
 
-    return setmetatable(self, countdownPrototype)
+    return setmetatable(self, countdownPrototype) :: any
 end
 
 
