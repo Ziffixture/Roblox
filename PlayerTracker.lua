@@ -14,7 +14,6 @@ local PlayerTracker = {}
 
 local playerTrackerPrivate     = {}
 local playerTrackerPrototype   = {}
-playerTrackerPrototype.__index = playerTrackerPrototype
 
 
 
@@ -306,6 +305,9 @@ function playerTrackerPrototype:Destroy()
     playerTrackerPrivate[self] = nil
 end
 
+
+
+playerTrackerPrototype.__index = playerTrackerPrototype
 
 
 export type PlayerTracker = {
