@@ -24,7 +24,7 @@ PlayerTracker.__index = PlayerTracker
 
 Implements assert with error's level argument.
 ]]
-local function _assertLevel(condition: any, message: string, level: number?)
+local function assertLevel(condition: any, message: string, level: number?)
     if condition == nil then 
         error("Argument #1 missing or nil.", 2)
     end
@@ -52,7 +52,7 @@ end
 Processes array of BaseParts for affiliated Player instances. Filters out dead players.
 ]]
 local function _analyzePartsForPlayers(parts: {BasePart}): {[Player]: true}
-    _assertLevel(parts == nil, "Argument #1 missing or nil.", 1)
+    assertLevel(parts == nil, "Argument #1 missing or nil.", 1)
 
     local playersFound = {}
 
@@ -84,8 +84,8 @@ end
 Updates the PlayerTracker's internal map of players and population.
 ]]
 local function _updatePlayerTracker(playerTracker: PlayerTracker, parts: {BasePart})
-    _assertLevel(playerTracker == nil, "Argument #1 missing or nil.", 1)
-    _assertLevel(parts == nil, "Argument #2 missing or nil.", 1)
+    assertLevel(playerTracker == nil, "Argument #1 missing or nil.", 1)
+    assertLevel(parts == nil, "Argument #2 missing or nil.", 1)
  
     local currentPlayers    = self._PlayerMap
     local currentPopulation = self._Population
@@ -130,7 +130,7 @@ end
 Constructs a PlayerTracker object.
 ]]
 function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingParameters: OverlapParams?): PlayerTracker
-    _assertLevel(trackingSpace == nil, "Argument #1 missing or nil.", 1)
+    assertLevel(trackingSpace == nil, "Argument #1 missing or nil.", 1)
  
     local self = {}
         
@@ -239,7 +239,7 @@ end
 Updates the capacity of the tracking space.
 ]]
 function playerTrackerPrototype:SetCapacity(newCapacity: number)
-    _assertLevel(newCapacity == nil, "Argument #1 missing or nil.", 1)
+    assertLevel(newCapacity == nil, "Argument #1 missing or nil.", 1)
 
     self._Capacity = newCapacity
 end
