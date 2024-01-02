@@ -178,7 +178,7 @@ local function updateRank(player: Player, rank: number): UpdateStatus
     assertLevel(rank ~= nil, "Argument #2 missing or nil.", 1)
 
     if not isValidGroupRank(rank) then
-	return "Rejected"	
+	    return "Rejected"	
     end
 
     local currentRank = getRank(player)
@@ -188,7 +188,7 @@ local function updateRank(player: Player, rank: number): UpdateStatus
     end
 
     if currentRank >= GROUP_RANK_CAP or rank > GROUP_RANK_CAP then
-	return "Rejected"	
+	    return "Rejected"	
     end
 	
     local role = "Unkown"
@@ -201,7 +201,7 @@ local function updateRank(player: Player, rank: number): UpdateStatus
         local info = getRightmostRoleInfo(rank)
 		
     	if info.Rank == userRankCache[player] then
-		return "Rejected"
+		    return "Rejected"
     	end
 	
     	role = info.Name
