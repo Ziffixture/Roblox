@@ -1,36 +1,38 @@
 --[[
 Authors:    Ziffix
-Version:    1.3.1 (Untested)
-Date:       23/4/29
+Version:    1.3.2 (Untested)
+Date:       24/01/01
 ]]
 
 
 
+--!strict
 local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
- 
+local Players    = game:GetService("Players")
+
 local PlayerTracker = {}
 
-local playerTrackerPrototype = {}
-local playerTrackerPrivate = {}
- 
- 
+local playerTrackerPrivate     = {}
+local playerTrackerPrototype   = {}
+playerTrackerPrototype.__index = playerTrackerPrototype
+
+
 
 --[[
-@param    condition   any       | The result of the condition
-@param    message     string    | The error message to be raised
-@param    level = 2   number?   | The level at which to raise the error
-@return               void
+@param     any        condition    | The result of the condition.
+@param     string     message      | The error message to be raised.
+@param     number?    level = 2    | The level at which to raise the error.
+@return    void
 
 Implements assert with error's level argument.
 ]]
 local function _assertLevel(condition: any, message: string, level: number?)
     if condition == nil then 
-        error("Argument #1 missing or nil.", 2) 
+        error("Argument #1 missing or nil.", 2)
     end
 
     if message == nil then 
-        error("Argument #2 missing or nil.", 2) 
+        error("Argument #2 missing or nil.", 2)
     end
 
     -- Lifts the error out of this function.
@@ -45,56 +47,57 @@ end
 
 
 --[[
-@param    playerTracker     PlayerTracker        | The PlayerTracker object
-@return                     Dict<String, Any>
+@param     PlayerTracker    playerTracker    | The PlayerTracker instance.
+@return    {[string]: any}
 
-Returns the private data associated with the given PlayerTracker object.
+Returns the private data associated with the given PlayerTracker instance.
 ]]
 local function _getPrivate(playerTracker: PlayerTracker): {[string]: any}
-    _assertLevel(countdownObject == nil, "Argument #1 missing or nil.", 1)
+    _assertLevel(playerTracker == nil, "Argument #1 missing or nil.", 1)
 
     local private = _assertLevel(playerTrackerPrivate[playerTracker], "PlayerTracker object was destroyed", 2)
-    
+
     return private
 end
 
 
 --[[
-@param    parts   Array<BasePart>               | The array of BaseParts to scan
-@return           Dictionary<Player, boolean>   | A dictionary of the players found
+@param     {BasePart}          parts    | The array of BaseParts to analyze.
+@return    {[player]: true}
 
 Processes array of BaseParts for affiliated Player instances. Filters out dead players.
 ]]
-local function _analyzePartsForPlayers(parts: {BasePart}): {[Player]: boolean}
+local function _analyzePartsForPlayers(parts: {BasePart}): {[Player]: true}
     _assertLevel(parts == nil, "Argument #1 missing or nil.", 1)
- 
+
     local playersFound = {}
- 
+
     for _, part in parts do
         local character = part.Parent
-  
+
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         if humanoid == nil or humanoid:GetState() == Enum.HumanoidStateType.Dead then
             continue
         end
-    
+
         local player = Players:GetPlayerFromCharacter(character)
         if player == nil then
             continue
         end
-    
+
         playersFound[player] = true
     end
- 
+
     return playersFound
 end
 
 
 --[[
-@param    playerTracker   PlayerTracker   | The array of BaseParts to scan
-@return                   void
+@param     PlayerTracker     playerTracker    | The PlayerTracker instance to update.
+@param     {BasePart}        parts            | The parts within the PlayerTracker's tracking space.
+@return    void
 
-Updates the PlayerTracker's internal map of Players, and population.
+Updates the PlayerTracker's internal map of players and population.
 ]]
 local function _updatePlayerTracker(playerTracker: PlayerTracker, parts: {BasePart})
     _assertLevel(playerTracker == nil, "Argument #1 missing or nil.", 1)
@@ -134,37 +137,37 @@ local function _updatePlayerTracker(playerTracker: PlayerTracker, parts: {BasePa
         private.PlayerLeft:Fire(player)
     end
 end
- 
- 
---[[
-@param    trackingSpace         BasePart          | The BasePart that will be scanned for players
-@param    capacity              number?           | The maximum number of players the tracker will process
-@param    trackingParameters    OverlapParams?    | The OverlapParams for the tracking query
-@return                         PlayerTracker     | The generated PlayerTracker object
 
-Generates a PlayerTracker object.
+
+--[[
+@param     BasePart         trackingSpace         | The BasePart that will be scanned for players
+@param     number?          capacity              | The maximum number of players the tracker will process
+@param     OverlapParams    trackingParameters    | The OverlapParams for the tracking query
+@return    PlayerTracker
+
+Constructs a PlayerTracker object.
 ]]
 function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingParameters: OverlapParams?): PlayerTracker
     _assertLevel(trackingSpace == nil, "Argument #1 missing or nil.", 1)
  
-    local self = {}
+    local self    = {}
     local private = {}
         
-    private.IsTracking = false
-    private.TrackingSpace = TrackingSpace
-    private.TrackingParameters = TrackingParameters
+    private.IsTracking         = false
+    private.TrackingSpace      = trackingSpace
+    private.TrackingParameters = trackingParameters
     private.TrackingConnection = nil
  
-    private.PlayerMap = {}
+    private.PlayerMap  = {}
     private.Population = 0
-    private.Capacity = capacity
+    private.Capacity   = capacity
   
-    private.PlayerLeft = Instance.new("BindableEvent")
-    private.PlayerEntered = Instance.new("BindableEvent")
+    private.PlayerLeft        = Instance.new("BindableEvent")
+    private.PlayerEntered     = Instance.new("BindableEvent")
     private.PopulationChanged = Instance.new("BindableEvent")
  
-    self.PlayerLeft = private.PlayerLeft.Event
-    self.PlayerEntered = private.PlayerEntered.Event
+    self.PlayerLeft        = private.PlayerLeft.Event
+    self.PlayerEntered     = private.PlayerEntered.Event
     self.PopulationChanged = private.PopulationChanged.Event
   
     playerTrackerPrivate[self] = private
@@ -173,15 +176,14 @@ function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
         self:Destroy()
     end)
  
-    return setmetatable(self, playerTrackerPrototype)
+    return setmetatable(self, playerTrackerPrototype) :: any
 end
- 
 
 
 --[[
-@return   void
+@return    void
 
-Begins updating the PlayerTracker object every RunService.Heartbeat.
+Begins updating the PlayerTracker every RunService.Heartbeat.
 ]]
 function playerTrackerPrototype:StartTracking()
     local private = _getPrivate(self)
@@ -207,7 +209,7 @@ end
 
 
 --[[
-@return   void
+@return    void
 
 Ceases updating the PlayerTracker.
 ]]
@@ -218,9 +220,9 @@ function playerTrackerPrototype:StopTracking()
     private.IsTracking = false
 end
 
- 
+
 --[[
-@return   Array<Player>
+@return    {Player}
 
 Returns an array of the players currently in the tracking space.
 ]]
@@ -228,7 +230,7 @@ function playerTrackerPrototype:GetPlayers(): {Player}
     local private = _getPrivate(self)
     local players = {}
  
-    for players in private.PlayerMap do
+    for player in private.PlayerMap do
         table.insert(players, player)
     end
  
@@ -237,7 +239,7 @@ end
 
 
 --[[
-@return   number
+@return    number
 
 Returns the current population of the tracking space.
 ]]
@@ -249,7 +251,7 @@ end
 
 
 --[[
-@return   number
+@return    number
 
 Returns the capacity of the tracking space.
 ]]
@@ -261,8 +263,8 @@ end
 
 
 --[[
-@param    capacity  number  | The new capacity of the tracking space 
-@return             void
+@param     number    capacity    | The new capacity of the tracking space 
+@return    void
 
 Updates the capacity of the tracking space.
 ]]
@@ -276,7 +278,7 @@ end
 
 
 --[[
-@return   boolean  | The state of the tracking process
+@return    boolean
 
 Returns a boolean detailing whether or not the tracking process is active.
 ]]
@@ -306,24 +308,20 @@ end
 
 
 
-playerTrackerPrototype.__index = playerTrackerPrototype
-playerTrackerPrototype.__metatable = "This metatable is locked."
-
 export type PlayerTracker = {
-
-   StartTracking: (PlayerTracker) -> (),
-   StopTracking: (PlayerTracker) -> (),
+   StartTracking : (PlayerTracker) -> (),
+   StopTracking  : (PlayerTracker) -> (),
  
-   GetPlayers: (PlayerTracker) -> {Player},
-   GetPopulation: (PlayerTracker) -> number,
-   GetCapacity: (PlayerTracker) -> number,
+   GetPlayers    : (PlayerTracker) -> {Player},
+   GetPopulation : (PlayerTracker) -> number,
+   GetCapacity   : (PlayerTracker) -> number,
  
-   SetCapacity: (PlayerTracker, number) -> (),
+   SetCapacity : (PlayerTracker, number) -> (),
  
-   IsTracking: (PlayerTracker) -> boolean,
+   IsTracking : (PlayerTracker) -> boolean,
  
-   Destroy: (PlayerTracker) -> ()
-
+   Destroy : (PlayerTracker) -> ()
 }
+
 
 return PlayerTracker
