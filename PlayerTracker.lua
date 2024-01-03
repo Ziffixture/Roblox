@@ -173,8 +173,8 @@ function playerTrackerPrototype:StartTracking()
   
     self._IsTracking = true
         
-    local trackingSpace      = private.TrackingSpace
-    local trackingParameters = private.TrackingParameters
+    local trackingSpace      = self._TrackingSpace
+    local trackingParameters = self._TrackingParameters
  
     self._TrackingConnection = RunService.Heartbeat:Connect(function()
         _updatePlayerTracker(
