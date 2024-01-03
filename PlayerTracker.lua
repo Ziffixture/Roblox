@@ -87,9 +87,9 @@ local function _updatePlayerTracker(playerTracker: PlayerTracker, parts: {BasePa
     assertLevel(playerTracker == nil, "Argument #1 missing or nil.", 1)
     assertLevel(parts == nil, "Argument #2 missing or nil.", 1)
  
-    local currentPlayers    = self._PlayerMap
-    local currentPopulation = self._Population
-    local capacity          = self._Capacity
+    local currentPlayers    = playerTracker._PlayerMap
+    local currentPopulation = playerTracker._Population
+    local capacity          = playerTracker._Capacity
  
     local newPlayers = _analyzePartsForPlayers(parts)
  
