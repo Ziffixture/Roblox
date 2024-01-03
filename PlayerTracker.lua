@@ -155,7 +155,7 @@ function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
         self:Destroy()
     end)
  
-    return setmetatable(self, playerTrackerPrototype) :: any
+    return setmetatable(self, PlayerTracker) :: any
 end
 
 
@@ -164,7 +164,7 @@ end
 
 Begins updating the PlayerTracker every RunService.Heartbeat.
 ]]
-function playerTrackerPrototype:StartTracking()
+function PlayerTracker:StartTracking()
     if self._IsTracking then
         warn("PlayerTracker is already tracking.")
     
@@ -190,7 +190,7 @@ end
 
 Ceases updating the PlayerTracker.
 ]]
-function playerTrackerPrototype:StopTracking()
+function PlayerTracker:StopTracking()
     self._TrackingConnection:Disconnect()
     self._IsTracking = false
 end
@@ -201,7 +201,7 @@ end
 
 Returns an array of the players currently in the tracking space.
 ]]
-function playerTrackerPrototype:GetPlayers(): {Player}
+function PlayerTracker:GetPlayers(): {Player}
     local players = {}
  
     for player in self._PlayerMap do
@@ -217,7 +217,7 @@ end
 
 Returns the current population of the tracking space.
 ]]
-function playerTrackerPrototype:GetPopulation(): number
+function PlayerTracker:GetPopulation(): number
     return self._Population
 end
 
@@ -227,7 +227,7 @@ end
 
 Returns the capacity of the tracking space.
 ]]
-function playerTrackerPrototype:GetCapacity(): number
+function PlayerTracker:GetCapacity(): number
     return self._Capacity
 end
 
@@ -238,7 +238,7 @@ end
 
 Updates the capacity of the tracking space.
 ]]
-function playerTrackerPrototype:SetCapacity(newCapacity: number)
+function PlayerTracker:SetCapacity(newCapacity: number)
     assertLevel(newCapacity == nil, "Argument #1 missing or nil.", 1)
 
     self._Capacity = newCapacity
@@ -250,7 +250,7 @@ end
 
 Returns a boolean detailing whether or not the tracking process is active.
 ]]
-function playerTrackerPrototype:IsTracking(): boolean
+function PlayerTracker:IsTracking(): boolean
     return self._IsTracking
 end
 
@@ -260,7 +260,7 @@ end
 
 Cleans up object data.
 ]]
-function playerTrackerPrototype:Destroy()
+function PlayerTracker:Destroy()
     self._PlayerLeft:Destroy()
     self._PlayerEntered:Destroy()
     self._PopulationChanged:Destroy()
