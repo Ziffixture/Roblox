@@ -147,9 +147,9 @@ function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
     self._PlayerEntered     = Instance.new("BindableEvent")
     self._PopulationChanged = Instance.new("BindableEvent")
  
-    self.PlayerLeft        = private.PlayerLeft.Event
-    self.PlayerEntered     = private.PlayerEntered.Event
-    self.PopulationChanged = private.PopulationChanged.Event
+    self.PlayerLeft        = self._PlayerLeft.Event
+    self.PlayerEntered     = self._PlayerEntered.Event
+    self.PopulationChanged = self._PopulationChanged.Event
  
     trackingSpace.Destroying:Connect(function()
         self:Destroy()
