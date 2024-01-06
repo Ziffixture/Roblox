@@ -133,7 +133,7 @@ end
 Constructs a PlayerTracker object.
 ]]
 function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingParameters: OverlapParams?): PlayerTracker
-	assertLevel(trackingSpace == nil, "Argument #1 missing or nil.", 1)
+	assertLevel(trackingSpace ~= nil, "Argument #1 missing or nil.", 1)
 
 	local self: PlayerTrackerLocal = {} :: PlayerTrackerLocal
 
