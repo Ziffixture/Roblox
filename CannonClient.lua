@@ -9,22 +9,22 @@ https://devforum.roblox.com/t/modeling-a-projectiles-motion/176677
 
 
 
-local CollectionService              = game:GetService("CollectionService")
-local ReplicatedStorage              = game:GetService("ReplicatedStorage")
-local RunService                     = game:GetService("RunService")
-local Players                        = game:GetService("Players")
+local CollectionService           = game:GetService("CollectionService")
+local ReplicatedStorage           = game:GetService("ReplicatedStorage")
+local RunService                  = game:GetService("RunService")
+local Players                     = game:GetService("Players")
 
-local Marble                         = require(ReplicatedStorage:WaitForChild("Classes"):WaitForChild("Marble"))
+local Marble                      = require(ReplicatedStorage:WaitForChild("Classes"):WaitForChild("Marble"))
 
-local GRAVITY_ACCELERATION           = Vector3.yAxis * -workspace.Gravity
+local GRAVITY_ACCELERATION        = Vector3.yAxis * -workspace.Gravity
 
-local CANNON_ALIGNMENT_ITERATIONS    = 2
-local CANNON_TAG                     = "Cannon"
+local CANNON_ALIGNMENT_ITERATIONS = 2
+local CANNON_TAG                  = "Cannon"
 
-local PLAYER                         = Players.LocalPlayer
+local PLAYER                      = Players.LocalPlayer
 
-local cannonInfo                     = {} :: {[Model]: CannonInfo}
-local playerInFlight                 = false
+local cannonInfo                  = {} :: {[Model]: CannonInfo}
+local playerInFlight              = false
 
 
 
@@ -130,25 +130,25 @@ end
 Initializes the given cannon.
 ]]
 local function initializeCannon(cannon: Model)
-    local barrel = cannon:WaitForChild("Barrel")
+    local barrel  = cannon:WaitForChild("Barrel")
     local trigger = cannon:WaitForChild("Trigger")
 	
     local launchOrigin = barrel:WaitForChild("LaunchOrigin")
-    local launchEnd = cannon:WaitForChild("LaunchEnd")
+    local launchEnd    = cannon:WaitForChild("LaunchEnd")
 	
-    local flightTime = getAttribute(cannon, "FlightTime")
+    local flightTime      = getAttribute(cannon, "FlightTime")
     local freezeOnLanding = getAttribute(cannon, "FreezeOnLanding")
       
     local info = {
-        Barrel             = barrel,
-        Trigger            = trigger,
+        Barrel          = barrel,
+        Trigger         = trigger,
 		
-        LaunchOrigin       = launchOrigin,
-        LaunchEnd          = launchEnd,
+        LaunchOrigin    = launchOrigin,
+        LaunchEnd       = launchEnd,
 		
-        FlightTime         = flightTime,
-        FreezeOnLanding    = freezeOnLanding,
-        InitialVelocity    = Vector3.zero,
+        FlightTime      = flightTime,
+        FreezeOnLanding = freezeOnLanding,
+        InitialVelocity = Vector3.zero,
     }
 	
     cannonInfo[cannon] = info
@@ -164,8 +164,8 @@ local function initializeCannon(cannon: Model)
     end
 	
     for _ = CANNON_ALIGNMENT_ITERATIONS, 1, -1 do
-        local barrelPosition = barrel:GetPivot().Position
-        local originPosition = launchOrigin.Position
+        local barrelPosition  = barrel:GetPivot().Position
+        local originPosition  = launchOrigin.Position
         local initialVelocity = getInitialVelocity(originPosition, launchEnd.Position, flightTime)
 		
         barrel:PivotTo(CFrame.lookAt(barrelPosition, originPosition + initialVelocity))
@@ -200,14 +200,15 @@ end
 
 initializeCannons()
 
+
 type CannonInfo = {
-    Barrel             : Model,
-    Trigger            : BasePart,
+    Barrel          : Model,
+    Trigger         : BasePart,
 	
-    LaunchOrigin       : BasePart,
-    LaunchEnd          : BasePart,
+    LaunchOrigin    : BasePart,
+    LaunchEnd       : BasePart,
 	
-    FlightTime         : number,
-    FreezeOnLanding    : boolean,
-    InitialVelocity    : Vector3,
+    FlightTime      : number,
+    FreezeOnLanding : boolean,
+    InitialVelocity : Vector3,
 }
