@@ -46,12 +46,12 @@ end
 
 
 --[[
-@param     {BasePart}          parts    | The array of BaseParts to analyze.
-@return    {[player]: true}
+@param     {BasePart}    parts    | The array of BaseParts to analyze.
+@return    PlayerMap
 
 Processes array of BaseParts for affiliated Player instances. Filters out dead players.
 ]]
-local function _analyzePartsForPlayers(parts: {BasePart}): {[Player]: true}
+local function _analyzePartsForPlayers(parts: {BasePart}): PlayerMap
 	assertLevel(parts ~= nil, "Argument #1 missing or nil.", 1)
 
 	local playersFound: PlayerMap = {}
