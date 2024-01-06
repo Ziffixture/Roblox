@@ -167,7 +167,7 @@ end
 --[[
 @return    void
 
-Begins updating the PlayerTracker every RunService.Heartbeat.
+Begins updating the PlayerTracker every RunService.PostSimulation.
 ]]
 function PlayerTracker:StartTracking()
 	if self._IsTracking then
