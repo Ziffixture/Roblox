@@ -1,7 +1,7 @@
 --[[
-Authors:    Ziffix
-Version:    1.3.6b
-Date:       24/01/05
+Authors    Ziffix
+Version    1.3.6b
+Date       24/01/05
 ]]
 
 
