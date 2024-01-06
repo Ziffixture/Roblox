@@ -1,6 +1,6 @@
 --[[
 Authors:    Ziffix
-Version:    1.3.5 (Untested)
+Version:    1.3.6b
 Date:       24/01/05
 ]]
 
@@ -104,6 +104,8 @@ local function _updatePlayerTracker(playerTracker: PlayerTrackerLocal, parts: {B
 		if currentPlayers[player] then
 			continue
 		end
+		
+		currentPlayers[player] = true
 
 		playerTracker._Population += 1
 		playerTracker._PopulationChanged:Fire(playerTracker._Population)
@@ -179,7 +181,7 @@ function PlayerTracker:StartTracking()
 	local trackingSpace      = self._TrackingSpace
 	local trackingParameters = self._TrackingParameters
 
-	self._TrackingConnection = RunService.Heartbeat:Connect(function()
+	self._TrackingConnection = RunService.PostSimulation:Connect(function()
 		_updatePlayerTracker(
 			self :: PlayerTrackerLocal,
 			workspace:GetPartBoundsInBox(trackingSpace.CFrame, trackingSpace.Size, trackingParameters)
