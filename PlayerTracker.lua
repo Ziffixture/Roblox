@@ -115,8 +115,10 @@ function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
 
 	local self: PlayerTrackerLocal = {} :: PlayerTrackerLocal
 
+	self._TrackingSpace           = trackingSpace
+	self._TrackingSpaceConnection = nil
+	
 	self._IsTracking         = false
-	self._TrackingSpace      = trackingSpace
 	self._TrackingParameters = trackingParameters
 	self._TrackingConnection = nil
 
@@ -132,7 +134,7 @@ function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
 	self.PlayerEntered     = self._PlayerEntered.Event
 	self.PopulationChanged = self._PopulationChanged.Event
 
-	trackingSpace.Destroying:Connect(function()
+	self._TrackingSpaceConnection = trackingSpace.Destroying:Connect(function()
 		self:Destroy()
 	end)
 
@@ -172,8 +174,8 @@ end
 Ceases updating the PlayerTracker.
 ]]
 function PlayerTracker:StopTracking()
-	self._TrackingConnection:Disconnect()
 	self._IsTracking = false
+	self._TrackingConnection:Disconnect()
 end
 
 
@@ -242,11 +244,13 @@ end
 Cleans up object data.
 ]]
 function PlayerTracker:Destroy()
+	self:StopTracking()
+
+	self._TrackingSpaceConnection:Disconnect()
+	
 	self._PlayerLeft:Destroy()
 	self._PlayerEntered:Destroy()
 	self._PopulationChanged:Destroy()
-
-	self:StopTracking()
 end
 
 
@@ -273,8 +277,10 @@ export type PlayerTracker = {
 type PlayerMap = {[Player]: true}
 
 type PlayerTrackerLocal = PlayerTracker & {	
-	_IsTracking         : boolean,
 	_TrackingSpace      : BasePart,
+	_TrackingSpaceConnection : RBXScriptConnection?
+	
+	_IsTracking         : boolean,
 	_TrackingParameters : OverlapParams?,
 	_TrackingConnection : RBXScriptConnection?,
 
