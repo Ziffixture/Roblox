@@ -52,7 +52,7 @@ end
 Processes array of BaseParts for affiliated Player instances. Filters out dead players.
 ]]
 local function _analyzePartsForPlayers(parts: {BasePart}): {[Player]: true}
-	assertLevel(parts == nil, "Argument #1 missing or nil.", 1)
+	assertLevel(parts ~= nil, "Argument #1 missing or nil.", 1)
 
 	local playersFound: PlayerMap = {}
 
@@ -87,8 +87,8 @@ end
 Updates the PlayerTracker's internal map of players and population.
 ]]
 local function _updatePlayerTracker(playerTracker: PlayerTrackerLocal, parts: {BasePart})
-	assertLevel(playerTracker == nil, "Argument #1 missing or nil.", 1)
-	assertLevel(parts == nil, "Argument #2 missing or nil.", 1)
+	assertLevel(playerTracker ~= nil, "Argument #1 missing or nil.", 1)
+	assertLevel(parts ~= nil, "Argument #2 missing or nil.", 1)
 
 	local currentPlayers    = playerTracker._PlayerMap
 	local currentPopulation = playerTracker._Population
@@ -242,7 +242,7 @@ end
 Updates the capacity of the tracking space.
 ]]
 function PlayerTracker:SetCapacity(newCapacity: number)
-	assertLevel(newCapacity == nil, "Argument #1 missing or nil.", 1)
+	assertLevel(newCapacity ~= nil, "Argument #1 missing or nil.", 1)
 
 	self._Capacity = newCapacity
 end
@@ -286,7 +286,7 @@ export type PlayerTracker = {
 	IsTracking : (PlayerTracker) -> boolean,
 
 	Destroy : (PlayerTracker) -> (),
-	
+
 	PlayerLeft        : RBXScriptSignal,
 	PlayerEntered     : RBXScriptSignal,
 	PopulationChanged : RBXScriptSignal,
@@ -299,11 +299,11 @@ type PlayerTrackerLocal = PlayerTracker & {
 	_TrackingSpace      : BasePart,
 	_TrackingParameters : OverlapParams?,
 	_TrackingConnection : RBXScriptConnection?,
-	
+
 	_PlayerMap  : PlayerMap,
 	_Population : number,
 	_Capacity   : number?,
-	
+
 	_PlayerLeft        : BindableEvent,
 	_PlayerEntered     : BindableEvent,
 	_PopulationChanged : BindableEvent,
