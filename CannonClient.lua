@@ -1,9 +1,7 @@
 --[[
-Author:     Ziffix (74087102)
-Date:       23/10/2
-Version:    1.0.2 (Stable)
-
-Notes:
+Author     Ziffix (74087102)
+Date       23/10/2
+Version    1.0.b
 
 Implements cannon physics using projectile motion modelling with manual CFrame-ing,
 https://devforum.roblox.com/t/modeling-a-projectiles-motion/176677
