@@ -277,8 +277,8 @@ export type PlayerTracker = {
 type PlayerMap = {[Player]: true}
 
 type PlayerTrackerLocal = PlayerTracker & {	
-	_TrackingSpace      : BasePart,
-	_TrackingSpaceConnection : RBXScriptConnection?
+	_TrackingSpace           : BasePart,
+	_TrackingSpaceConnection : RBXScriptConnection?,
 	
 	_IsTracking         : boolean,
 	_TrackingParameters : OverlapParams?,
