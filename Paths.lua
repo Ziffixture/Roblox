@@ -29,7 +29,7 @@ Paths.TRANSITION_RULES = {} :: TransitionRuleMap
 
 A helper function that retrieves the connecting paths within the given path instance.
 ]]
-local function getConnectedPaths(path: InstanceTypes.Path): {InstanceTypes.Path}
+local function getConnections(path: InstanceTypes.Path): {InstanceTypes.Path}
 	local connectedPaths: any = path.Connections:GetChildren()
 	local result = {}
 
@@ -95,7 +95,7 @@ function Paths.CategorizeGraph(graph: InstanceTypes.PathGraph): ObjectTypes.Cate
 	local hasIncomingConnections: {[InstanceTypes.Path]: true} = {}
 
 	for _, path in paths do
-		local connectedPaths: {ObjectValue} = getConnectedPaths(path)
+		local connectedPaths: {ObjectValue} = getConnections(path)
 
 		if #connectedPaths >= 1 then
 			-- One or more outgoing connections.
@@ -276,7 +276,7 @@ local function getNextPath(path: InstanceTypes.Path?, enemy: InstanceTypes.Enemy
         return
     end
 
-    local connectedPaths = getConnectedPaths(path)
+    local connectedPaths = getConnections(path)
     local transitionRule = Paths.GetTransitionRule(enemy)
 
     return transitionRule(connectedPaths, enemy)
