@@ -14,7 +14,7 @@ local Types         = ReplicatedStorage.Types
 local ObjectTypes   = require(Types.ObjectTypes)
 local InstanceTypes = require(Types.InstanceTypes)
 
-local DevKit           = require(ReplicatedStorage.DevKit)
+local DevKit            = require(ReplicatedStorage.DevKit)
 local BootstrapChildren = DevKit.Functions.BootstrapChildren
 
 
@@ -24,10 +24,10 @@ Paths.TRANSITION_RULES = {} :: TransitionRuleMap
 
 
 --[[
-@param     InstanceTypes.Path      paths    | The path of which to derive its connecting paths.
+@param     InstanceTypes.Path      paths    | The path from which to derive its connecting paths.
 @return    {InstanceTypes.Path}
 
-Collects the mapped connecting paths within the given path instance.
+A helper function that retrieves the connecting paths within the given path instance.
 ]]
 local function getConnectedPaths(path: InstanceTypes.Path): {InstanceTypes.Path}
 	local connectedPaths: any = path.Connections:GetChildren()
@@ -46,7 +46,7 @@ end
 @param     {InstanceTypes.Path}    paths    | The paths whose waypoints to colourize.
 @return    void
 
-Applies a BrickColor to each waypoint of the given paths.
+A helper function that applies a BrickColor to each waypoint of the given paths.
 ]]
 local function colourWaypointsOfPaths(paths: {InstanceTypes.Path}, colour: BrickColor)
 	for _, path in paths do
