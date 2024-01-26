@@ -258,8 +258,8 @@ local function getNextPath(path: InstanceTypes.Path?, enemy: InstanceTypes.Enemy
         return
     end
 
-    local connectedPaths = PathsShared.GetConnectedPaths(path)
-    local transitionRule = Module.GetTransitionRule(enemy)
+    local connectedPaths = getConnectedPaths(path)
+    local transitionRule = Paths.GetTransitionRule(enemy)
 
     return transitionRule(connectedPaths, enemy)
 end
