@@ -41,6 +41,24 @@ local function getConnectedPaths(path: InstanceTypes.Path): {InstanceTypes.Path}
 end
 
 
+--[[
+@param     InstanceTypes.Path    path    | The path from which to derive its waypoints.
+@return    {BasePart}
+
+A helper function that bypasses Instance:GetChildren's insertion order by reading the path's numbered waypoints.
+]]
+local function getWaypoints(path: InstanceTypes.Path): {BasePart}
+	local waypoints = path.Waypoints
+	local result = {}
+
+	for index = 1, #waypoints:GetChildren() do
+		table.insert(result, waypoints[index])
+	end
+
+	return result :: {InstanceTypes.Path}
+end
+
+
 
 --[[
 @param     {InstanceTypes.Path}    paths    | The paths whose waypoints to colourize.
@@ -77,7 +95,7 @@ function Paths.CategorizeGraph(graph: InstanceTypes.PathGraph): ObjectTypes.Cate
 	local hasIncomingConnections: {[InstanceTypes.Path]: true} = {}
 
 	for _, path in paths do
-		local connectedPaths: {ObjectValue} = path.Connections:GetChildren() :: any
+		local connectedPaths: {ObjectValue} = getConnectedPaths(path)
 
 		if #connectedPaths >= 1 then
 			-- One or more outgoing connections.
@@ -88,8 +106,8 @@ function Paths.CategorizeGraph(graph: InstanceTypes.PathGraph): ObjectTypes.Cate
 		end
 
 		-- Record connected paths.
-		for _, connectedPath in connectedPaths do
-			hasIncomingConnections[connectedPath.Value :: InstanceTypes.Path] = true
+		for _, connectingPath in connectedPaths do
+			hasIncomingConnections[connectingPath] = true
 		end
 	end
 
@@ -147,7 +165,7 @@ end
 A recursive helper function that, with Beams, traces the waypoints of each path connected to the given path.
 ]]
 local function tracePath(path: InstanceTypes.Path, pathsVisited: {}, lastEndWaypoint: BasePart?)
-	local waypoints = Paths.GetWaypoints(path)
+	local waypoints = getWaypoints(path)
 
     --[[
 	Connecting a single path's waypoints is different from connecting two paths. To achieve this,
@@ -264,6 +282,7 @@ local function getNextPath(path: InstanceTypes.Path?, enemy: InstanceTypes.Enemy
     return transitionRule(connectedPaths, enemy)
 end
 
+
 --[[
 @param     InstanceTypes.Path     startPath    | The path at which the enemy begins walking.
 @param     InstanceTypes.Enemy    enemy        | The enemy walking the path of the iterator.
@@ -274,7 +293,7 @@ transition rule, which is queried every iteration and decides how the iterator m
 ]]
 function Paths.MakeIterator(startPath: InstanceTypes.Path, enemy: InstanceTypes.Enemy): () -> BasePart?
     local currentPath = startPath
-    local currentWaypoints = Paths.GetWaypoints(currentPath)
+    local currentWaypoints = getWaypoints(currentPath)
     local currentWaypointIndex = 0
 
     return function()
@@ -289,30 +308,12 @@ function Paths.MakeIterator(startPath: InstanceTypes.Path, enemy: InstanceTypes.
                 return nil
             end
 
-            currentWaypoints = Paths.GetWaypoints(currentPath)
+            currentWaypoints = getWaypoints(currentPath)
             currentWaypointIndex = 1
         end
 
         return currentWaypoints[currentWaypointIndex]
     end
-end
-
-
---[[
-@param     InstanceTypes.Path    path    | The path from which to derive its waypoints.
-@return    {BasePart}
-
-Bypasses Instance:GetChildren's insertion order by reading the path's numbered waypoints.
-]]
-function Paths.GetWaypoints(path: InstanceTypes.Path): {BasePart}
-	local waypoints = path.Waypoints
-	local result = {}
-
-	for index = 1, #waypoints:GetChildren() do
-		table.insert(result, waypoints[index])
-	end
-
-	return result :: {InstanceTypes.Path}
 end
 
 
