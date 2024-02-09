@@ -12,13 +12,37 @@ local RunService        = game:GetService("RunService")
 local Players           = game:GetService("Players")
 
 
-local DevKit      = ReplicatedStorage.DevKit
-local AssertLevel = require(DevKit.Functions.AssertLevel)
-
-
 local PlayerTracker = {}
 PlayerTracker.__index = PlayerTracker
 
+
+
+--[[
+@param     any        condition    | The result of the condition.
+@param     string     message      | The error message to be raised.
+@param     number?    level = 2    | The level at which to raise the error.
+@return    void
+
+Implements assert with error's level argument.
+]]
+local function assertLevel(condition: any, message: string, level: number?)
+    if condition == nil then 
+        error("Argument #1 missing or nil.", 2)
+    end
+
+    if message == nil then 
+        error("Argument #2 missing or nil.", 2)
+    end
+
+    -- Lifts the error out of this function.
+    level = (level or 1) + 1
+
+    if condition then
+        return condition
+    end
+
+    error(message, level)
+end
 
 
 --[[
@@ -28,7 +52,7 @@ PlayerTracker.__index = PlayerTracker
 Processes array of BaseParts for affiliated Player instances. Filters out dead players.
 ]]
 local function _analyzePartsForPlayers(parts: {BasePart}): PlayerMap
-	AssertLevel(parts ~= nil, "Argument #1 missing or nil.", 1)
+	assertLevel(parts ~= nil, "Argument #1 missing or nil.", 1)
 
 	local playersFound: PlayerMap = {}
 
@@ -63,8 +87,8 @@ end
 Updates the PlayerTracker's internal map of players and population.
 ]]
 local function _updatePlayerTracker(playerTracker: PlayerTrackerLocal, parts: {BasePart})
-	AssertLevel(playerTracker ~= nil, "Argument #1 missing or nil.", 1)
-	AssertLevel(parts ~= nil, "Argument #2 missing or nil.", 1)
+	assertLevel(playerTracker ~= nil, "Argument #1 missing or nil.", 1)
+	assertLevel(parts ~= nil, "Argument #2 missing or nil.", 1)
 
 	local currentPlayers    = playerTracker._PlayerMap
 	local currentPopulation = playerTracker._Population
@@ -111,7 +135,7 @@ end
 Constructs a PlayerTracker object.
 ]]
 function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingParameters: OverlapParams?): PlayerTracker
-	AssertLevel(trackingSpace ~= nil, "Argument #1 missing or nil.", 1)
+	assertLevel(trackingSpace ~= nil, "Argument #1 missing or nil.", 1)
 
 	local self: PlayerTrackerLocal = {} :: PlayerTrackerLocal
 
@@ -222,7 +246,7 @@ end
 Updates the capacity of the tracking space.
 ]]
 function PlayerTracker:SetCapacity(newCapacity: number)
-	AssertLevel(newCapacity ~= nil, "Argument #1 missing or nil.", 1)
+	assertLevel(newCapacity ~= nil, "Argument #1 missing or nil.", 1)
 
 	self._Capacity = newCapacity
 end
