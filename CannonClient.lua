@@ -188,11 +188,11 @@ Begins an initialization process for all cannons that are and are to be.
 ]]
 local function initializeCannons()
     for _, cannon in CollectionService:GetTagged(CANNON_TAG) do
-        task.spawn(initializeCannon, cannon)
+        task.defer(initializeCannon, cannon)
     end
 	
     CollectionService:GetInstanceAddedSignal(CANNON_TAG):Connect(function(cannon)
-        task.spawn(initializeCannon, cannon)
+        initializeCannon(cannon)
     end)
 end
 
