@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/03/25
-Version    1.0.2b
+Version    1.0.6b
 ]]
 
 
@@ -40,7 +40,7 @@ local Configuration = Feature.Configuration
 local FriendlyFire  = Configuration.FriendlyFire
 
 local KillsService = {}
-KillsService.PlayerKilled = Signal.new()
+KillsService.PlayerKilled = Signal.new() :: Signal.Signal<Player, DeathSummary?>
 
 local damageHistories: DamageHistories = {}
 
@@ -51,7 +51,7 @@ local damageHistories: DamageHistories = {}
 @param     Player     playerB    | A player.
 @return    boolean
 
-A helper function used to check if two players are under friendly fire.
+A helper function used to check if two teammates are fighting against each other.
 ]]
 local function isFriendlyFire(playerA: Player, playerB: Player): boolean
 	return not FriendlyFire.Value and playerA.Team == playerB.Team
@@ -59,7 +59,7 @@ end
 
 --[[
 @param     DamageHistory    damageHistory    | The history of damage dealt to a particular Humanoid.
-@return    DeathSummary
+@return    DeathSummary?
 
 Constructs a death summary based on the given damage history.
 ]]
