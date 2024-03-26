@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/03/25
-Version    1.0.1b
+Version    1.0.2b
 ]]
 
 
@@ -64,11 +64,12 @@ end
 Constructs a death summary based on the given damage history.
 ]]
 local function buildDeathSummary(damageHistory: DamageHistory): DeathSummary?
-	if #damageHistory.Tokens == 0 then
-		return nil
+	local latestToken = damageHistory.Tokens[#damageHistory.Tokens]
+	if not latestToken then
+		return
 	end
 	
-	local killer = damageHistory.Tokens[#damageHistory.Tokens].Attacker
+	local killer = latestToken.Attacker
 	
 	local damageTotals = {} :: {[Player]: number}
 	local deathSummary = {} :: DeathSummary
@@ -161,12 +162,16 @@ function KillsService.trackDamage(player)
 	
 	humanoid.HealthChanged:Connect(function(newHealth)
 		if newHealth > previousHealth then
-			local increment   = newHealth - previousHealth
-			local oldestToken = damageHistory[1]
+			local oldestToken = damageHistory.Tokens[1]
+			if not oldestToken then
+				return
+			end
+			
+			local gainedHealth = newHealth - previousHealth
 
-			oldestToken.Damage -= increment		
+			oldestToken.Damage -= gainedHealth
 			if oldestToken.Damage <= 0 then
-				table.remove(damageHistory, 1)
+				table.remove(damageHistory.Tokens, 1)
 			end
 		end
 		
