@@ -118,7 +118,7 @@ If possible, deals a specific amount of damage to the given player. Records this
 damage history.
 ]]
 function KillsService.dealDamage(damageParameters: DamageParameters)
-	local _, attackedHumanoid = PlayerEssentials.get(damageParameters.Target)
+	local attackedHumanoid = PlayerEssentials.getHumanoid(damageParameters.Target)
 	if not attackedHumanoid then
 		warn(`Unable to damage {damageParameters.Target.Name} (no Humanoid available).`)
 
@@ -149,7 +149,7 @@ end
 Starts a track record of the player's damage. Reports a summary of this damage upon death.
 ]]
 function KillsService.trackDamage(player)
-	local _, humanoid = PlayerEssentials.get(player)
+	local humanoid = PlayerEssentials.getHumanoid(player)
 	if not humanoid then
 		warn(`Unable to track {player.Name}'s damage (no Humanoid available).`)
 
