@@ -50,6 +50,7 @@ local FriendlyFire  = Configuration.FriendlyFire
 local KillsService = {}
 KillsService.PlayerKilled = Signal.new() :: Signal.Signal<Player, DeathSummary>
 
+
 local damageHistories: DamageHistories = {}
 
 
