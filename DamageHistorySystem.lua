@@ -152,13 +152,13 @@ function KillsService.trackDamage(player)
 		return
 	end
 	
-	local previousHealth = humanoid.Health
-	
 	local damageHistory = {} :: DamageHistory
 	damageHistory.Humanoid = humanoid
 	damageHistory.Tokens   = {}
 	
 	damageHistories[humanoid] = damageHistory
+	
+	local previousHealth = humanoid.Health
 	
 	humanoid.HealthChanged:Connect(function(newHealth)
 		if newHealth > previousHealth then
