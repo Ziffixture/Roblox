@@ -1,16 +1,16 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/03/25
-Version    1.0.6b
+Version    1.1.1b
 ]]
 
 
 
 --!strict
 type DamageToken = {
-	Attacker   : Player,
-	Damage     : number,
-	WeaponName : string,
+	Dealer : Player?,
+	Damage : number,
+	Cause  : string,
 }
 
 type DamageHistory = {
@@ -23,7 +23,15 @@ type DamageHistories = {[Humanoid]: DamageHistory}
 export type DeathSummary = {
 	Assists             : {Player},
 	AssistCountAsKiller : Player?,
-	Killer              : Player
+	Killer              : Player?,
+	Cause               : string,
+}
+
+export type DamageParameters = {
+	Target : Player,
+	Dealer : Player?,
+	Amount : number,
+	Cause  : string,
 }
 
 
@@ -40,7 +48,7 @@ local Configuration = Feature.Configuration
 local FriendlyFire  = Configuration.FriendlyFire
 
 local KillsService = {}
-KillsService.PlayerKilled = Signal.new() :: Signal.Signal<Player, DeathSummary?>
+KillsService.PlayerKilled = Signal.new() :: Signal.Signal<Player, DeathSummary>
 
 local damageHistories: DamageHistories = {}
 
@@ -51,50 +59,49 @@ local damageHistories: DamageHistories = {}
 @param     Player     playerB    | A player.
 @return    boolean
 
-A helper function used to check if two teammates are fighting against each other.
+Check if two teammates are fighting against each other, and whether or not it's permitted.
 ]]
-local function isFriendlyFire(playerA: Player, playerB: Player): boolean
+function KillsService.isFriendlyFire(playerA: Player, playerB: Player): boolean
 	return not FriendlyFire.Value and playerA.Team == playerB.Team
 end
 
+
 --[[
 @param     DamageHistory    damageHistory    | The history of damage dealt to a particular Humanoid.
-@return    DeathSummary?
+@return    DeathSummary
 
 Constructs a death summary based on the given damage history.
 ]]
-local function buildDeathSummary(damageHistory: DamageHistory): DeathSummary?
+local function buildDeathSummary(damageHistory: DamageHistory): DeathSummary
 	local latestToken = damageHistory.Tokens[#damageHistory.Tokens]
-	if not latestToken then
-		return
-	end
+	local killer      = latestToken.Dealer
 	
-	local killer = latestToken.Attacker
-	
-	local damageTotals = {} :: {[Player]: number}
 	local deathSummary = {} :: DeathSummary
 	deathSummary.Assists             = {}
 	deathSummary.AssistCountAsKiller = nil
 	deathSummary.Killer              = killer
+	deathSummary.Cause               = latestToken.Cause
+	
+	local damageTotals = {} :: {[Player]: number}
 
 	for _, token in damageHistory.Tokens do
-		if token.Attacker == killer then
+		if not token.Dealer or token.Dealer == killer then
 			continue
 		end
-		
-		damageTotals[token.Attacker] = (damageTotals[token.Attacker] or 0) + token.Damage
+
+		damageTotals[token.Dealer] = (damageTotals[token.Dealer] or 0) + token.Damage
 	end
-	
+
 	local halfMaxHealth = damageHistory.Humanoid.MaxHealth / 2
-	
-	for attacker, totalDamage in damageTotals do
+
+	for dealer, totalDamage in damageTotals do
 		if totalDamage >= halfMaxHealth then
-			deathSummary.AssistCountAsKiller = attacker
+			deathSummary.AssistCountAsKiller = dealer
 		else
-			table.insert(deathSummary.Assists, attacker)
+			table.insert(deathSummary.Assists, dealer)
 		end
 	end
-	
+
 	return deathSummary
 end
 
@@ -109,32 +116,28 @@ end
 If possible, deals a specific amount of damage to the given player. Records this damage in the given player's
 damage history.
 ]]
-function KillsService.dealDamage(attacked: Player, amount: number, attacker: Player, weaponName: string)
-	if isFriendlyFire(attacked, attacker) then
-		return
-	end
-	
-	local _, attackedHumanoid = PlayerEssentials.get(attacked)
+function KillsService.dealDamage(damageParameters: DamageParameters)
+	local _, attackedHumanoid = PlayerEssentials.get(damageParameters.Target)
 	if not attackedHumanoid then
-		warn(`Unable to damage {attacked.Name} (no Humanoid available).`)
+		warn(`Unable to damage {damageParameters.Target.Name} (no Humanoid available).`)
 
 		return
 	end
-	
+
 	if attackedHumanoid.Health == 0 then
 		return
 	end
-	
+
 	local damageHistory = damageHistories[attackedHumanoid]
-	
+
 	local damageToken = {} :: DamageToken
-	damageToken.Attacker   = attacker
-	damageToken.Damage     = amount
-	damageToken.WeaponName = weaponName
-		
+	damageToken.Dealer = damageParameters.Dealer
+	damageToken.Damage = damageParameters.Amount
+	damageToken.Cause  = damageParameters.Cause 
+
 	table.insert(damageHistory.Tokens, damageToken)
 
-	attackedHumanoid.Health -= amount
+	attackedHumanoid.Health -= damageParameters.Amount
 end
 
 
@@ -148,39 +151,55 @@ function KillsService.trackDamage(player)
 	local _, humanoid = PlayerEssentials.get(player)
 	if not humanoid then
 		warn(`Unable to track {player.Name}'s damage (no Humanoid available).`)
-		
+
 		return
 	end
-	
+
 	local damageHistory = {} :: DamageHistory
 	damageHistory.Humanoid = humanoid
 	damageHistory.Tokens   = {}
-	
+
 	damageHistories[humanoid] = damageHistory
-	
+
 	local previousHealth = humanoid.Health
-	
+	local previousToken  = nil
+
 	humanoid.HealthChanged:Connect(function(newHealth)
+		local latestToken = damageHistory.Tokens[#damageHistory.Tokens]
+		
+		local healthDifference = math.abs(newHealth - previousHealth)
+
 		if newHealth > previousHealth then
 			local oldestToken = damageHistory.Tokens[1]
 			if not oldestToken then
 				return
 			end
-			
-			local gainedHealth = newHealth - previousHealth
 
-			oldestToken.Damage -= gainedHealth
+			oldestToken.Damage -= healthDifference
 			if oldestToken.Damage <= 0 then
 				table.remove(damageHistory.Tokens, 1)
 			end
+		else
+			-- If no new record of damage exists, the damage was caused by an external force.
+			if previousToken ~= latestToken then
+				return
+			end
+				
+			local damageToken = {} :: DamageToken
+			damageToken.Dealer = nil
+			damageToken.Damage = healthDifference
+			damageToken.Cause  = "Envrionment"
+
+			table.insert(damageHistory.Tokens, damageToken)
 		end
-		
+
 		previousHealth = newHealth
+		previousToken  = latestToken
 	end)
-	
+
 	humanoid.Died:Connect(function()
 		damageHistories[humanoid] = nil
-		
+
 		KillsService.PlayerKilled:Fire(player, buildDeathSummary(damageHistory))
 	end)
 end
