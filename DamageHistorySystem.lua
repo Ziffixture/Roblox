@@ -198,7 +198,7 @@ function KillsService.trackDamage(player)
 		previousToken  = latestToken
 	end)
 
-	humanoid.Died:Connect(function()
+	humanoid.Died:Once(function()
 		damageHistories[humanoid] = nil
 
 		KillsService.PlayerKilled:Fire(player, buildDeathSummary(damageHistory))
