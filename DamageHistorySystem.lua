@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/03/25
-Version    1.1.1b
+Date       24/03/26
+Version    1.1.2b
 ]]
 
 
@@ -56,14 +56,13 @@ local damageHistories: DamageHistories = {}
 
 
 --[[
-@param     Player     playerA    | A player.
-@param     Player     playerB    | A player.
-@return    boolean
+@param     DamageHistory    damageHistory    | The damage history in which the damage token is appeneded to.
+@param     DamageToken      damageToken      | The damage token to append.
 
-Check if two teammates are fighting against each other, and whether or not it's permitted.
+Records the damage token as the lastest damage token in the given damage history.
 ]]
-function KillsService.isFriendlyFire(playerA: Player, playerB: Player): boolean
-	return not FriendlyFire.Value and playerA.Team == playerB.Team
+local function appendDamageToken(damageHistory: DamageHistory, damageToken: DamageToken)
+	table.insert(damageHistory.Tokens, damageToken)
 end
 
 
@@ -108,6 +107,18 @@ end
 
 
 --[[
+@param     Player     playerA    | A player.
+@param     Player     playerB    | A player.
+@return    boolean
+
+Check if two teammates are fighting against each other, and whether or not it's permitted.
+]]
+function KillsService.isFriendlyFire(playerA: Player, playerB: Player): boolean
+	return not FriendlyFire.Value and playerA.Team == playerB.Team
+end
+
+
+--[[
 @param     Player    attacked      | The player to deal damage to.
 @param     number    amount        | The amount of damage to deal.
 @param     Player    attacker      | The player dealing the damage.
@@ -131,12 +142,11 @@ function KillsService.dealDamage(damageParameters: DamageParameters)
 
 	local damageHistory = damageHistories[attackedHumanoid]
 
-	local damageToken = {} :: DamageToken
-	damageToken.Dealer = damageParameters.Dealer
-	damageToken.Damage = damageParameters.Amount
-	damageToken.Cause  = damageParameters.Cause 
-
-	table.insert(damageHistory.Tokens, damageToken)
+	appendDamageToken(damageHistory, {
+		Dealer = damageParameters.Dealer,
+		Damage = damageParameters.Amount,
+		Cause  = damageParameters.Cause,
+	})
 
 	attackedHumanoid.Health -= damageParameters.Amount
 end
@@ -185,13 +195,12 @@ function KillsService.trackDamage(player)
 			if previousToken ~= latestToken then
 				return
 			end
-				
-			local damageToken = {} :: DamageToken
-			damageToken.Dealer = nil
-			damageToken.Damage = healthDifference
-			damageToken.Cause  = "Envrionment"
-
-			table.insert(damageHistory.Tokens, damageToken)
+			
+			appendDamageToken(damageHistory, {
+				Dealer = nil,
+				Damage = healthDifference,
+				Cause  = "Envrionment",
+			})
 		end
 
 		previousHealth = newHealth
