@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/03/26
-Version    1.1.2b
+Version    1.1.3b
 ]]
 
 
@@ -58,11 +58,29 @@ local damageHistories: DamageHistories = {}
 --[[
 @param     DamageHistory    damageHistory    | The damage history in which the damage token is appeneded to.
 @param     DamageToken      damageToken      | The damage token to append.
+@return    void
 
 Records the damage token as the lastest damage token in the given damage history.
 ]]
 local function appendDamageToken(damageHistory: DamageHistory, damageToken: DamageToken)
 	table.insert(damageHistory.Tokens, damageToken)
+end
+
+
+--[[
+@param     Humanoid         humanoid    | The Humanoid to associate a damage history with.
+@return    DamageHistory
+
+Initializes a damage history under the given Humanoid. Returns a reference to that damage history.
+]]
+local function initializeDamageHistory(humanoid: Humanoid): DamageHistory
+	local damageHistory = {} :: DamageHistory
+	damageHistory.Humanoid = humanoid
+	damageHistory.Tokens   = {}
+
+	damageHistories[humanoid] = damageHistory
+
+	return damageHistory
 end
 
 
@@ -166,11 +184,7 @@ function KillsService.trackDamage(player)
 		return
 	end
 
-	local damageHistory = {} :: DamageHistory
-	damageHistory.Humanoid = humanoid
-	damageHistory.Tokens   = {}
-
-	damageHistories[humanoid] = damageHistory
+	local damageHistory = initializeDamageHistory(humanoid)
 
 	local previousHealth = humanoid.Health
 	local previousToken  = nil
