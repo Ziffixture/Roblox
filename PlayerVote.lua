@@ -102,6 +102,26 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	
 	
 	--[[
+	@return    Poll<T>
+	
+	Returns the current state of the vote.
+	]]
+	function self:GetPoll(): Poll<T>
+		return table.clone(poll)
+	end
+	
+	
+	--[[
+	@return    T
+	
+	Returns a list of the options available for vote.
+	]]
+	function self:GetOptions(): {T}
+		return table.clone(options)
+	end
+	
+	
+	--[[
 	@param     T         option    | The option whose vote count to retrieve.
 	@return    number
 	@throws
@@ -115,26 +135,6 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 		
 		return poll[option]
 	end
-	
-	
-	--[[
-	@return    Poll<T>
-	
-	Returns the current state of the vote.
-	]]
-	function self:GetPoll(): Poll<T>
-		return table.clone(poll)
-	end
-
-
-	--[[
-	@return    T
-	
-	Returns a list of the options available for vote.
-	]]
-	function self:GetOptions(): {T}
-		return table.clone(options)
-	end
 
 
 	return self :: any
@@ -145,10 +145,10 @@ end
 type PlayerVote<T> = {
 	Cast : (self: PlayerVote<T>, player: Player, option: T) -> (),
 
-	GetVotes   : (self: PlayerVote<T>, option: T) -> number,
-	GetOptions : (self: PlayerVote<T>) -> {T},
-	GetPoll    : (self: PlayerVote<T>) -> Poll<T>,
 	GetWinner  : (self: PlayerVote<T>) -> T,
+	GetPoll    : (self: PlayerVote<T>) -> Poll<T>,
+	GetOptions : (self: PlayerVote<T>) -> {T},
+	GetVotes   : (self: PlayerVote<T>, option: T) -> number,
 
 	Changed : Signal.Signal<T, number>,
 }
