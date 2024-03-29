@@ -59,7 +59,7 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	Counts the player's vote towards a specific option. Decrements their vote from 
 	the previously voted option.
 	]]
-	function self:VoteFor(player: Player, option: T)
+	function self:Cast(player: Player, option: T)
 		local currentOption: T = optionVotedBy[player]
 		if currentOption then
 			poll[currentOption] -= 1
@@ -117,7 +117,7 @@ end
 
 
 type PlayerVote<T> = {
-	VoteFor : (self: PlayerVote<T>, player: Player, option: T) -> (),
+	Cast : (self: PlayerVote<T>, player: Player, option: T) -> (),
 	
 	GetWinner  : (self: PlayerVote<T>) -> T,
 	GetOptions : (self: PlayerVote<T>) -> {T},
