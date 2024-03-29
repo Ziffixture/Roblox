@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/03/27
-Version    1.0.2b
+Date       24/03/29
+Version    1.1.0b
 
 A closure-based object that holds a player-involved vote.
 ]]
@@ -12,8 +12,8 @@ A closure-based object that holds a player-involved vote.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 
-local Utility = ReplicatedStorage.Utility
-local Signal  = require(Utility.Signal)
+local Vendor = ReplicatedStorage.Vendor
+local Signal = require(Vendor.Signal)
 
 
 local PlayerVote = {}
