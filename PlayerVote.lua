@@ -87,7 +87,6 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 			self.Changed:Fire(currentOption, poll[currentOption])
 		end
 		
-
 		return currentOption
 	end
 
