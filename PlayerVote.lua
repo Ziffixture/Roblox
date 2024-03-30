@@ -184,5 +184,4 @@ export type Poll<T> = {
 }
 
 
-
 return PlayerVote
