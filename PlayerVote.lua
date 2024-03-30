@@ -81,12 +81,14 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	]]
 	function self:Revoke(player: Player): T?
 		local currentOption: T = optionVotedBy[player]
-		if currentOption then
-			poll[currentOption] -= 1
-			optionVotedBy[player] = nil
-		
-			self.Changed:Fire(currentOption, poll[currentOption])
+		if not currentOption then
+			return
 		end
+		
+		poll[currentOption] -= 1
+		optionVotedBy[player] = nil
+		
+		self.Changed:Fire(currentOption, poll[currentOption])
 		
 		return currentOption
 	end
