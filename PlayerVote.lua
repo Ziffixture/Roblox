@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/03/29
-Version    1.3.0b
+Version    1.4.0b
 
 A closure-based object that holds a player-involved vote.
 ]]
@@ -60,13 +60,13 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	the previously voted option.
 	]]
 	function self:Cast(player: Player, option: T)
-		local currentOption: T = optionVotedBy[player]
-		if currentOption then
-			poll[currentOption] -= 1
+		if not poll[option] then
+			error(`Option {option} is not a valid member of this vote.`)
 		end
-
+		
+		self:Revoke(player)
+		
 		poll[option] += 1
-
 		optionVotedBy[player] = option
 
 		self.Changed:Fire(option, poll[option])
