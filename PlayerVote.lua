@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/03/29
-Version    1.2.0b
+Version    1.3.0b
 
 A closure-based object that holds a player-involved vote.
 ]]
@@ -70,6 +70,22 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 		optionVotedBy[player] = option
 
 		self.Changed:Fire(option, poll[option])
+	end
+	
+	
+	--[[
+	@param     Player    player    | The player submitting their vote.
+	@return    T
+	
+	Revokes the vote cast by the given player. Returns the option they voted for.
+	]]
+	function self:Revoke(player: Player): T?
+		local currentOption: T = optionVotedBy[player]
+		if currentOption then
+			poll[currentOption] -= 1
+		end
+
+		return currentOption
 	end
 
 
@@ -143,7 +159,8 @@ end
 
 
 type PlayerVote<T> = {
-	Cast : (self: PlayerVote<T>, player: Player, option: T) -> (),
+	Cast   : (self: PlayerVote<T>, player: Player, option: T) -> (),
+	Revoke : (self: PlayerVote<T>, player: Player) -> T?, 
 
 	GetWinner  : (self: PlayerVote<T>) -> T,
 	GetPoll    : (self: PlayerVote<T>) -> Poll<T>,
