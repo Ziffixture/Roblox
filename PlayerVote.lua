@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/03/29
-Version    1.4.0b
+Version    1.4.1b
 
 A closure-based object that holds a player-involved vote.
 ]]
@@ -83,6 +83,7 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 		local currentOption: T = optionVotedBy[player]
 		if currentOption then
 			poll[currentOption] -= 1
+			optionVotedBy[player] = nil
 		
 			self.Changed:Fire(currentOption, poll[currentOption])
 		end
