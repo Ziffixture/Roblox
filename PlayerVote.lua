@@ -83,7 +83,10 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 		local currentOption: T = optionVotedBy[player]
 		if currentOption then
 			poll[currentOption] -= 1
+		
+			self.Changed:Fire(currentOption, poll[currentOption])
 		end
+		
 
 		return currentOption
 	end
