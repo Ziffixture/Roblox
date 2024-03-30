@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/03/29
-Version    1.4.2b
+Version    1.5.0b
 
 A closure-based object that holds a player-involved vote.
 ]]
@@ -55,24 +55,25 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	@param     Player    player    | The player submitting their vote.
 	@param     T         option    | The option chosen by the player.
 	@return    void
+	@throws
 	
 	Counts the player's vote towards a specific option. Revokes their vote from 
 	the previously voted option.
 	]]
 	function self:Cast(player: Player, option: T)
-		if not poll[option] then
+		if not self:HasOption(option) then
 			error(`Option {option} is not a valid member of this vote.`)
 		end
-		
+
 		self:Revoke(player)
-		
+
 		poll[option] += 1
 		optionVotedBy[player] = option
 
 		self.Changed:Fire(option, poll[option])
 	end
-	
-	
+
+
 	--[[
 	@param     Player    player    | The player submitting their vote.
 	@return    T
@@ -84,12 +85,12 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 		if not currentOption then
 			return
 		end
-		
+
 		poll[currentOption] -= 1
 		optionVotedBy[player] = nil
-		
+
 		self.Changed:Fire(currentOption, poll[currentOption])
-		
+
 		return currentOption
 	end
 
@@ -120,8 +121,8 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 
 		return highestVoteGroup[math.random(#highestVoteGroup)]
 	end
-	
-	
+
+
 	--[[
 	@return    Poll<T>
 	
@@ -130,8 +131,8 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	function self:GetPoll(): Poll<T>
 		return table.clone(poll)
 	end
-	
-	
+
+
 	--[[
 	@return    T
 	
@@ -140,8 +141,8 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	function self:GetOptions(): {T}
 		return table.clone(options)
 	end
-	
-	
+
+
 	--[[
 	@param     T         option    | The option whose vote count to retrieve.
 	@return    number
@@ -150,11 +151,22 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	Returns the current number of votes for the given option.
 	]]
 	function self:GetVotes(option: T): number
-		if not poll[option] then
+		if self:HasOption(option) then
 			error(`Given option is not a member of the vote. ({tostring(option)})`)
 		end
-		
+
 		return poll[option]
+	end
+	
+	
+	--[[
+	@param     T          option    | The option to check.
+	@return    boolean
+	
+	Checks whether or not the given option is a member of this vote.
+	]]
+	function self:HasOption(option: T): boolean
+		return poll[option] ~= nil
 	end
 
 
@@ -171,6 +183,8 @@ type PlayerVote<T> = {
 	GetPoll    : (self: PlayerVote<T>) -> Poll<T>,
 	GetOptions : (self: PlayerVote<T>) -> {T},
 	GetVotes   : (self: PlayerVote<T>, option: T) -> number,
+	
+	HasOption : (self: PlayerVote<T>, option: T) -> boolean,
 
 	Changed : Signal.Signal<T, number>,
 }
