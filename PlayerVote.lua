@@ -56,7 +56,7 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	@param     T         option    | The option chosen by the player.
 	@return    void
 	
-	Counts the player's vote towards a specific option. Decrements their vote from 
+	Counts the player's vote towards a specific option. Revokes their vote from 
 	the previously voted option.
 	]]
 	function self:Cast(player: Player, option: T)
