@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/03/29
-Version    1.4.1b
+Version    1.4.2b
 
 A closure-based object that holds a player-involved vote.
 ]]
@@ -80,7 +80,7 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	Revokes the vote cast by the given player. Returns the option they voted for.
 	]]
 	function self:Revoke(player: Player): T?
-		local currentOption: T = optionVotedBy[player]
+		local currentOption: T? = optionVotedBy[player]
 		if not currentOption then
 			return
 		end
