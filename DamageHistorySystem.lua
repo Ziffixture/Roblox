@@ -1,10 +1,10 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/04/01 (YY/MM/DD)
-Version    1.1.4b
+Version    1.1.5b
 
-A service built under the Feature-Per-Folder architecture designed to identify the circumstances
-of a chosen entity's death.
+A service built under the Feature-Per-Folder architecture largely designed to identify the circumstances
+of a selected entity's death. KillsService is ultimately concerned with all things surrounding death.
 ]]
 
 
