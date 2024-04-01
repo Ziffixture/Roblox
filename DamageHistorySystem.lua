@@ -209,10 +209,10 @@ function KillsService.trackDamage(player)
 				table.remove(damageHistory.Tokens, 1)
 			end
 		else
-			-- If no new record of damage exists, the damage was caused by an external force.
 			if previousToken ~= latestToken then
 				return
 			end
+			-- If no new record of damage exists, the damage was caused by an external force.
 			
 			appendDamageToken(damageHistory, {
 				Dealer = nil,
