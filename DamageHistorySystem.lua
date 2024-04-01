@@ -39,9 +39,9 @@ export type DamageParameters = {
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 
-local Utility          = ReplicatedStorage.Utility
-local Signal           = require(Utility.Signal)
-local PlayerEssentials = require(Utility.PlayerEssentials)
+local Vendor           = ReplicatedStorage.Utility
+local Signal           = require(Vendor.Signal)
+local PlayerEssentials = require(Vendor.PlayerEssentials)
 
 local Feature       = script.Parent
 local Configuration = Feature.Configuration
