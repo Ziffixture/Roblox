@@ -60,7 +60,7 @@ local damageHistories: DamageHistories = {}
 @param     DamageToken      damageToken      | The damage token to append.
 @return    void
 
-Records the damage token as the lastest damage token in the given damage history.
+Helper function for recording a damage token as the lastest damage token in the given damage history.
 ]]
 local function appendDamageToken(damageHistory: DamageHistory, damageToken: DamageToken)
 	table.insert(damageHistory.Tokens, damageToken)
@@ -71,7 +71,8 @@ end
 @param     Humanoid         humanoid    | The Humanoid to associate a damage history with.
 @return    DamageHistory
 
-Initializes a damage history under the given Humanoid. Returns a reference to that damage history.
+Helper function for initializing a damage history under the given Humanoid. Returns a reference to that damage 
+history.
 ]]
 local function initializeDamageHistory(humanoid: Humanoid): DamageHistory
 	local damageHistory = {} :: DamageHistory
@@ -88,7 +89,7 @@ end
 @param     DamageHistory    damageHistory    | The history of damage dealt to a particular Humanoid.
 @return    DeathSummary
 
-Constructs a death summary based on the given damage history.
+Helper function for building a death summary based on the given damage history.
 ]]
 local function buildDeathSummary(damageHistory: DamageHistory): DeathSummary
 	local latestToken = damageHistory.Tokens[#damageHistory.Tokens]
@@ -129,7 +130,7 @@ end
 @param     Player     playerB    | A player.
 @return    boolean
 
-Check if two teammates are fighting against each other, and whether or not it's permitted.
+Helper function to check if two teammates are fighting against each other, and whether or not it's permitted.
 ]]
 function KillsService.isFriendlyFire(playerA: Player, playerB: Player): boolean
 	return not FriendlyFire.Value and playerA.Team == playerB.Team
