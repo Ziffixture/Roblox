@@ -2,6 +2,9 @@
 Author     Ziffixture (74087102)
 Date       24/04/01 (YY/MM/DD)
 Version    1.1.4b
+
+A service built under the Feature-Per-Folder architecture designed to identify the circumstances
+of a chosen entity's death.
 ]]
 
 
@@ -130,7 +133,7 @@ end
 @param     Player     playerB    | A player.
 @return    boolean
 
-Helper function to check if two teammates are fighting against each other, and whether or not it's permitted.
+Checks if two teammates are fighting against each other, and whether or not it's permitted.
 ]]
 function KillsService.isFriendlyFire(playerA: Player, playerB: Player): boolean
 	return not FriendlyFire.Value and playerA.Team == playerB.Team
