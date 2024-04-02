@@ -1,6 +1,6 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/03/21
+Date       24/04/02 (YY/MM/DD)
 Version    1.3.0b
 ]]
 
@@ -42,7 +42,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local Players            = game:GetService("Players")
 
 
-local Marketplace = {}
+local MonetizationService = {}
 
 
 local NOT_PROCESSED_YET = Enum.ProductPurchaseDecision.NotProcessedYet
@@ -51,7 +51,7 @@ local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
 
 local gamePassOwnershipCache = {} :: GamePassOwnershipCache
 
-local categorizedAssets = {} :: CategorizedAssets -- Initialized by the "boostrapAssets" function.
+local categorizedAssets = {} :: CategorizedAssets
 categorizedAssets.GamePass         = {}
 categorizedAssets.DeveloperProduct = {}
 
@@ -149,7 +149,7 @@ end
 Acts as a wrapper function to MarketplaceService:UserOwnsGamePassAsync, where Roblox's static cache is
 replaced with a dynamic cache.
 ]]
-function Marketplace.userOwnsGamePassAsync(userId: number, gamePassId: number): boolean
+function MonetizationService.userOwnsGamePassAsync(userId: number, gamePassId: number): boolean
 	local player = Players:GetPlayerByUserId(userId)
 	if not player then
 		return MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId)
@@ -174,9 +174,9 @@ end
 
 Calls the game-pass handler function of all game-passes owned by the given player.
 ]]
-function Marketplace.loadGamePasses(player: Player)
+function MonetizationService.loadGamePasses(player: Player)
 	for _, gamePass in categorizedAssets.GamePass do
-		if Marketplace.userOwnsGamePassAsync(player.UserId, gamePass.Id) then
+		if MonetizationService.userOwnsGamePassAsync(player.UserId, gamePass.Id) then
 			task.defer(gamePass.Handler, player)
 		end
 	end
@@ -191,4 +191,4 @@ MarketplaceService.PromptGamePassPurchaseFinished:Connect(onGamePassPurchaseFini
 MarketplaceService.ProcessReceipt = onDeveloperProductPurchaseFinished
 
 
-return table.freeze(Marketplace)
+return MonetizationService
