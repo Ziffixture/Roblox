@@ -4,7 +4,7 @@ Date       24/04/01 (YY/MM/DD)
 Version    1.1.5b
 
 A service—built under the Feature-Per-Folder architecture—largely designed to identify the circumstances 
-of a selected entity's death. KillsService is ultimately concerned with all things regarding the harming of entities.
+of a selected Humanoid's death.
 ]]
 
 
@@ -129,18 +129,6 @@ end
 
 
 --[[
-@param     Player     playerA    | A player.
-@param     Player     playerB    | A player.
-@return    boolean
-
-Checks if two teammates are fighting against each other, and whether or not it's permitted.
-]]
-function KillsService.isFriendlyFire(playerA: Player, playerB: Player): boolean
-	return not FriendlyFire.Value and playerA.Team == playerB.Team
-end
-
-
---[[
 @param     Player    attacked      | The player to deal damage to.
 @param     number    amount        | The amount of damage to deal.
 @param     Player    attacker      | The player dealing the damage.
@@ -180,14 +168,7 @@ end
 
 Starts a track record of the player's damage. Reports a summary of this damage upon death.
 ]]
-function KillsService.trackDamage(player)
-	local humanoid = PlayerEssentials.getHumanoid(player)
-	if not humanoid then
-		warn(`Unable to track {player.Name}'s damage (no Humanoid available).`)
-
-		return
-	end
-
+function KillsService.trackDamage(humanoid: Humanoid)
 	local damageHistory = initializeDamageHistory(humanoid)
 
 	local previousHealth = humanoid.Health
