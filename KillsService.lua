@@ -1,10 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/04/01 (YY/MM/DD)
+Date       24/04/03 (YY/MM/DD)
 Version    1.1.5b
-
-A service—built under the Feature-Per-Folder architecture—largely designed to identify the circumstances 
-of a selected Humanoid's death.
 ]]
 
 
@@ -31,10 +28,11 @@ export type DeathSummary = {
 }
 
 export type DamageParameters = {
-	Target : Player,
-	Dealer : Player?,
-	Amount : number,
-	Cause  : string,
+	Target       : Player,
+	Dealer       : Player?,
+	Amount       : number,
+	FriendlyFire : boolean?,
+	Cause        : string,
 }
 
 
@@ -42,7 +40,7 @@ export type DamageParameters = {
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 
-local Vendor           = ReplicatedStorage.Vendor
+local Vendor          = ReplicatedStorage.Vendor
 local Signal           = require(Vendor.Signal)
 local PlayerEssentials = require(Vendor.PlayerEssentials)
 
@@ -63,7 +61,7 @@ local damageHistories: DamageHistories = {}
 @param     DamageToken      damageToken      | The damage token to append.
 @return    void
 
-Helper function for recording a damage token as the lastest damage token in the given damage history.
+Records the damage token as the lastest damage token in the given damage history.
 ]]
 local function appendDamageToken(damageHistory: DamageHistory, damageToken: DamageToken)
 	table.insert(damageHistory.Tokens, damageToken)
@@ -74,8 +72,7 @@ end
 @param     Humanoid         humanoid    | The Humanoid to associate a damage history with.
 @return    DamageHistory
 
-Helper function for initializing a damage history under the given Humanoid. Returns a reference to that damage 
-history.
+Initializes a damage history under the given Humanoid. Returns a reference to that damage history.
 ]]
 local function initializeDamageHistory(humanoid: Humanoid): DamageHistory
 	local damageHistory = {} :: DamageHistory
@@ -92,18 +89,18 @@ end
 @param     DamageHistory    damageHistory    | The history of damage dealt to a particular Humanoid.
 @return    DeathSummary
 
-Helper function for building a death summary based on the given damage history.
+Constructs a death summary based on the given damage history.
 ]]
 local function buildDeathSummary(damageHistory: DamageHistory): DeathSummary
 	local latestToken = damageHistory.Tokens[#damageHistory.Tokens]
 	local killer      = latestToken.Dealer
-	
+
 	local deathSummary = {} :: DeathSummary
 	deathSummary.Assists             = {}
 	deathSummary.AssistCountAsKiller = nil
 	deathSummary.Killer              = killer
 	deathSummary.Cause               = latestToken.Cause
-	
+
 	local damageTotals = {} :: {[Player]: number}
 
 	for _, token in damageHistory.Tokens do
@@ -129,6 +126,18 @@ end
 
 
 --[[
+@param     Player     playerA    | A player.
+@param     Player     playerB    | A player.
+@return    boolean
+
+Checks if two teammates are fighting against each other, and whether or not it's permitted.
+]]
+local function isFriendlyFire(playerA: Player, playerB: Player): boolean
+	return not FriendlyFire.Value and playerA.Team == playerB.Team
+end
+
+
+--[[
 @param     Player    attacked      | The player to deal damage to.
 @param     number    amount        | The amount of damage to deal.
 @param     Player    attacker      | The player dealing the damage.
@@ -139,6 +148,13 @@ If possible, deals a specific amount of damage to the given player. Records this
 damage history.
 ]]
 function KillsService.dealDamage(damageParameters: DamageParameters)
+	if not damageParameters.FriendlyFire 
+		and damageParameters.Dealer
+		and isFriendlyFire(damageParameters.Dealer, damageParameters.Target)
+	then
+		return
+	end
+	
 	local attackedHumanoid = PlayerEssentials.getHumanoid(damageParameters.Target)
 	if not attackedHumanoid then
 		warn(`Unable to damage {damageParameters.Target.Name} (no Humanoid available).`)
@@ -168,7 +184,14 @@ end
 
 Starts a track record of the player's damage. Reports a summary of this damage upon death.
 ]]
-function KillsService.trackDamage(humanoid: Humanoid)
+function KillsService.trackDamage(player)
+	local humanoid = PlayerEssentials.getHumanoid(player)
+	if not humanoid then
+		warn(`Unable to track {player.Name}'s damage. (Humanoid unvailable)`)
+
+		return
+	end
+
 	local damageHistory = initializeDamageHistory(humanoid)
 
 	local previousHealth = humanoid.Health
@@ -176,7 +199,7 @@ function KillsService.trackDamage(humanoid: Humanoid)
 
 	humanoid.HealthChanged:Connect(function(newHealth)
 		local latestToken = damageHistory.Tokens[#damageHistory.Tokens]
-		
+
 		local healthDifference = math.abs(newHealth - previousHealth)
 
 		if newHealth > previousHealth then
@@ -194,7 +217,7 @@ function KillsService.trackDamage(humanoid: Humanoid)
 				return
 			end
 			-- If no new record of damage exists, the damage was caused by an external force.
-			
+
 			appendDamageToken(damageHistory, {
 				Dealer = nil,
 				Damage = healthDifference,
@@ -210,6 +233,10 @@ function KillsService.trackDamage(humanoid: Humanoid)
 		damageHistories[humanoid] = nil
 
 		KillsService.PlayerKilled:Fire(player, buildDeathSummary(damageHistory))
+	end)
+	
+	humanoid.Destroying:Once(function()
+		damageHistories[humanoid] = nil
 	end)
 end
 
