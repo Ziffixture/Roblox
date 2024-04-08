@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/04/03 (YY/MM/DD)
-Version    1.1.5b
+Date       24/04/07 (YY/MM/DD)
+Version    1.1.6b
 ]]
 
 
@@ -25,6 +25,7 @@ export type DeathSummary = {
 	AssistCountAsKiller : Player?,
 	Killer              : Player?,
 	Cause               : string,
+	TimeOfDeath         : number,
 }
 
 export type DamageParameters = {
@@ -100,8 +101,9 @@ local function buildDeathSummary(damageHistory: DamageHistory): DeathSummary
 	deathSummary.AssistCountAsKiller = nil
 	deathSummary.Killer              = killer
 	deathSummary.Cause               = latestToken.Cause
+	deathSummary.TimeOfDeath         = os.time()
 
-	local damageTotals = {} :: {[Player]: number}
+	local damageTotals = {}
 
 	for _, token in damageHistory.Tokens do
 		if not token.Dealer or token.Dealer == killer then
