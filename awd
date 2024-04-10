@@ -1,0 +1,235 @@
+--[[
+Author(s)    Ziffixture
+Date         24/03/11
+Version      0.0.7a
+]]
+
+
+
+--!strict
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage     = game:GetService("ServerStorage")
+local SoundService      = game:GetService("SoundService")
+local Players           = game:GetService("Players")
+
+
+local PlayerEssentials = require(ReplicatedStorage.Utility.PlayerEssentials)
+local DigitalClock     = require(ReplicatedStorage.Utility.DigitalClock)
+local RoleChance       = require(ReplicatedStorage.Utility.RoleChance)
+local Assert           = require(ReplicatedStorage.Utility.Assert)
+
+
+local STATUS        = ReplicatedStorage.Status
+local ROUND_TIMER   = STATUS.RoundTimer
+local ROUND_TYPE    = STATUS.RoundType
+local ROUND_MESSAGE = STATUS.RoundMessage
+
+local EVENTS      = ReplicatedStorage.Events
+local ROUND_EVENT = EVENTS.Round 
+local ROLE_EVENT  = EVENTS.Role
+
+local TOOLS         = ReplicatedStorage.Gear.Tools
+local KNIFE_TOOL    = TOOLS.Knife
+local GUN_TOOL      = TOOLS.Gun
+
+
+local Classic = {
+	Name    = "Classic",
+	Special = false,
+	
+	Players     = {},
+	PlayersDead = {},
+	Murderer    = nil,
+	Sheriff     = nil,
+
+	Duration           = 90, -- 1:30
+	TimeLeft           = 90,
+	WeaponDeliveryTime = 10,
+	
+	Connections = {}
+}
+
+
+
+function Classic:CheckEndCondition(): boolean
+	-- Murderer left the game.
+	if not Classic.Murderer then
+		return true
+	end
+	
+	-- Murderer is presumed dead by absence of Humanoid.
+	local _, murdererHumanoid = PlayerEssentials.get(Classic.Murderer)
+	if not murdererHumanoid then
+		return true
+	end
+	
+	local isMurdererDead = murdererHumanoid.Health == 0
+	local noPlayersLeft  = #Classic.Players < 2
+	local noTimeLeft     = Classic.TimeLeft <= 0
+	
+	return isMurdererDead or noPlayersLeft or noTimeLeft
+end
+
+function Classic:Start(players: {Player})
+	Assert.assertLevel(players, "Argument #1 missing or nil.", 1)
+	Assert.assertLevel(#players > 1, "The Classic gamemode requires one or more players to execute safely.", 1)
+	
+	Classic.Players  = table.clone(players)
+	Classic.TimeLeft = Classic.Duration
+	
+	-------------------- ROLE SELECTION --------------------
+	local murdererRaffle = {}
+	local sheriffRaffle  = {}
+	
+	for _, player in Classic.Players do
+		local chanceMultipliers = player.ChanceMultipliers
+		
+		for _ = 1, chanceMultipliers.Murderer.Value do
+			table.insert(murdererRaffle, player)
+		end
+		
+		for _ = 1, chanceMultipliers.Sheriff.Value do
+			table.insert(sheriffRaffle, player)
+		end
+	end
+	
+	local murderer = murdererRaffle[math.random(#murdererRaffle)]
+	local sheriff  = nil
+	
+	repeat
+		sheriff = sheriffRaffle[math.random(#sheriffRaffle)]
+	until sheriff ~= murderer
+	
+	murderer.ChanceMultipliers.Murderer.Value = 1
+	sheriff.ChanceMultipliers.Sheriff.Value = 1
+	
+	for _, player in Classic.Players do
+		-- Ziffix 24/03/11: If you're a murderer or a sheriff, your chances don't increase for the counterpart role.
+		if player == murderer or player == sheriff then
+			continue
+		end
+		
+		local chanceMultipliers = player.ChanceMultipliers
+	
+		chanceMultipliers.Murderer.Value += 1
+		chanceMultipliers.Sheriff.Value += 1
+	end
+	
+	Classic.Murderer = murderer
+	Classic.Sheriff  = sheriff
+	--------------------------------------------------------
+	
+	-------------------- MISCELLANEOUS ---------------------
+	for index = #Classic.Players, 1, -1 do
+		local player = Classic.Players[index]
+
+		local character = player.Character
+		local humanoid  = character:FindFirstChildOfClass("Humanoid")
+
+		if not humanoid or humanoid.Health == 0 then
+			table.remove(Classic.Players, index)
+			table.insert(Classic.PlayersDead, player)
+
+			if player == sheriff then
+				-- Handle early sheriff death.
+			end
+
+			continue
+		end
+
+		Classic.Connections.PlayerDeath = {}
+		Classic.Connections.PlayerDeath[player] = humanoid.Died:Once(function()
+			table.remove(Classic.Players, table.find(Classic.Players, player))
+			table.insert(Classic.PlayersDead, player)
+		end)
+	end
+
+	Classic.Connections.OnPlayerRemoving = Players.PlayerRemoving:Connect(function(player)
+		table.remove(Classic.Players, table.find(Classic.Players, player))
+		table.remove(Classic.PlayersDead, table.find(Classic.PlayersDead, player))
+	end)
+	--------------------------------------------------------
+	
+	SoundService.Round:Play()
+	SoundService.Round.Ended:Wait()
+	
+	SoundService.Role:Play()
+	SoundService.Role.Ended:Wait()
+	
+	ROUND_TYPE.Value    = Classic.Name
+	ROUND_TIMER.Value   = DigitalClock.format(math.max(0, math.ceil(Classic.TimeLeft)))
+	ROUND_MESSAGE.Value = ""
+	
+	---------------- ROLE AND TOOL DELIVERY ----------------
+	for _, player in Classic.Players :: {Player} do
+		local role = "Bystander"
+		
+		if player == murderer then
+			role = "Murderer"
+		elseif player == sheriff then
+			role = "Sheriff"
+		end
+		
+		ROLE_EVENT:FireClient(player, "Role", role, Classic.WeaponDeliveryTime)
+		ROLE_EVENT:FireClient(player, "Chance", {
+			Murderer = RoleChance.calculate(player, "Murderer"),
+			Sheriff  = RoleChance.calculate(player, "Sheriff"),
+		})
+	end
+
+	task.wait(Classic.WeaponDeliveryTime)
+	
+	if table.find(Classic.Players, murderer) then
+		KNIFE_TOOL:Clone().Parent = murderer.Backpack
+	end
+	
+	if table.find(Classic.Players, sheriff) then
+		GUN_TOOL:Clone().Parent = sheriff.Backpack
+	end
+	--------------------------------------------------------
+end
+
+function Classic:Update(deltaTime: number)
+	Assert.assertLevel(deltaTime, "Argument #1 missing or nil.")
+	
+	if #Classic.Players <= 2 then
+		ROUND_MESSAGE.Value = "Two players remaining; locations have been revealed."
+	end
+	
+	Classic.TimeLeft -= deltaTime
+	
+	ROUND_TYPE.Value  = Classic.Name
+	ROUND_TIMER.Value = DigitalClock.format(math.max(0, math.ceil(Classic.TimeLeft)))
+end
+
+function Classic:Cleanup()
+	-- Connections.disconnect(Classic.Connections)
+
+	Classic.Connections = {}
+	
+	for _, player in Classic.Players do
+		local _, humanoid = PlayerEssentials.get(player)
+		if not humanoid then
+			continue
+		end
+		
+		humanoid:UnequipTools()
+		
+		-- Allow previously equipped tool to repsond to Tool.Unequipped
+		task.defer(function()
+			player.Backpack:ClearAllChildren()
+		end)
+	end
+	
+	Classic.Players     = {}
+	Classic.PlayersDead = {}
+	
+	Classic.Murderer = nil
+	Classic.Sheriff  = nil
+
+	Classic.TimeLeft = Classic.Duration
+end
+
+
+
+return Classic
