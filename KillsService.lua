@@ -105,11 +105,6 @@ local function buildDeathSummary(damageHistory: DamageHistory): DeathSummary
 	deathSummary.Time                = os.time()
 	deathSummary.Cause               = latestToken.Cause
 	deathSummary.Location            = nil
-	
-	local rootPart = damageHistory.Humanoid.RootPart
-	if rootPart then
-		deathSummary.Location = rootPart.Position
-	end
 
 	local damageTotals = {} :: {[Player]: number}
 
@@ -129,6 +124,11 @@ local function buildDeathSummary(damageHistory: DamageHistory): DeathSummary
 		else
 			table.insert(deathSummary.Assists, dealer)
 		end
+	end
+
+	local rootPart = damageHistory.Humanoid.RootPart
+	if rootPart then
+		deathSummary.Location = rootPart.Position
 	end
 
 	return deathSummary
