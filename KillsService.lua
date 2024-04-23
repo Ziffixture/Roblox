@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/04/13 (YY/MM/DD)
-Version    1.1.6b
+Date       24/04/19 (YY/MM/DD)
+Version    1.1.8b
 ]]
 
 
@@ -24,16 +24,18 @@ export type DeathSummary = {
 	Assists             : {Player},
 	AssistCountAsKiller : Player?,
 	Killer              : Player?,
+	Time                : number,
 	Cause               : string,
-	TimeOfDeath         : number,
+	Location            : Vector3?
 }
 
 export type DamageParameters = {
-	Target       : Player,
-	Dealer       : Player?,
-	Amount       : number,
-	FriendlyFire : boolean?,
-	Cause        : string,
+	Target           : Player,
+	Dealer           : Player?,
+	Amount           : number,
+	Cause            : string,
+	FriendlyFire     : boolean?,
+	BypassForceField : boolean?,
 }
 
 
@@ -100,10 +102,16 @@ local function buildDeathSummary(damageHistory: DamageHistory): DeathSummary
 	deathSummary.Assists             = {}
 	deathSummary.AssistCountAsKiller = nil
 	deathSummary.Killer              = killer
+	deathSummary.Time                = os.time()
 	deathSummary.Cause               = latestToken.Cause
-	deathSummary.TimeOfDeath         = os.time()
+	deathSummary.Location            = nil
+	
+	local rootPart = damageHistory.Humanoid.RootPart
+	if rootPart then
+		deathSummary.Location = rootPart.Position
+	end
 
-	local damageTotals = {}
+	local damageTotals = {} :: {[Player]: number}
 
 	for _, token in damageHistory.Tokens do
 		if not token.Dealer or token.Dealer == killer then
@@ -128,14 +136,39 @@ end
 
 
 --[[
-@param     Player     playerA    | A player.
-@param     Player     playerB    | A player.
+@param     DamageParameters    damageParameters    | The parameters concerning this damage instance.
 @return    boolean
 
 Checks if two teammates are fighting against each other, and whether or not it's permitted.
 ]]
-local function isFriendlyFire(playerA: Player, playerB: Player): boolean
-	return not FriendlyFire.Value and playerA.Team == playerB.Team
+local function isFriendlyFire(damageParameters: DamageParameters): boolean	
+	local allowed = FriendlyFire.Value and damageParameters.FriendlyFire
+	if allowed then
+		return false
+	end
+	
+	local playerA = damageParameters.Dealer :: Player
+	local playerB = damageParameters.Target :: Player
+
+	return playerA.Team == playerB.Team
+end
+
+
+--[[
+@param     DamageParameters    damageParameters    | The parameters concerning this damage instance.
+@return    boolean
+
+Checks if the target's force field is active, and whether or not that matters.
+]]
+local function isForceFieldActive(damageParameters: DamageParameters): boolean
+	local character = damageParameters.Target.Character
+	local bypass    = damageParameters.BypassForceField
+	
+	if not character or bypass then
+		return false
+	end
+	
+	return character:FindFirstChildOfClass("ForceField") ~= nil 
 end
 
 
@@ -150,10 +183,7 @@ If possible, deals a specific amount of damage to the given player. Records this
 damage history.
 ]]
 function KillsService.dealDamage(damageParameters: DamageParameters)
-	if not damageParameters.FriendlyFire 
-		and damageParameters.Dealer
-		and isFriendlyFire(damageParameters.Dealer, damageParameters.Target)
-	then
+	if isFriendlyFire(damageParameters) or isForceFieldActive(damageParameters) then
 		return
 	end
 	
@@ -163,7 +193,7 @@ function KillsService.dealDamage(damageParameters: DamageParameters)
 
 		return
 	end
-
+	
 	if attackedHumanoid.Health == 0 then
 		return
 	end
