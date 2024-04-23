@@ -146,9 +146,13 @@ local function isFriendlyFire(damageParameters: DamageParameters): boolean
 	if allowed then
 		return false
 	end
+
+	if not damageParameters.Dealer then
+		return false
+	end
 	
-	local playerA = damageParameters.Dealer :: Player
-	local playerB = damageParameters.Target :: Player
+	local playerA = damageParameters.Dealer
+	local playerB = damageParameters.Target
 
 	return playerA.Team == playerB.Team
 end
