@@ -142,12 +142,12 @@ end
 Checks if two teammates are fighting against each other, and whether or not it's permitted.
 ]]
 local function isFriendlyFire(damageParameters: DamageParameters): boolean	
-	local allowed = FriendlyFire.Value and damageParameters.FriendlyFire
-	if allowed then
+	if not damageParameters.Dealer then
 		return false
 	end
-
-	if not damageParameters.Dealer then
+	
+	local allowed = FriendlyFire.Value and damageParameters.FriendlyFire
+	if allowed then
 		return false
 	end
 	
