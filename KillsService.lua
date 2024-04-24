@@ -177,10 +177,7 @@ end
 
 
 --[[
-@param     Player    attacked      | The player to deal damage to.
-@param     number    amount        | The amount of damage to deal.
-@param     Player    attacker      | The player dealing the damage.
-@param     string    weaponName    | The name of the weapon dealing damage.
+@param     DamageParameters    damageParameters    | The parameters concerning this damage instance.
 @return    void
 
 If possible, deals a specific amount of damage to the given player. Records this damage in the given player's
