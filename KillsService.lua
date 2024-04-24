@@ -210,7 +210,7 @@ function KillsService.dealDamage(damageParameters: DamageParameters)
 			Cause  = damageParameters.Cause,
 		})
 	else
-		warn(`Damage is not being tracked for {damageParameters.Target.Name}—consider calling KillsService.trackDamage for this target.`)
+		warn(`Damage is not being tracked for {damageParameters.Target.Name}; consider calling KillsService.trackDamage on this target.`)
 	end
 
 	attackedHumanoid.Health -= damageParameters.Amount
