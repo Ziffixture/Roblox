@@ -193,7 +193,7 @@ function KillsService.dealDamage(damageParameters: DamageParameters)
 	
 	local attackedHumanoid = PlayerEssentials.getHumanoid(damageParameters.Target)
 	if not attackedHumanoid then
-		warn(`Unable to damage {damageParameters.Target.Name} (no Humanoid available).`)
+		warn(`Unable to damage {damageParameters.Target.Name} (Humanoid unavailable)`)
 
 		return
 	end
@@ -203,12 +203,15 @@ function KillsService.dealDamage(damageParameters: DamageParameters)
 	end
 
 	local damageHistory = damageHistories[attackedHumanoid]
-
-	appendDamageToken(damageHistory, {
-		Dealer = damageParameters.Dealer,
-		Damage = damageParameters.Amount,
-		Cause  = damageParameters.Cause,
-	})
+	if damageHistory then
+		appendDamageToken(damageHistory, {
+			Dealer = damageParameters.Dealer,
+			Damage = damageParameters.Amount,
+			Cause  = damageParameters.Cause,
+		})
+	else
+		warn(`Damage is not being tracked for {damageParameters.Target.Name}.`)
+	end
 
 	attackedHumanoid.Health -= damageParameters.Amount
 end
