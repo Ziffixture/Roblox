@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/04/23 (YY/MM/DD)
-Version    1.1.9b
+Date       24/04/24 (YY/MM/DD)
+Version    1.2.0b
 ]]
 
 
@@ -210,7 +210,7 @@ function KillsService.dealDamage(damageParameters: DamageParameters)
 			Cause  = damageParameters.Cause,
 		})
 	else
-		warn(`Damage is not being tracked for {damageParameters.Target.Name}.`)
+		warn(`Damage is not being tracked for {damageParameters.Target.Name}—consider calling KillsService.trackDamage for this target.`)
 	end
 
 	attackedHumanoid.Health -= damageParameters.Amount
