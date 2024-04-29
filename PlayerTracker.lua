@@ -1,7 +1,7 @@
 --[[
-Authors    Ziffix (74087102)
-Date       24/01/05
-Version    1.3.6b
+Authors    Ziffixture (74087102)
+Date       24/04/29 (YY/MM/DD)
+Version    1.3.7b
 ]]
 
 
@@ -127,9 +127,9 @@ end
 
 
 --[[
-@param     BasePart         trackingSpace         | The BasePart that will be scanned for players
-@param     number?          capacity              | The maximum number of players the tracker will process
-@param     OverlapParams    trackingParameters    | The OverlapParams for the tracking query
+@param     BasePart         trackingSpace         | The BasePart that will be scanned for players.
+@param     number?          capacity              | The maximum number of players the tracker will process.
+@param     OverlapParams    trackingParameters    | The OverlapParams for the tracking query.
 @return    PlayerTracker
 
 Constructs a PlayerTracker object.
@@ -145,6 +145,8 @@ function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
 	self._IsTracking         = false
 	self._TrackingParameters = trackingParameters
 	self._TrackingConnection = nil
+    
+	self._ScanInterval = nil
 
 	self._PlayerMap  = {}
 	self._Population = 0
@@ -183,7 +185,17 @@ function PlayerTracker:StartTracking()
 	local trackingSpace      = self._TrackingSpace
 	local trackingParameters = self._TrackingParameters
 
-	self._TrackingConnection = RunService.PostSimulation:Connect(function()
+	local secondsElapsed = 0
+	
+	self._TrackingConnection = RunService.PostSimulation:Connect(function(deltaTime: number)
+		secondsElapsed += deltaTime
+
+		if secondsElapsed >= self._ScanInterval then
+            secondsElapsed = 0        
+        else
+			return
+		end
+			
 		_updatePlayerTracker(
 			self :: PlayerTrackerLocal,
 			workspace:GetPartBoundsInBox(trackingSpace.CFrame, trackingSpace.Size, trackingParameters)
@@ -240,15 +252,24 @@ end
 
 
 --[[
-@param     number    capacity    | The new capacity of the tracking space 
+@param     number?    capacity    | The new capacity of the tracking space.
 @return    void
 
 Updates the capacity of the tracking space.
 ]]
-function PlayerTracker:SetCapacity(newCapacity: number)
-	assertLevel(newCapacity ~= nil, "Argument #1 missing or nil.", 1)
+function PlayerTracker:SetCapacity(capacity: number?)
+	self._Capacity = capacity
+end
 
-	self._Capacity = newCapacity
+
+--[[
+@param     number?    interval    | The new scan internal of the tracking space.
+@return    void
+
+Updates the scan interval of the tracking space.
+]]
+function PlayerTracker:SetScanInterval(interval: number?)
+	self._ScanInterval = interval
 end
 
 
@@ -287,7 +308,8 @@ export type PlayerTracker = {
 	GetPopulation : (PlayerTracker) -> number,
 	GetCapacity   : (PlayerTracker) -> number,
 
-	SetCapacity : (PlayerTracker, number) -> (),
+	SetCapacity     : (PlayerTracker, number?) -> (),
+    SetScanInterval : (PlayerTracker, number?) -> (), 
 
 	IsTracking : (PlayerTracker) -> boolean,
 
@@ -308,7 +330,9 @@ type PlayerTrackerLocal = PlayerTracker & {
 	_TrackingParameters : OverlapParams?,
 	_TrackingConnection : RBXScriptConnection?,
 
-	_PlayerMap  : PlayerMap,
+	_ScanInterval : number?
+	
+    _PlayerMap  : PlayerMap,
 	_Population : number,
 	_Capacity   : number?,
 
