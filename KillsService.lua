@@ -266,8 +266,6 @@ function KillsService.trackDamage(player)
 	end)
 
 	humanoid.Died:Once(function()
-		damageHistories[humanoid] = nil
-
 		KillsService.PlayerKilled:Fire(player, buildDeathSummary(damageHistory))
 	end)
 	
