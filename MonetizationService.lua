@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/04/02 (YY/MM/DD)
-Version    1.3.0b
+Date       24/06/08 (YY/MM/DD)
+Version    1.3.1b
 ]]
 
 
@@ -39,8 +39,12 @@ type DeveloperProductReceipt = {
 
 
 local MarketplaceService = game:GetService("MarketplaceService")
+local ReplicatedStorage  = game:GetService("ReplicatedStorage")
 local Players            = game:GetService("Players")
 
+
+local Vendor      = ReplicatedStorage.Vendor
+local ResumeAfter = require(Vendor.ResumeAfter)
 
 local MonetizationService = {}
 
@@ -58,24 +62,58 @@ categorizedAssets.DeveloperProduct = {}
 
 
 --[[
+@param     number           assetId     | The Id of the asset whose price to query.
+@param     Enum.InfoType    infoType    | The InfoType of the asset being queried.
+@return    number?
+
+Attempts to retrieve the price of the given asset in Robux.
+]]
+local function getAssetPriceInRobuxAsync(assetId: number, infoType: Enum.InfoType): number?
+	local success, response = pcall(function()
+		return MarketplaceService:GetProductInfo(assetId, infoType)
+	end)
+	
+	if not success then
+		warn(`Price retrieval failure for {infoType.Name} {assetId}; {response}`)
+
+		return
+	end
+
+	return response.PriceInRobux
+end
+
+
+--[[
 @return    void
 
-Processes the GamePasses and DeveloperProducts child folders into a lookup table.
+Processes the asset folders under MonetizationService into a lookup table.
 ]]
-local function boostrapAssets()
-	local gamePass         = assert(script:FindFirstChild("GamePass"), "Could not find GamePass directory.")
-	local developerProduct = assert(script:FindFirstChild("DeveloperProduct"), "Could not find DeveloperProduct directory.")
-
-	local function loadModules(container: AssetIdMap, modules: {ModuleScript})
+local function boostrapAssetsAsync()
+	local developerProduct = assert(Assets:FindFirstChild("DeveloperProduct"), "Could not find DeveloperProduct directory.")
+	local gamePass         = assert(Assets:FindFirstChild("GamePass"), "Could not find GamePass directory.")
+	
+	local jobs = {}
+	
+	local function loadModules(container: AssetIdMap, infoType: Enum.InfoType, modules: {ModuleScript})
 		for _, module in modules do
 			local asset = require(module) :: AssetData
+			if not asset.Id then
+				error(`{module:GetFullName()} is missing Id field.`)
+			end
+			
+			table.insert(jobs, function()
+				asset.Price = getAssetPriceInRobuxAsync(asset.Id, infoType)
 
-			container[asset.Id] = asset
+				container[asset.Id] = asset
+			end)
 		end
 	end
 
-	loadModules(categorizedAssets.GamePass, gamePass:GetChildren())
-	loadModules(categorizedAssets.DeveloperProduct, developerProduct:GetChildren())
+	loadModules(MonetizationShared.CategorizedAssets.GamePass, Enum.InfoType.GamePass, gamePass:GetChildren())
+	loadModules(MonetizationShared.CategorizedAssets.DeveloperProduct, Enum.InfoType.Product, developerProduct:GetChildren())
+	
+	ResumeAfter.all(table.unpack(jobs))
+	coroutine.yield()
 end
 
 
