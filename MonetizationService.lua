@@ -43,6 +43,9 @@ local ReplicatedStorage  = game:GetService("ReplicatedStorage")
 local Players            = game:GetService("Players")
 
 
+local Feature = script.Parent
+local Assets  = Feature.Assets
+
 local MonetizationService = {}
 
 
