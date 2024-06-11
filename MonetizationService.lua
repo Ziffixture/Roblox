@@ -43,9 +43,6 @@ local ReplicatedStorage  = game:GetService("ReplicatedStorage")
 local Players            = game:GetService("Players")
 
 
-local Vendor      = ReplicatedStorage.Vendor
-local ResumeAfter = require(Vendor.ResumeAfter)
-
 local MonetizationService = {}
 
 
@@ -92,7 +89,20 @@ local function boostrapAssetsAsync()
 	local developerProduct = assert(Assets:FindFirstChild("DeveloperProduct"), "Could not find DeveloperProduct directory.")
 	local gamePass         = assert(Assets:FindFirstChild("GamePass"), "Could not find GamePass directory.")
 	
-	local jobs = {}
+	local jobs     = {}
+	local jobCount = 0
+	
+	local function addJob(callback: () -> ())
+		local job = coroutine.create(function()
+			callback()
+			
+			jobCount -= 1
+		end)
+		
+		jobCount += 1
+		
+		table.insert(jobs, job)
+	end
 	
 	local function loadModules(container: AssetIdMap, infoType: Enum.InfoType, modules: {ModuleScript})
 		for _, module in modules do
@@ -101,7 +111,7 @@ local function boostrapAssetsAsync()
 				error(`{module:GetFullName()} is missing Id field.`)
 			end
 			
-			table.insert(jobs, function()
+			addJob(function()
 				asset.Price = getAssetPriceInRobuxAsync(asset.Id, infoType)
 
 				container[asset.Id] = asset
@@ -112,8 +122,13 @@ local function boostrapAssetsAsync()
 	loadModules(MonetizationShared.CategorizedAssets.GamePass, Enum.InfoType.GamePass, gamePass:GetChildren())
 	loadModules(MonetizationShared.CategorizedAssets.DeveloperProduct, Enum.InfoType.Product, developerProduct:GetChildren())
 	
-	ResumeAfter.all(table.unpack(jobs))
-	coroutine.yield()
+	for _, job in jobs do
+		coroutine.resume(job)
+	end
+	
+	repeat
+		task.wait()
+	until jobCount == 0
 end
 
 
