@@ -1,6 +1,6 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/06/08 (YY/MM/DD)
+Date       24/08/01 (YY/MM/DD)
 Version    1.3.1b
 ]]
 
@@ -215,7 +215,7 @@ function MonetizationService.userOwnsGamePassAsync(userId: number, gamePassId: n
 		gamePassOwnershipCache[player] = {}
 	end
 	
-	if gamePassOwnershipCache[player][gamePassId] then
+	if not gamePassOwnershipCache[player][gamePassId] then
 		gamePassOwnershipCache[player][gamePassId] = MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId)
 	end
 
