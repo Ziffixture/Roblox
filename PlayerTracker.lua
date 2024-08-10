@@ -1,6 +1,6 @@
 --[[
 Authors    Ziffixture (74087102)
-Date       24/08/9 (YY/MM/DD)
+Date       24/08/89 (YY/MM/DD)
 Version    1.3.8b
 ]]
 
