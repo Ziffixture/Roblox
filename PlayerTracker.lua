@@ -1,7 +1,7 @@
 --[[
 Authors    Ziffixture (74087102)
-Date       24/04/29 (YY/MM/DD)
-Version    1.3.7b
+Date       24/08/9 (YY/MM/DD)
+Version    1.3.8b
 ]]
 
 
@@ -90,14 +90,13 @@ local function _updatePlayerTracker(playerTracker: PlayerTrackerLocal, parts: {B
 	assertLevel(playerTracker ~= nil, "Argument #1 missing or nil.", 1)
 	assertLevel(parts ~= nil, "Argument #2 missing or nil.", 1)
 
-	local currentPlayers    = playerTracker._PlayerMap
-	local currentPopulation = playerTracker._Population
-	local capacity          = playerTracker._Capacity
+	local currentPlayers = playerTracker._PlayerMap
+	local capacity       = playerTracker._Capacity
 
 	local newPlayers = _analyzePartsForPlayers(parts)
 
 	for player in newPlayers do
-		if capacity and currentPopulation >= capacity then
+		if capacity and playerTracker._Population >= capacity then
 			break
 		end
 
