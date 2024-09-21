@@ -1,7 +1,7 @@
 --[[
 Authors    Ziffixture (74087102)
-Date       24/08/89 (YY/MM/DD)
-Version    1.3.8b
+Date       24/08/21 (YY/MM/DD)
+Version    1.3.9b
 ]]
 
 
@@ -12,37 +12,14 @@ local RunService        = game:GetService("RunService")
 local Players           = game:GetService("Players")
 
 
+local Vendor  = -- Path.to.Vendor
+local Signal  = require(Vendor:WaitForChild("Signal"))
+local Connect = require(Vendor:WaitForChild("Connect")
+
+
 local PlayerTracker = {}
 PlayerTracker.__index = PlayerTracker
 
-
-
---[[
-@param     any        condition    | The result of the condition.
-@param     string     message      | The error message to be raised.
-@param     number?    level = 2    | The level at which to raise the error.
-@return    void
-
-Implements assert with error's level argument.
-]]
-local function assertLevel(condition: any, message: string, level: number?)
-    if condition == nil then 
-        error("Argument #1 missing or nil.", 2)
-    end
-
-    if message == nil then 
-        error("Argument #2 missing or nil.", 2)
-    end
-
-    -- Lifts the error out of this function.
-    level = (level or 1) + 1
-
-    if condition then
-        return condition
-    end
-
-    error(message, level)
-end
 
 
 --[[
@@ -52,8 +29,6 @@ end
 Processes array of BaseParts for affiliated Player instances. Filters out dead players.
 ]]
 local function _analyzePartsForPlayers(parts: {BasePart}): PlayerMap
-	assertLevel(parts ~= nil, "Argument #1 missing or nil.", 1)
-
 	local playersFound: PlayerMap = {}
 
 	for _, part in parts do
@@ -87,9 +62,6 @@ end
 Updates the PlayerTracker's internal map of players and population.
 ]]
 local function _updatePlayerTracker(playerTracker: PlayerTrackerLocal, parts: {BasePart})
-	assertLevel(playerTracker ~= nil, "Argument #1 missing or nil.", 1)
-	assertLevel(parts ~= nil, "Argument #2 missing or nil.", 1)
-
 	local currentPlayers = playerTracker._PlayerMap
 	local capacity       = playerTracker._Capacity
 
@@ -107,8 +79,9 @@ local function _updatePlayerTracker(playerTracker: PlayerTrackerLocal, parts: {B
 		currentPlayers[player] = true
 
 		playerTracker._Population += 1
-		playerTracker._PopulationChanged:Fire(playerTracker._Population)
-		playerTracker._PlayerEntered:Fire(player)
+
+		playerTracker.PopulationChanged:Fire(playerTracker._Population)
+		playerTracker.PlayerEntered:Fire(player)
 	end
 
 	for player in currentPlayers do
@@ -119,8 +92,9 @@ local function _updatePlayerTracker(playerTracker: PlayerTrackerLocal, parts: {B
 		currentPlayers[player] = nil
 
 		playerTracker._Population -= 1
-		playerTracker._PopulationChanged:Fire(playerTracker._Population)
-		playerTracker._PlayerLeft:Fire(player)
+
+		playerTracker.PopulationChanged:Fire(playerTracker._Population)
+		playerTracker.PlayerLeft:Fire(player)
 	end
 end
 
@@ -134,16 +108,11 @@ end
 Constructs a PlayerTracker object.
 ]]
 function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingParameters: OverlapParams?): PlayerTracker
-	assertLevel(trackingSpace ~= nil, "Argument #1 missing or nil.", 1)
-
 	local self: PlayerTrackerLocal = {} :: PlayerTrackerLocal
 
-	self._TrackingSpace           = trackingSpace
-	self._TrackingSpaceConnection = nil
-	
+	self._TrackingSpace      = trackingSpace
 	self._IsTracking         = false
 	self._TrackingParameters = trackingParameters
-	self._TrackingConnection = nil
     
 	self._ScanInterval = nil
 
@@ -151,15 +120,14 @@ function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
 	self._Population = 0
 	self._Capacity   = capacity
 
-	self._PlayerLeft        = Instance.new("BindableEvent")
-	self._PlayerEntered     = Instance.new("BindableEvent")
-	self._PopulationChanged = Instance.new("BindableEvent")
+	self.PlayerLeft        = Signal.new()
+	self.PlayerEntered     = Signal.new()
+	self.PopulationChanged = Signal.new()
 
-	self.PlayerLeft        = self._PlayerLeft.Event
-	self.PlayerEntered     = self._PlayerEntered.Event
-	self.PopulationChanged = self._PopulationChanged.Event
-
-	self._TrackingSpaceConnection = trackingSpace.Destroying:Connect(function()
+    self._Tray = {}
+    self._Tray.TrackingSpaceConnection = nil,
+    self._Tray.TrackingConnection      = nil,
+	self._Tray.TrackingSpaceConnection = trackingSpace.Destroying:Connect(function()
 		self:Destroy()
 	end)
 
@@ -174,8 +142,6 @@ Begins updating the PlayerTracker every RunService.PostSimulation.
 ]]
 function PlayerTracker:StartTracking()
 	if self._IsTracking then
-		warn("PlayerTracker is already tracking.")
-
 		return
 	end
 
@@ -186,17 +152,19 @@ function PlayerTracker:StartTracking()
 
 	local secondsElapsed = 0
 	
-	self._TrackingConnection = RunService.PostSimulation:Connect(function(deltaTime: number)
-		secondsElapsed += deltaTime
+	self._Tray.TrackingConnection = RunService.PostSimulation:Connect(function(deltaTime: number)
+        if self.ScanInterval then
+            secondsElapsed += deltaTime
 
-		if secondsElapsed >= self._ScanInterval then
-            secondsElapsed = 0        
-        else
-			return
-		end
+            if secondsElapsed >= self._ScanInterval then
+                secondsElapsed = 0        
+            else
+                return
+            end
+        end
 			
 		_updatePlayerTracker(
-			self :: PlayerTrackerLocal,
+			self :: any,
 			workspace:GetPartBoundsInBox(trackingSpace.CFrame, trackingSpace.Size, trackingParameters)
 		)
 	end)
@@ -210,7 +178,7 @@ Ceases updating the PlayerTracker.
 ]]
 function PlayerTracker:StopTracking()
 	self._IsTracking = false
-	self._TrackingConnection:Disconnect()
+	self._Tray.TrackingConnection:Disconnect()
 end
 
 
@@ -290,44 +258,38 @@ Cleans up object data.
 function PlayerTracker:Destroy()
 	self:StopTracking()
 
-	self._TrackingSpaceConnection:Disconnect()
-	
-	self._PlayerLeft:Destroy()
-	self._PlayerEntered:Destroy()
-	self._PopulationChanged:Destroy()
+	Connect.clearKeys(self._Tray)
 end
 
 
 
 export type PlayerTracker = {
-	StartTracking : (PlayerTracker) -> (),
-	StopTracking  : (PlayerTracker) -> (),
+	StartTracking : (self: PlayerTracker) -> (),
+	StopTracking  : (self: layerTracker) -> (),
 
-	GetPlayers    : (PlayerTracker) -> {Player},
-	GetPopulation : (PlayerTracker) -> number,
-	GetCapacity   : (PlayerTracker) -> number,
+	GetPlayers    : (self: PlayerTracker) -> {Player},
+	GetPopulation : (self: PlayerTracker) -> number,
+	GetCapacity   : (self: PlayerTracker) -> number,
 
-	SetCapacity     : (PlayerTracker, number?) -> (),
-    SetScanInterval : (PlayerTracker, number?) -> (), 
+	SetCapacity     : (self: PlayerTracker, capacity: number?) -> (),
+    SetScanInterval : (self: PlayerTracker, scanInterval: number?) -> (), 
 
-	IsTracking : (PlayerTracker) -> boolean,
+	IsTracking : (self: PlayerTracker) -> boolean,
 
-	Destroy : (PlayerTracker) -> (),
+    Destroy : (self: PlayerTracker) -> (),
 
-	PlayerLeft        : RBXScriptSignal,
-	PlayerEntered     : RBXScriptSignal,
-	PopulationChanged : RBXScriptSignal,
+	PlayerLeft        : Signal.Signal<Player>,
+	PlayerEntered     : Signal.Signal<Player>,
+	PopulationChanged : Signal.Singal<number>,
 }
 
 type PlayerMap = {[Player]: true}
 
 type PlayerTrackerLocal = PlayerTracker & {	
-	_TrackingSpace           : BasePart,
-	_TrackingSpaceConnection : RBXScriptConnection?,
+	_TrackingSpace : BasePart,
 	
 	_IsTracking         : boolean,
 	_TrackingParameters : OverlapParams?,
-	_TrackingConnection : RBXScriptConnection?,
 
 	_ScanInterval : number?
 	
@@ -335,9 +297,10 @@ type PlayerTrackerLocal = PlayerTracker & {
 	_Population : number,
 	_Capacity   : number?,
 
-	_PlayerLeft        : BindableEvent,
-	_PlayerEntered     : BindableEvent,
-	_PopulationChanged : BindableEvent,
+    _Tray = {
+        TrackingSpaceConnection : RBXScriptSignal?,
+        TrackingConnection      : RBXScriptSignal?,
+    }
 }
 
 
