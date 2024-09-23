@@ -298,8 +298,8 @@ type PlayerTrackerLocal = PlayerTracker & {
 	_Capacity   : number?,
 
     _Tray = {
-        TrackingSpaceConnection : RBXScriptSignal?,
-        TrackingConnection      : RBXScriptSignal?,
+        TrackingSpaceConnection : RBXScriptConnection?,
+        TrackingConnection      : RBXScriptConnection?,
     }
 }
 
