@@ -71,13 +71,13 @@ local function trySetResetEnabled(enabled: boolean)
 	end)
 end
 
-local function safeInput(keycode: Enum.KeyCode, callback: (InputObject) -> ())
+local function safeInput(key: Enum.KeyCode, callback: (InputObject) -> ())
 	return UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
 		if gameProcessedEvent then
 			return
 		end
 		
-		if input.KeyCode ~= keycode then
+		if input.KeyCode ~= key then
 			return
 		end
 		
