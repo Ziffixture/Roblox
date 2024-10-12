@@ -42,7 +42,7 @@ local tray: Types.Tray = {
 	
 	RawCharacterAddedConnections    = {},
 	RawCharacterRemovingConnections = {},
-    RawAncestryChangedConnections   = {},
+    AncestryChangedConnections      = {},
 	
 	ButtonConnections = {},
 }
