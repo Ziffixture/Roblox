@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.0.6
+Version    1.0.7
 ]]
 
 
@@ -162,9 +162,9 @@ local function stopSpectating()
 	trySetResetEnabled(true)
 	enablePlayerMovement()
 
-	Connect.cleanKeys(tray.KeyBindConnections)
+	Connect.clean(tray.KeyBindConnections)
 
-	Connect.cleanKeys(tray.AncestryChangedConnections)
+	Connect.clean(tray.AncestryChangedConnections)
 	Connect.clean(tray.RawCharacterAddedConnections)
 	Connect.clean(tray.RawCharacterRemovingConnections)
 
