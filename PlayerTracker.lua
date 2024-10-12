@@ -12,9 +12,9 @@ local RunService        = game:GetService("RunService")
 local Players           = game:GetService("Players")
 
 
-local Vendor  = -- Path.to.Vendor
+local Vendor  = workspace:WaitForChild("Vendor")
 local Signal  = require(Vendor:WaitForChild("Signal"))
-local Connect = require(Vendor:WaitForChild("Connect")
+local Connect = require(Vendor:WaitForChild("Connect"))
 
 
 local PlayerTracker = {}
@@ -75,7 +75,7 @@ local function _updatePlayerTracker(playerTracker: PlayerTrackerLocal, parts: {B
 		if currentPlayers[player] then
 			continue
 		end
-		
+
 		currentPlayers[player] = true
 
 		playerTracker._Population += 1
@@ -113,7 +113,7 @@ function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
 	self._TrackingSpace      = trackingSpace
 	self._IsTracking         = false
 	self._TrackingParameters = trackingParameters
-    
+
 	self._ScanInterval = nil
 
 	self._PlayerMap  = {}
@@ -124,9 +124,9 @@ function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
 	self.PlayerEntered     = Signal.new()
 	self.PopulationChanged = Signal.new()
 
-    self._Tray = {}
-    self._Tray.TrackingSpaceConnection = nil,
-    self._Tray.TrackingConnection      = nil,
+	self._Tray = {}
+	self._Tray.TrackingSpaceConnection = nil
+	self._Tray.TrackingConnection      = nil
 	self._Tray.TrackingSpaceConnection = trackingSpace.Destroying:Connect(function()
 		self:Destroy()
 	end)
@@ -151,18 +151,18 @@ function PlayerTracker:StartTracking()
 	local trackingParameters = self._TrackingParameters
 
 	local secondsElapsed = 0
-	
-	self._Tray.TrackingConnection = RunService.PostSimulation:Connect(function(deltaTime: number)
-        if self.ScanInterval then
-            secondsElapsed += deltaTime
 
-            if secondsElapsed >= self._ScanInterval then
-                secondsElapsed = 0        
-            else
-                return
-            end
-        end
-			
+	self._Tray.TrackingConnection = RunService.PostSimulation:Connect(function(deltaTime: number)
+		if self.ScanInterval then
+			secondsElapsed += deltaTime
+
+			if secondsElapsed >= self._ScanInterval then
+				secondsElapsed = 0        
+			else
+				return
+			end
+		end
+
 		_updatePlayerTracker(
 			self :: any,
 			workspace:GetPartBoundsInBox(trackingSpace.CFrame, trackingSpace.Size, trackingParameters)
@@ -258,49 +258,49 @@ Cleans up object data.
 function PlayerTracker:Destroy()
 	self:StopTracking()
 
-	Connect.clear(self._Tray)
+	Connect.clean(self._Tray)
 end
 
 
 
 export type PlayerTracker = {
 	StartTracking : (self: PlayerTracker) -> (),
-	StopTracking  : (self: layerTracker) -> (),
+	StopTracking  : (self: PlayerTracker) -> (),
 
 	GetPlayers    : (self: PlayerTracker) -> {Player},
 	GetPopulation : (self: PlayerTracker) -> number,
 	GetCapacity   : (self: PlayerTracker) -> number,
 
 	SetCapacity     : (self: PlayerTracker, capacity: number?) -> (),
-    SetScanInterval : (self: PlayerTracker, scanInterval: number?) -> (), 
+	SetScanInterval : (self: PlayerTracker, scanInterval: number?) -> (), 
 
 	IsTracking : (self: PlayerTracker) -> boolean,
 
-    Destroy : (self: PlayerTracker) -> (),
+	Destroy : (self: PlayerTracker) -> (),
 
 	PlayerLeft        : Signal.Signal<Player>,
 	PlayerEntered     : Signal.Signal<Player>,
-	PopulationChanged : Signal.Singal<number>,
+	PopulationChanged : Signal.Signal<number>,
 }
 
 type PlayerMap = {[Player]: true}
 
 type PlayerTrackerLocal = PlayerTracker & {	
 	_TrackingSpace : BasePart,
-	
+
 	_IsTracking         : boolean,
 	_TrackingParameters : OverlapParams?,
 
-	_ScanInterval : number?
-	
-    _PlayerMap  : PlayerMap,
+	_ScanInterval : number?,
+
+	_PlayerMap  : PlayerMap,
 	_Population : number,
 	_Capacity   : number?,
 
-    _Tray = {
-        TrackingSpaceConnection : RBXScriptConnection?,
-        TrackingConnection      : RBXScriptConnection?,
-    }
+	_Tray : {
+		TrackingSpaceConnection : RBXScriptConnection?,
+		TrackingConnection      : RBXScriptConnection?,
+	}
 }
 
 
