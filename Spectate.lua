@@ -197,7 +197,7 @@ local function tryStartSpectating()
 		tryLoadSubject()
 	end
 
-	tray.CharacterRemoved     = characterRemoved:Connect(nextCharacter)
+	tray.CharacterRemoved     = characterRemoved:Connect(tryLoadSubject)
 	tray.KeyBindConnections.E = safeInput(Enum.KeyCode.E, nextCharacter)
 	tray.KeyBindConnections.Q = safeInput(Enum.KeyCode.Q, previousCharacter)
 	
