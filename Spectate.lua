@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.0.5
+Version    1.0.6
 ]]
 
 
@@ -188,12 +188,6 @@ local function tryStartSpectating()
 	disablePlayerMovement()
 
 	local function tryLoadSubject()
-		if #characters == 0 then
-			stopSpectating()
-
-			return
-		end
-
 		local character = characters[index]
 		trySetCameraToCharacter(character)
 
@@ -219,7 +213,21 @@ local function tryStartSpectating()
 		tryLoadSubject()
 	end
 
-	tray.CharacterRemoved     = characterRemoved:Connect(nextCharacter)
+	tray.CharacterRemoved = characterRemoved:Connect(function()
+		local characterCount = #characters
+		if characterCount == 0 then
+			stopSpectating()
+
+			return
+		end
+		
+		if index > characterCount then
+			index = 1
+		end
+		
+		tryLoadSubject()
+	end)
+	
 	tray.KeyBindConnections.E = safeInput(Enum.KeyCode.E, nextCharacter)
 	tray.KeyBindConnections.Q = safeInput(Enum.KeyCode.Q, previousCharacter)
 
