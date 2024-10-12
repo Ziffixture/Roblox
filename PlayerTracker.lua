@@ -1,7 +1,7 @@
 --[[
 Authors    Ziffixture (74087102)
-Date       24/08/21 (YY/MM/DD)
-Version    1.3.9b
+Date       24/10/12 (YY/MM/DD)
+Version    1.4.0b
 ]]
 
 
@@ -258,7 +258,7 @@ Cleans up object data.
 function PlayerTracker:Destroy()
 	self:StopTracking()
 
-	Connect.clearKeys(self._Tray)
+	Connect.clear(self._Tray)
 end
 
 
