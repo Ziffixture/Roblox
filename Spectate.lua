@@ -92,7 +92,7 @@ local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character
 	local characterAdded   = Signal.new()
 	local characterRemoved = Signal.new()
 	
-	local function removeFromCharacters(character: Model, player: Player, isBeingReplaced)
+	local function removeFromCharacters(character: Model, player: Player, isBeingReplaced: boolean)
 		local index = table.find(characters, character :: Types.Character)
 		if not index then
 			return
