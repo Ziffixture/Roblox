@@ -65,9 +65,9 @@ local function enablePlayerMovement()
 	ContextActionService:UnbindAction(PLAYER_MOVEMENT_DISABLE_FLAG)
 end
 
-local function toggleReset(canReset: boolean)
+local function trySetResetEnabled(enabled: boolean)
 	pcall(function()
-		StarterGui:SetCore("ResetButtonCallback", canReset)
+		StarterGui:SetCore("ResetButtonCallback", enabled)
 	end)
 end
 
@@ -122,7 +122,7 @@ local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character
 	return characters, characterAdded, characterRemoved
 end
 
-local function setCameraToCharacter(character: Types.Character?)
+local function trySetCameraToCharacter(character: Types.Character?)
 	if not character then
 		return
 	end
@@ -137,10 +137,10 @@ local function stopSpectating()
 	Container.Visible = false
 	isSpectating      = false
 	
-	setCameraToCharacter(LOCAL_PLAYER.Character)
+	trySetCameraToCharacter(LOCAL_PLAYER.Character)
+	trySetResetEnabled(true)
 	enablePlayerMovement()
-	toggleReset(true)
-
+	
 	Connect.cleanKeys(tray.KeyBindConnections)
 
 	Connect.clean(tray.RawCharacterAddedConnections)
@@ -151,7 +151,7 @@ local function stopSpectating()
 	;(tray.CharacterRemoved :: Signal.Connection):Disconnect()
 end
 
-local function startSpectating()
+local function tryStartSpectating()
 	local characters, _, characterRemoved = getTrackedCharacters({LOCAL_PLAYER})
 	if #characters == 0 then
 		return
@@ -162,10 +162,10 @@ local function startSpectating()
 	Container.Visible = true
 	isSpectating      = true
 
+	trySetResetEnabled(false)
 	disablePlayerMovement()
-	toggleReset(false)
 	
-	local function setCharacter()
+	local function tryLoadSubject()
 		if #characters == 0 then
 			stopSpectating()
 			
@@ -173,7 +173,7 @@ local function startSpectating()
 		end
 		
 		local character = characters[index]
-		setCameraToCharacter(character)
+		trySetCameraToCharacter(character)
 
 		Username.Text = character.Name
 	end
@@ -189,12 +189,12 @@ local function startSpectating()
 	
 	local function nextCharacter()
 		offsetIndex(1)
-		setCharacter()
+		tryLoadSubject()
 	end
 	
 	local function previousCharacter()
 		offsetIndex(-1)
-		setCharacter()
+		tryLoadSubject()
 	end
 
 	tray.CharacterRemoved     = characterRemoved:Connect(nextCharacter)
@@ -207,19 +207,19 @@ local function startSpectating()
 	table.insert(tray.ButtonConnections, nextConnection)
 	table.insert(tray.ButtonConnections, previousConnection)
 	
-	setCharacter()
+	tryLoadSubject()
 end
 
 local function onSpectate()
 	if isSpectating then
 		stopSpectating()
 	else
-		startSpectating()
+		tryStartSpectating()
 	end
 end
 
 
 
-toggleReset(true)
+trySetResetEnabled(true)
 
 Spectate.Activated:Connect(onSpectate)
