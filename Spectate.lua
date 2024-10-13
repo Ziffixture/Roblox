@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.1.3
+Version    1.1.4
 ]]
 
 
@@ -117,7 +117,7 @@ local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Type
 				end
 			end)
 		end
-		
+
 		table.insert(characters, character :: Types.Character)
 
 		characterAdded:Fire()
@@ -172,7 +172,7 @@ local function stopSpectating()
 
 	Connect.clean(tray.ButtonConnections)
 
-	;(tray.PlayerAddedConnection :: RBXScriptSignal):Disconnect()	
+	;(tray.PlayerAddedConnection :: RBXScriptConnection):Disconnect()	
 	;(tray.CharacterRemovedConnection :: Signal.Connection):Disconnect()
 end
 
@@ -216,7 +216,7 @@ local function tryStartSpectating()
 		tryLoadSubject()
 	end
 
-	tray.CharacterRemoved = characterRemoved:Connect(function()
+	tray.CharacterRemovedConnection = characterRemoved:Connect(function()
 		local characterCount = #characters
 		if characterCount == 0 then
 			stopSpectating()
