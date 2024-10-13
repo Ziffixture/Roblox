@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/13 (YY/MM/DD)
-Version    1.1.9
+Version    1.2.0
 ]]
 
 
@@ -154,16 +154,20 @@ local function stopSpectating()
 	enablePlayerMovement()
 
 	Connect.clean(tray.KeyBindConnections)
-
+	Connect.clean(tray.ButtonConnections)
+	
 	Connect.clean(tray.AncestryChangedConnections)
 	Connect.clean(tray.RawCharacterAddedConnections)
 	Connect.clean(tray.RawCharacterRemovingConnections)
-
-	Connect.clean(tray.ButtonConnections)
-
-	;(tray.PlayerAddedConnection :: RBXScriptConnection):Disconnect()	
-	;(tray.CharacterRemovedConnection :: Signal.Connection):Disconnect()
-
+	
+	if tray.CharacterRemovedConnection then
+		tray.CharacterRemovedConnection:Disconnect()
+	end
+	
+	if tray.PlayerAddedConnection then
+		tray.PlayerAddedConnection:Disconnect()
+	end
+	
 	isSpectating      = false
 	Container.Visible = false
 end
@@ -171,6 +175,8 @@ end
 local function tryStartSpectating()
 	local characters, _, characterRemoved = getTrackedCharactersInWorkspace({LOCAL_PLAYER})
 	if #characters == 0 then
+		stopSpectating()
+		
 		return
 	end
 
