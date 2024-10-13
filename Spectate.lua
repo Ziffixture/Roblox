@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.1.0
+Version    1.1.1
 ]]
 
 
@@ -92,7 +92,7 @@ local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character
 	local characterAdded   = Signal.new()
 	local characterRemoved = Signal.new()
 
-	local function removeFromCharacters(character: Model, player: Player)
+	local function onCharacterRemoving(character: Model, player: Player)
 		local index = table.find(characters, character :: Types.Character)
 		if not index then
 			return
@@ -103,7 +103,7 @@ local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character
 		characterRemoved:Fire()
 	end
 
-	local function addToCharacters(character: Model, player: Player)
+	local function onCharacterAdded(character: Model, player: Player)
 		if character.Parent ~= workspace then
 			return
 		end
@@ -111,9 +111,9 @@ local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character
 		if not tray.AncestryChangedConnections[character] then
 			tray.AncestryChangedConnections[character] = character.AncestryChanged:Connect(function(_, newParent: Instance)
 				if newParent ~= workspace then
-					removeFromCharacters(character, player)
+					onCharacterRemoving(character, player)
 				elseif newParent == workspace then
-					addToCharacters(character, player)
+					onCharacterAdded(character, player)
 				end
 			end)
 		end
@@ -123,20 +123,24 @@ local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character
 		characterAdded:Fire()
 	end
 
-	for _, player in Players:GetPlayers() do
-		if table.find(excludePlayers, player) then
-			continue
-		end
-
-		local characterAdded, characterRemoving = Connect.character(player, addToCharacters, function(character, player)
+	local function trackCharacter(player: Player)
+		local characterAdded, characterRemoving = Connect.character(player, onCharacterAdded, function(character, player)
 			tray.AncestryChangedConnections[character]:Disconnect()
 
-			removeFromCharacters(character, player)
+			onCharacterRemoving(character, player)
 		end)
 
 		table.insert(tray.RawCharacterAddedConnections, characterAdded :: RBXScriptConnection)
 		table.insert(tray.RawCharacterRemovingConnections, characterRemoving :: RBXScriptConnection)
 	end
+
+	for _, player in Players:GetPlayers() do
+		if not table.find(excludePlayers, player) then
+			trackCharacter(player)
+		end
+	end
+
+	tray.PlayerAddedConnection = Players.PlayerAdded:Connect(trackCharacter)
 
 	return characters, characterAdded, characterRemoved
 end
@@ -168,7 +172,8 @@ local function stopSpectating()
 
 	Connect.clean(tray.ButtonConnections)
 
-	;(tray.CharacterRemoved :: Signal.Connection):Disconnect()
+	;(tray.PlayerAddedConnection :: RBXScriptSignal):Disconnect()	
+	;(tray.CharacterRemovedConnection :: Signal.Connection):Disconnect()
 end
 
 local function tryStartSpectating()
