@@ -174,7 +174,7 @@ local function tryStartSpectating()
 		return
 	end
 
-	local characterIndex = 1
+	local index = 1
 
 	local function tryLoadSubject()
 		local character = characters[index]
@@ -184,13 +184,7 @@ local function tryStartSpectating()
 	end
 
 	local function offsetIndex(offset)
-		local characterCount = #characters
-
-		index = (index + offset - 1) % characterCount + 1
-		
-		if index < 1 then
-			index += characterCount
-		end
+		index = (index + offset - 1) % #characters + 1
 	end
 
 	local function nextCharacter()
