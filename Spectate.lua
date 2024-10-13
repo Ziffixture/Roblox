@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.1.1
+Version    1.1.2
 ]]
 
 
@@ -86,7 +86,7 @@ local function safeInput(key: Enum.KeyCode, callback: (InputObject) -> ())
 	end)
 end
 
-local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character}, Signal.Signal<>, Signal.Signal<>)
+local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Types.Character}, Signal.Signal<>, Signal.Signal<>)
 	local characters = {}
 
 	local characterAdded   = Signal.new()
@@ -181,7 +181,7 @@ local function tryStartSpectating()
 		return
 	end
 
-	local characters, _, characterRemoved = getTrackedCharacters({LOCAL_PLAYER})
+	local characters, _, characterRemoved = getTrackedCharactersInWorkspace({LOCAL_PLAYER})
 	if #characters == 0 then
 		return
 	end
