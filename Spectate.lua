@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.1.4
+Version    1.1.5
 ]]
 
 
@@ -10,7 +10,6 @@ Version    1.1.4
 local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage    = game:GetService("ReplicatedStorage")
 local UserInputService     = game:GetService("UserInputService")
-local StarterGui           = game:GetService("StarterGui")
 local Players              = game:GetService("Players")
 
 
@@ -51,6 +50,20 @@ local isSpectating = false
 
 
 
+local function safeInput(key: Enum.KeyCode, callback: (InputObject) -> ())
+	return UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
+		if gameProcessedEvent then
+			return
+		end
+
+		if input.KeyCode ~= key then
+			return
+		end
+
+		callback(input)
+	end)
+end
+
 local function disablePlayerMovement()
 	ContextActionService:BindAction(
 		PLAYER_MOVEMENT_DISABLE_FLAG,
@@ -64,26 +77,6 @@ end
 
 local function enablePlayerMovement()
 	ContextActionService:UnbindAction(PLAYER_MOVEMENT_DISABLE_FLAG)
-end
-
-local function trySetResetEnabled(enabled: boolean)
-	pcall(function()
-		StarterGui:SetCore("ResetButtonCallback", enabled)
-	end)
-end
-
-local function safeInput(key: Enum.KeyCode, callback: (InputObject) -> ())
-	return UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
-		if gameProcessedEvent then
-			return
-		end
-
-		if input.KeyCode ~= key then
-			return
-		end
-
-		callback(input)
-	end)
 end
 
 local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Types.Character}, Signal.Signal<>, Signal.Signal<>)
@@ -161,7 +154,6 @@ local function stopSpectating()
 	isSpectating      = false
 
 	trySetCameraToCharacter(LOCAL_PLAYER.Character)
-	trySetResetEnabled(true)
 	enablePlayerMovement()
 
 	Connect.clean(tray.KeyBindConnections)
@@ -186,8 +178,7 @@ local function tryStartSpectating()
 
 	Container.Visible = true
 	isSpectating      = true
-
-	trySetResetEnabled(false)
+	
 	disablePlayerMovement()
 
 	local function tryLoadSubject()
@@ -201,6 +192,7 @@ local function tryStartSpectating()
 		local length = #characters
 
 		index = (index + offset - 1) % length + 1
+		
 		if index < 1 then
 			index += length
 		end
@@ -252,7 +244,5 @@ local function onSpectate()
 end
 
 
-
-trySetResetEnabled(true)
 
 Spectate.Activated:Connect(onSpectate)
