@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/13 (YY/MM/DD)
-Version    1.2.1
+Version    1.2.2
 ]]
 
 
@@ -79,7 +79,7 @@ local function enablePlayerMovement()
 	ContextActionService:UnbindAction(PLAYER_MOVEMENT_DISABLE_FLAG)
 end
 
-local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Types.Character}, Signal.Signal<>, Signal.Signal<>)
+local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Types.Character}?, Signal.Signal<>?, Signal.Signal<>?)
 	local players = {}
 
 	for _, player in Players:GetPlayers() do
@@ -89,7 +89,7 @@ local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Type
 	end
 
 	if #players == 0 then
-		return {}, nil, nil
+		return nil, nil, nil
 	end
 
 	local characters = {}
@@ -164,26 +164,26 @@ local function stopSpectating()
 
 	Connect.clean(tray.KeyBindConnections)
 	Connect.clean(tray.ButtonConnections)
-	
+
 	Connect.clean(tray.AncestryChangedConnections)
 	Connect.clean(tray.RawCharacterAddedConnections)
 	Connect.clean(tray.RawCharacterRemovingConnections)
-	
+
 	if tray.CharacterRemovedConnection then
 		tray.CharacterRemovedConnection:Disconnect()
 	end
-	
+
 	if tray.PlayerAddedConnection then
 		tray.PlayerAddedConnection:Disconnect()
 	end
-	
+
 	isSpectating      = false
 	Container.Visible = false
 end
 
 local function tryStartSpectating()
 	local characters, _, characterRemoved = getTrackedCharactersInWorkspace({LOCAL_PLAYER})
-	if #characters == 0 then
+	if not characters then
 		return
 	end
 
@@ -210,7 +210,7 @@ local function tryStartSpectating()
 		tryLoadSubject()
 	end
 
-	tray.CharacterRemovedConnection = characterRemoved:Connect(function()
+	tray.CharacterRemovedConnection = (characterRemoved :: Signal.Signal<>):Connect(function()
 		local characterCount = #characters
 		if characterCount == 0 then
 			stopSpectating()
