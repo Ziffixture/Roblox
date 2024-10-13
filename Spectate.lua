@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.0.9
+Version    1.1.0
 ]]
 
 
@@ -172,6 +172,10 @@ local function stopSpectating()
 end
 
 local function tryStartSpectating()
+	if isSpectating then
+		return
+	end
+
 	local characters, _, characterRemoved = getTrackedCharacters({LOCAL_PLAYER})
 	if #characters == 0 then
 		return
