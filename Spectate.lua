@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.1.5
+Version    1.1.6
 ]]
 
 
@@ -150,9 +150,6 @@ local function trySetCameraToCharacter(character: Types.Character?)
 end
 
 local function stopSpectating()
-	Container.Visible = false
-	isSpectating      = false
-
 	trySetCameraToCharacter(LOCAL_PLAYER.Character)
 	enablePlayerMovement()
 
@@ -175,11 +172,6 @@ local function tryStartSpectating()
 	end
 
 	local index = 1
-
-	Container.Visible = true
-	isSpectating      = true
-	
-	disablePlayerMovement()
 
 	local function tryLoadSubject()
 		local character = characters[index]
@@ -232,6 +224,7 @@ local function tryStartSpectating()
 	table.insert(tray.ButtonConnections, nextConnection)
 	table.insert(tray.ButtonConnections, previousConnection)
 
+	disablePlayerMovement()
 	tryLoadSubject()
 end
 
@@ -241,6 +234,9 @@ local function onSpectate()
 	else
 		tryStartSpectating()
 	end
+
+	isSpectating      = not isSpectating
+	Container.Visible = isSpectating
 end
 
 
