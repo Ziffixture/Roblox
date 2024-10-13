@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.1.7
+Version    1.1.8
 ]]
 
 
@@ -164,8 +164,8 @@ local function stopSpectating()
 	;(tray.PlayerAddedConnection :: RBXScriptConnection):Disconnect()	
 	;(tray.CharacterRemovedConnection :: Signal.Connection):Disconnect()
 
-	isSpectating      = true
-	Container.Visible = true
+	isSpectating      = false
+	Container.Visible = false
 end
 
 local function tryStartSpectating()
@@ -230,8 +230,8 @@ local function tryStartSpectating()
 	disablePlayerMovement()
 	tryLoadSubject()
 
-	isSpectating      = false
-	Container.Visible = false
+	isSpectating      = true
+	Container.Visible = true
 end
 
 local function onSpectate()
