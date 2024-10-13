@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.0.8
+Version    1.0.9
 ]]
 
 
@@ -108,17 +108,17 @@ local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character
 			return
 		end
 
-		table.insert(characters, character :: Types.Character)
-
 		if not tray.AncestryChangedConnections[character] then
 			tray.AncestryChangedConnections[character] = character.AncestryChanged:Connect(function(_, newParent: Instance)
 				if newParent ~= workspace then
-					removeFromCharacters(character, player, false)
+					removeFromCharacters(character, player)
 				elseif newParent == workspace then
 					addToCharacters(character, player)
 				end
 			end)
 		end
+		
+		table.insert(characters, character :: Types.Character)
 
 		characterAdded:Fire()
 	end
@@ -130,7 +130,7 @@ local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character
 
 		local characterAdded, characterRemoving = Connect.character(player, addToCharacters, function(character, player)
 			tray.AncestryChangedConnections[character]:Disconnect()
-				
+
 			removeFromCharacters(character, player)
 		end)
 
@@ -218,14 +218,14 @@ local function tryStartSpectating()
 
 			return
 		end
-		
+
 		if index > characterCount then
 			index = 1
 		end
-		
+
 		tryLoadSubject()
 	end)
-	
+
 	tray.KeyBindConnections.E = safeInput(Enum.KeyCode.E, nextCharacter)
 	tray.KeyBindConnections.Q = safeInput(Enum.KeyCode.Q, previousCharacter)
 
