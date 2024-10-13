@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/13 (YY/MM/DD)
-Version    1.1.8
+Version    1.1.9
 ]]
 
 
@@ -174,7 +174,7 @@ local function tryStartSpectating()
 		return
 	end
 
-	local index = 1
+	local characterIndex = 1
 
 	local function tryLoadSubject()
 		local character = characters[index]
@@ -184,12 +184,12 @@ local function tryStartSpectating()
 	end
 
 	local function offsetIndex(offset)
-		local length = #characters
+		local characterCount = #characters
 
-		index = (index + offset - 1) % length + 1
+		index = (index + offset - 1) % characterCount + 1
 		
 		if index < 1 then
-			index += length
+			index += characterCount
 		end
 	end
 
