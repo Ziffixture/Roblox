@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/12 (YY/MM/DD)
-Version    1.0.7
+Version    1.0.8
 ]]
 
 
@@ -92,14 +92,10 @@ local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character
 	local characterAdded   = Signal.new()
 	local characterRemoved = Signal.new()
 
-	local function removeFromCharacters(character: Model, player: Player, isBeingReplaced: boolean)
+	local function removeFromCharacters(character: Model, player: Player)
 		local index = table.find(characters, character :: Types.Character)
 		if not index then
 			return
-		end
-
-		if isBeingReplaced then
-			tray.AncestryChangedConnections[character]:Disconnect()
 		end
 
 		table.remove(characters, index)
@@ -133,7 +129,9 @@ local function getTrackedCharacters(excludePlayers: {Player}): ({Types.Character
 		end
 
 		local characterAdded, characterRemoving = Connect.character(player, addToCharacters, function(character, player)
-			removeFromCharacters(character, player, true)
+			tray.AncestryChangedConnections[character]:Disconnect()
+				
+			removeFromCharacters(character, player)
 		end)
 
 		table.insert(tray.RawCharacterAddedConnections, characterAdded :: RBXScriptConnection)
