@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/13 (YY/MM/DD)
-Version    1.2.0
+Version    1.2.1
 ]]
 
 
@@ -80,8 +80,19 @@ local function enablePlayerMovement()
 end
 
 local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Types.Character}, Signal.Signal<>, Signal.Signal<>)
-	local characters = {}
+	local players = {}
 
+	for _, player in Players:GetPlayers() do
+		if not table.find(excludePlayers, player) then
+			table.insert(players, player)
+		end
+	end
+
+	if #players == 0 then
+		return {}, nil, nil
+	end
+
+	local characters = {}
 	local characterAdded   = Signal.new()
 	local characterRemoved = Signal.new()
 
@@ -127,10 +138,8 @@ local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Type
 		table.insert(tray.RawCharacterRemovingConnections, characterRemoving :: RBXScriptConnection)
 	end
 
-	for _, player in Players:GetPlayers() do
-		if not table.find(excludePlayers, player) then
-			trackCharacter(player)
-		end
+	for _, player in players do
+		trackCharacter(player)
 	end
 
 	tray.PlayerAddedConnection = Players.PlayerAdded:Connect(trackCharacter)
@@ -175,8 +184,6 @@ end
 local function tryStartSpectating()
 	local characters, _, characterRemoved = getTrackedCharactersInWorkspace({LOCAL_PLAYER})
 	if #characters == 0 then
-		stopSpectating()
-		
 		return
 	end
 
