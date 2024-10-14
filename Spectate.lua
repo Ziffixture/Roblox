@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/10/13 (YY/MM/DD)
-Version    1.2.2
+Date       24/10/14 (YY/MM/DD)
+Version    1.2.3
 ]]
 
 
@@ -169,13 +169,8 @@ local function stopSpectating()
 	Connect.clean(tray.RawCharacterAddedConnections)
 	Connect.clean(tray.RawCharacterRemovingConnections)
 
-	if tray.CharacterRemovedConnection then
-		tray.CharacterRemovedConnection:Disconnect()
-	end
-
-	if tray.PlayerAddedConnection then
-		tray.PlayerAddedConnection:Disconnect()
-	end
+	;(tray.CharacterRemovedConnection :: Signal.Connection<>):Disconnect()
+	;(tray.PlayerAddedConnection :: RBXScriptConnection):Disconnect()
 
 	isSpectating      = false
 	Container.Visible = false
