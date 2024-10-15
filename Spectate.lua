@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/10/14 (YY/MM/DD)
-Version    1.2.3
+Date       24/10/15 (YY/MM/DD)
+Version    1.2.4
 ]]
 
 
@@ -50,7 +50,7 @@ local isSpectating = false
 
 
 
-local function safeInput(key: Enum.KeyCode, callback: (InputObject) -> ())
+local function safeInput(key: Enum.KeyCode, callback: (InputObject) -> ()): RBXScriptConnection
 	return UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessedEvent: boolean)
 		if gameProcessedEvent then
 			return
