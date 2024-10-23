@@ -83,7 +83,7 @@ function GuiObjectHover.generateHoverEvents(guiObject: GuiObject): (Signal.Signa
 		GuiObjectHover.expireHoverEvents(guiObject)
 	end)
 	
-	if #registeredGuiObjects == 1 then
+	if #registeredGuiObjects ~= 0 then
 		processGuiObjectsConnection = RunService.RenderStepped:Connect(processGuiObjects)
 	end
 	
