@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/27 (YY/MM/DD)
-Version    1.2.6
+Version    1.2.7
 ]]
 
 
@@ -191,8 +191,8 @@ local function tryStartSpectating()
 		Username.Text = character.Name
 	end
 
-	local function readjustIndex(additionalOffset: number?)
-		index = (index + (additionalOffset or 0) - 1) % #characters + 1
+	local function readjustIndex(offset: number?)
+		index = (index + (offset or 0) - 1) % #characters + 1
 	end
 
 	local function nextCharacter()
