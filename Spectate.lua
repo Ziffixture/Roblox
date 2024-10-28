@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       24/10/27 (YY/MM/DD)
-Version    1.2.7
+Version    1.2.9
 ]]
 
 
@@ -158,12 +158,7 @@ local function stopSpectating()
 	trySetCameraToCharacter(LOCAL_PLAYER.Character)
 	enablePlayerMovement()
 
-	Connect.clean(tray.KeyBindConnections)
-	Connect.clean(tray.ButtonConnections)
-
-	Connect.clean(tray.AncestryChangedConnections)
-	Connect.clean(tray.RawCharacterAddedConnections)
-	Connect.clean(tray.RawCharacterRemovingConnections)
+	Connect.clean(tray)
 
 	;(tray.CharacterRemovedConnection :: Signal.Connection<>):Disconnect()
 	;(tray.PlayerAddedConnection :: RBXScriptConnection):Disconnect()
