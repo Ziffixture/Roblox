@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/10/15 (YY/MM/DD)
-Version    1.2.4
+Date       24/10/27 (YY/MM/DD)
+Version    1.2.5
 ]]
 
 
@@ -191,17 +191,17 @@ local function tryStartSpectating()
 		Username.Text = character.Name
 	end
 
-	local function offsetIndex(offset)
-		index = (index + offset - 1) % #characters + 1
+	local function readjustIndex(additionalOffset)
+		index = (index + additionalOffset - 1) % #characters + 1
 	end
 
 	local function nextCharacter()
-		offsetIndex(1)
+		readjustIndex(1)
 		tryLoadSubject()
 	end
 
 	local function previousCharacter()
-		offsetIndex(-1)
+		readjustIndex(-1)
 		tryLoadSubject()
 	end
 
@@ -213,10 +213,7 @@ local function tryStartSpectating()
 			return
 		end
 
-		if index > characterCount then
-			index = 1
-		end
-
+		readjustIndex(0)
 		tryLoadSubject()
 	end)
 
