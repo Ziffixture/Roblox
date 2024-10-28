@@ -108,10 +108,6 @@ local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Type
 	end
 
 	local function onCharacterAdded(character: Model, player: Player)
-		if character.Parent ~= workspace then
-			return
-		end
-
 		if not tray.AncestryChangedConnections[character] then
 			tray.AncestryChangedConnections[character] = character.AncestryChanged:Connect(function(_, newParent: Instance)
 				if newParent ~= workspace then
