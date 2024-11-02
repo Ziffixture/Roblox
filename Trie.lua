@@ -84,7 +84,7 @@ function TriePrototype:AddWord(word: string)
 	container.isWord = true
 end
 
-function TriePrototype:RemoveWords(word: string)
+function TriePrototype:RemoveWords(prefix: string)
 	local container = getLastContainer(self.root, word)
 	if container == self.root then
 		return
