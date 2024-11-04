@@ -258,6 +258,10 @@ Cleans up object data.
 function PlayerTracker:Destroy()
 	self:StopTracking()
 
+	self.PlayerLeft:Destroy()
+	self.PlayerEntered:Destroy()
+	self.PopulationChanged:Destroy()
+
 	Connect.clean(self._Tray)
 end
 
