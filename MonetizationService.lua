@@ -143,7 +143,7 @@ end
 If purchased, invokes the associated game-pass' handler function with the player who purchased the game-pass.
 ]]
 local function onGamePassPurchaseFinished(player: Player, gamePassId: number)
-	if MonetizationService.userOwnsGamePass(gamePassId) then
+	if MonetizationService.userOwnsGamePassAsync(gamePassId) then
 		return
 	end
 
