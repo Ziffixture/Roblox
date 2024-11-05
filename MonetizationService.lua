@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/08/01 (YY/MM/DD)
-Version    1.3.1b
+Date       11/05/2024 (MM/DD/YYYY)
+Version    1.3.2
 ]]
 
 
@@ -138,13 +138,12 @@ end
 --[[
 @param     Player     player          | The player who observed the game-pass.
 @param     number     gamePassId      | The asset ID of the game-pass.
-@param     boolean    wasPurchased    | Whether or not the game-pass was purchased.
 @return    void
 
 If purchased, invokes the associated game-pass' handler function with the player who purchased the game-pass.
 ]]
-local function onGamePassPurchaseFinished(player: Player, gamePassId: number, wasPurchased: boolean)
-	if not wasPurchased then
+local function onGamePassPurchaseFinished(player: Player, gamePassId: number)
+	if MonetizationService.userOwnsGamePass(gamePassId) then
 		return
 	end
 
@@ -155,7 +154,6 @@ local function onGamePassPurchaseFinished(player: Player, gamePassId: number, wa
 		return
 	end
 
-	gamePassOwnershipCache[player][gamePassId] = true
 	gamePass.Handler(player)
 end
 
