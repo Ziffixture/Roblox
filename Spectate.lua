@@ -92,7 +92,7 @@ local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Type
 		return nil, nil, nil
 	end
 
-	local characters = {}
+	local characters       = {}
 	local characterAdded   = Signal.new()
 	local characterRemoved = Signal.new()
 
