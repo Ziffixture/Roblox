@@ -168,7 +168,7 @@ local function stopSpectating()
 end
 
 local function tryStartSpectating()
-	local characters, _, characterRemoved = getTrackedCharactersInWorkspace({})
+	local characters, _, characterRemoved = getTrackedCharactersInWorkspace({LOCAL_PLAYER})
 	if not characters then
 		return
 	end
