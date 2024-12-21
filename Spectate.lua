@@ -20,8 +20,8 @@ local LOCAL_PLAYER   = Players.LocalPlayer
 
 
 local Vendor  = ReplicatedStorage:WaitForChild("Vendor")
-local Connect = require(Vendor:WaitForChild("Connect"))
-local Signal  = require(Vendor:WaitForChild("Signal"))
+local Connect = require(Vendor:WaitForChild("Connect")) -- https://github.com/SolarScuffle-Bot/ConnectUtil
+local Signal  = require(Vendor:WaitForChild("Signal")) -- https://github.com/Data-Oriented-House/LemonSignal
 
 local Feature = script.Parent
 local Types   = require(Feature:WaitForChild("Types"))
