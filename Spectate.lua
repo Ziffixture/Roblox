@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/10/27 (YY/MM/DD)
-Version    1.2.9
+Date       24/12/21 (YY/MM/DD)
+Version    1.3.0
 ]]
 
 
@@ -92,7 +92,7 @@ local function getTrackedCharactersInWorkspace(excludePlayers: {Player}): ({Type
 		return nil, nil, nil
 	end
 
-	local characters       = {}
+	local characters = {}
 	local characterAdded   = Signal.new()
 	local characterRemoved = Signal.new()
 
@@ -158,17 +158,17 @@ local function stopSpectating()
 	trySetCameraToCharacter(LOCAL_PLAYER.Character)
 	enablePlayerMovement()
 
-	Connect.clean(tray)
-
 	;(tray.CharacterRemovedConnection :: Signal.Connection<>):Disconnect()
 	;(tray.PlayerAddedConnection :: RBXScriptConnection):Disconnect()
+	
+	Connect.clean(tray)
 
 	isSpectating      = false
 	Container.Visible = false
 end
 
 local function tryStartSpectating()
-	local characters, _, characterRemoved = getTrackedCharactersInWorkspace({LOCAL_PLAYER})
+	local characters, _, characterRemoved = getTrackedCharactersInWorkspace({})
 	if not characters then
 		return
 	end
