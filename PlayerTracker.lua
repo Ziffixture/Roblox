@@ -13,8 +13,8 @@ local Players           = game:GetService("Players")
 
 
 local Vendor  = workspace:WaitForChild("Vendor")
-local Signal  = require(Vendor:WaitForChild("Signal"))
-local Connect = require(Vendor:WaitForChild("Connect"))
+local Connect = require(Vendor:WaitForChild("Connect")) -- https://github.com/SolarScuffle-Bot/ConnectUtil
+local Signal  = require(Vendor:WaitForChild("Signal")) -- https://github.com/Data-Oriented-House/LemonSignal
 
 
 local PlayerTracker = {}
