@@ -220,7 +220,7 @@ end
 
 Starts a track record of the player's damage. Reports a summary of this damage upon death.
 ]]
-function KillsService.trackDamage(player)
+function KillsService.trackDamage(player: Player)
 	local humanoid = PlayerEssentials.getHumanoid(player)
 	if not humanoid then
 		warn(`Unable to track {player.Name}'s damage. (Humanoid unvailable)`)
