@@ -44,8 +44,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 
 local Vendor           = ReplicatedStorage.Vendor
-local Signal           = require(Vendor.Signal)
-local PlayerEssentials = require(Vendor.PlayerEssentials)
+local Signal           = require(Vendor.Signal) -- https://github.com/Data-Oriented-House/LemonSignal
+local PlayerEssentials = require(Vendor.PlayerEssentials) -- Home-brewed tooling.
 
 local Feature       = script.Parent
 local Configuration = Feature.Configuration
