@@ -51,7 +51,7 @@ local Feature       = script.Parent
 local Configuration = Feature.Configuration
 local FriendlyFire  = Configuration.FriendlyFire
 
-local KillsService = {}
+local KillsService        = {}
 KillsService.PlayerKilled = Signal.new() :: Signal.Signal<Player, DeathSummary>
 
 
@@ -78,7 +78,7 @@ end
 Initializes a damage history under the given Humanoid. Returns a reference to that damage history.
 ]]
 local function initializeDamageHistory(humanoid: Humanoid): DamageHistory
-	local damageHistory = {} :: DamageHistory
+	local damageHistory    = {} :: DamageHistory
 	damageHistory.Humanoid = humanoid
 	damageHistory.Tokens   = {}
 
@@ -98,7 +98,7 @@ local function buildDeathSummary(damageHistory: DamageHistory): DeathSummary
 	local latestToken = damageHistory.Tokens[#damageHistory.Tokens]
 	local killer      = latestToken.Dealer
 
-	local deathSummary = {} :: DeathSummary
+	local deathSummary               = {} :: DeathSummary
 	deathSummary.Assists             = {}
 	deathSummary.AssistCountAsKiller = nil
 	deathSummary.Killer              = killer
