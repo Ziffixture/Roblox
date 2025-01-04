@@ -110,6 +110,10 @@ Constructs a PlayerTracker object.
 function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingParameters: OverlapParams?): PlayerTracker
 	local self: PlayerTrackerLocal = {} :: PlayerTrackerLocal
 
+        self.PlayerLeft        = Signal.new()
+	self.PlayerEntered     = Signal.new()
+	self.PopulationChanged = Signal.new()
+
 	self._TrackingSpace      = trackingSpace
 	self._IsTracking         = false
 	self._TrackingParameters = trackingParameters
@@ -119,10 +123,6 @@ function PlayerTracker.new(trackingSpace: BasePart, capacity: number?, trackingP
 	self._PlayerMap  = {}
 	self._Population = 0
 	self._Capacity   = capacity
-
-	self.PlayerLeft        = Signal.new()
-	self.PlayerEntered     = Signal.new()
-	self.PopulationChanged = Signal.new()
 
 	self._Tray = {}
 	self._Tray.TrackingSpaceConnection = nil
