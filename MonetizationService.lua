@@ -26,7 +26,7 @@ type CategorizedAssets = {
 	DeveloperProduct : AssetIdMap,
 }
 
--- In accordance with https://create.roblox.com/docs/reference/engine/classes/MarketplaceService#ProcessReceipt (23/10/20)
+-- In accordance with https://create.roblox.com/docs/reference/engine/classes/MarketplaceService#ProcessReceipt (11/05/2024)
 type DeveloperProductReceipt = {
 	PurchaseId            : number,
 	PlayerId              : number,
