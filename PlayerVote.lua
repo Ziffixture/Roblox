@@ -102,24 +102,19 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	options under the highest vote, one is chosen at random.
 	]]
 	function self:GetWinner(): T
-		local voteGroups  : {[number]: {T}} = {}
-		local highestVote : number          = 0
-
+        local highestVote    : number = 0
+		local highestOptions : {T}    = {}
+		
 		for option, votes in poll do
-			if highestVote <= votes then
-				highestVote = votes
-
-				if voteGroups[votes] == nil then
-					voteGroups[votes] = {option}
-				else
-					table.insert(voteGroups[votes], option)
-				end
-			end
+			if highestVote < votes then
+                highestVote    = votes
+                highestOptions = {option}
+            else
+                table.insert(highestOptions, option)
+            end
 		end
 
-		local highestVoteGroup = voteGroups[highestVote]
-
-		return highestVoteGroup[math.random(#highestVoteGroup)]
+		return highestOptions[math.random(#highestOptions)]
 	end
 
 
