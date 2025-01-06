@@ -13,7 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 
 local Vendor = ReplicatedStorage.Vendor
-local Signal = require(Vendor.Signal)
+local Signal = require(Vendor.Signal) -- https://github.com/Data-Oriented-House/LemonSignal
 
 
 local PlayerVote = {}
@@ -103,10 +103,10 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	]]
 	function self:GetWinner(): T
         local highestVote    : number = 0
-		local highestOptions : {T}    = {}
+        local highestOptions : {T}    = {}
 		
 		for option, votes in poll do
-			if highestVote < votes then
+            if highestVote < votes then
                 highestVote    = votes
                 highestOptions = {option}
             else
