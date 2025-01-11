@@ -113,9 +113,7 @@ function TriePrototype:GetWords(prefix: string?): {}
 		end
 	end
 
-	for _, child in node.children do		
-		getWords(child)
-	end
+	getWords(node)
 
 	return words
 end
