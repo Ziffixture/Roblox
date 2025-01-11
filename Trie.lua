@@ -1,20 +1,20 @@
 --[[
 Author     Ziffix (74087102)
 Date       01/11/2024 (MM/DD/YYYY)
-Version    1.0.1
+Version    1.0.2
 
 Grassroots Trie implementation.
 ]]
 
 
 
-type Container = {
+type Node = {
 	word      : string,
 	isWord    : boolean,
 	character : string,
 	
-	parent   : Container,
-	children : {Container},
+	parent   : Node,
+	children : {Node},
 }
 
 
@@ -24,7 +24,7 @@ local TriePrototype = {}
 
 
 
-local function getChild(parent: Container, character): Container?
+local function getChild(parent: Node, character): Node?
 	for _, child in parent.children do
 		if child.character == character then
 			return child
@@ -34,22 +34,22 @@ local function getChild(parent: Container, character): Container?
 	return nil
 end
 
-local function getLastContainer(parent: Container, word: string, breakpoint: number?): (Container, {string}, depth)
+local function getLastNode(parent: Node, word: string): (Node, {string}, depth)
 	local characters = string.split(word, "")
-	local container  = parent
+	local node       = parent
 	local depth      = 0
 
 	for index, character in characters do
-		local child = getChild(container, character)
-		if not child or breakpoint == index then
+		local child = getChild(node, character)
+		if not child then
 			break
 		end
 
-		container = child
-		depth    += 1
+		node  = child
+		depth += 1
 	end
 
-	return container, characters, depth
+	return node, characters, depth
 end
 
 
@@ -69,41 +69,41 @@ function Trie.new(words: {string})
 end
 
 function TriePrototype:AddWord(word: string)
-	local container, characters, depth = getLastContainer(self.root, word)
+	local node, characters, depth = getLastNode(self.root, word)
 
 	for index = depth + 1, #characters do
 		local child = {}
 
 		child.character = characters[index]
 		child.children  = {}
-		child.parent    = container
+		child.parent    = node
 
-		table.insert(container.children, child)
+		table.insert(node.children, child)
 
-		container = child
+		node = child
 	end
 
-	container.word   = word
-	container.isWord = true
+	node.word   = word
+	node.isWord = true
 end
 
 function TriePrototype:RemoveWords(prefix: string)
-	local container = getLastContainer(self.root, prefix)
-	if container == self.root then
+	local node = getLastNode(self.root, prefix)
+	if node == self.root then
 		return
 	end
 
-	local siblings = container.parent.children 
-	local index    = table.find(siblings, container)
+	local siblings = node.parent.children 
+	local index    = table.find(siblings, node)
 
 	table.remove(siblings, index)
 end
 
 function TriePrototype:GetWords(prefix: string?): {}
-	local container = if prefix	then getLastContainer(self.root, prefix) else self.root
+	local node = if prefix	then getLastNode(self.root, prefix) else self.root
 	local words     = {}
 
-	local function getWords(parent: Container)
+	local function getWords(parent: Node)
 		if parent.isWord then
 			table.insert(words, parent.word)
 		end
@@ -113,7 +113,7 @@ function TriePrototype:GetWords(prefix: string?): {}
 		end
 	end
 
-	for _, child in container.children do		
+	for _, child in node.children do		
 		getWords(child)
 	end
 
