@@ -53,7 +53,7 @@ local function getLastNode(parent: Node, word: string): (Node, {string}, depth)
 end
 
 
-function Trie.new(words: {string})
+function Trie.new(words: {string}?)
 	local self = {}
 
 	self.root          = {}
@@ -61,8 +61,10 @@ function Trie.new(words: {string})
 
 	setmetatable(self, TriePrototype)
 
-	for _, word in words do
-		self:AddWord(word)
+	if words then
+		for _, word in words do
+			self:AddWord(word)
+		end
 	end
 
 	return self
