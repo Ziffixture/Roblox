@@ -69,7 +69,7 @@ function Trie.new(words: {string})
 end
 
 function TriePrototype:AddWord(word: string)
-	local node, characters, depth = getLastNode(self.root, word)
+	local node, characters, depth = getLastNode(self.root, string.lower(word))
 
 	for index = depth + 1, #characters do
 		local child = {}
@@ -88,7 +88,7 @@ function TriePrototype:AddWord(word: string)
 end
 
 function TriePrototype:RemoveWords(prefix: string)
-	local node = getLastNode(self.root, prefix)
+	local node = getLastNode(self.root, string.lower(prefix))
 	if node == self.root then
 		return
 	end
@@ -100,8 +100,8 @@ function TriePrototype:RemoveWords(prefix: string)
 end
 
 function TriePrototype:GetWords(prefix: string?): {}
-	local node = if prefix	then getLastNode(self.root, prefix) else self.root
-	local words     = {}
+	local node  = if prefix	then getLastNode(self.root, string.lower(prefix)) else self.root
+	local words = {}
 
 	local function getWords(parent: Node)
 		if parent.isWord then
