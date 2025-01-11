@@ -1,9 +1,9 @@
 --[[
 Author     Ziffix (74087102)
 Date       01/11/2024 (MM/DD/YYYY)
-Version    1.0.2
+Version    1.0.4
 
-Grassroots Trie implementation.
+Grassroots, case-insensitive Trie implementation.
 ]]
 
 
