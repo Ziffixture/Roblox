@@ -39,7 +39,7 @@ local function getLastNode(parent: Node, word: string): (Node, {string}, depth)
 	local node       = parent
 	local depth      = 0
 
-	for index, character in characters do
+	for _, character in characters do
 		local child = getChild(node, character)
 		if not child then
 			break
