@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       01/18/2024 (MM/DD/YYYY)
-Version    2.0.2
+Version    2.0.4
 ]]
 
 
@@ -326,7 +326,7 @@ function MonetizationService.tryGiveGamePass(userId: number, gamePassId: number)
 		MonetizationService.tryLoadGamePass(player, gamePass)
 	end
 	
-	UnofficialGamePassOwners:UpdateAsync(userId, function(gamePassIds: OwnershipMap)
+	UnofficialGamePassOwners:UpdateAsync(userId, function(gamePassIds: GamePassOwnershipMap)
 		gamePassIds = gamePassIds or {}
 		gamePassIds[gamePassId] = true
 		
