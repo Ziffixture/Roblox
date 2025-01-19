@@ -1,14 +1,18 @@
 --[[
 Author     Ziffixture (74087102)
-Date       01/17/2024 (MM/DD/YYYY)
-Version    2.0.0
+Date       01/18/2024 (MM/DD/YYYY)
+Version    2.0.2
 ]]
 
 
 
 --!strict
+type GamePassOwnershipMap = {
+	[number]: true,
+}
+
 type GamePassOwnershipCache = {
-	[Player]: {[number]: true},
+	[Player]: GamePassOwnershipMap,
 }
 
 type AssetData = {
@@ -28,7 +32,7 @@ type CategorizedAssets = {
 	Product  : AssetIdMap,
 }
 
--- In accordance with https://create.roblox.com/docs/reference/engine/classes/MarketplaceService#ProcessReceipt (11/05/2024)
+-- In accordance with https://create.roblox.com/docs/reference/engine/classes/MarketplaceService#ProcessReceipt (05/11/2024)
 type ProductReceipt = {
 	PurchaseId            : number,
 	PlayerId              : number,
@@ -42,6 +46,7 @@ type ProductReceipt = {
 
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage  = game:GetService("ReplicatedStorage")
+local DataStoreService   = game:GetService("DataStoreService")
 local RunService         = game:GetService("RunService")
 local Players            = game:GetService("Players")
 
@@ -50,11 +55,13 @@ local NOT_PROCESSED_YET = Enum.ProductPurchaseDecision.NotProcessedYet
 local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
 
 
+local MonetizationService = {}
+
 local Feature               = script.Parent
 local Configuration         = Feature.Configuration
 local OwnGamePassesInStudio = Configuration.OwnGamePassesInStudio 
 
-local MonetizationService = {}
+local UnofficialGamePassOwners = DataStoreService:GetDataStore("UnofficialGamePassOwners", "Test1") 
 
 
 local gamePassOwnershipCache = {} :: GamePassOwnershipCache
@@ -63,28 +70,6 @@ local categorizedAssets    = {} :: CategorizedAssets
 categorizedAssets.GamePass = {}
 categorizedAssets.Product  = {}
 
-
-
---[[
-@param     number           assetId     | The Id of the asset whose price to query.
-@param     Enum.InfoType    infoType    | The InfoType of the asset being queried.
-@return    number?
-
-Attempts to retrieve the price of the given asset in Robux.
-]]
-local function getPriceInRobuxAsync(assetId: number, infoType: Enum.InfoType): number?
-	local success, response = pcall(function()
-		return MarketplaceService:GetProductInfo(assetId, infoType)
-	end)
-
-	if not success then
-		warn(`Price retrieval failure for {infoType.Name} {assetId}; {response}`)
-
-		return
-	end
-
-	return response.PriceInRobux
-end
 
 
 --[[
@@ -99,7 +84,7 @@ local function onGamePassPurchaseFinished(player: Player, gamePassId: number, wa
 	if not wasPurchased then
 		return
 	end
-	
+
 	local gamePass = categorizedAssets.GamePass[gamePassId]
 	if not gamePass then
 		warn(`Unregistered game-pass {gamePassId}.`)
@@ -138,21 +123,42 @@ end
 
 
 --[[
+@param     number           assetId     | The Id of the asset whose price to query.
+@param     Enum.InfoType    infoType    | The InfoType of the asset being queried.
+@return    number?
+
+Attempts to retrieve the price of the given asset in Robux.
+]]
+local function getPriceInRobuxAsync(assetId: number, infoType: Enum.InfoType): number?
+	local success, response = pcall(function()
+		return MarketplaceService:GetProductInfo(assetId, infoType)
+	end)
+
+	if not success then
+		warn(`Price retrieval failure for {infoType.Name} {assetId}; {response}`)
+
+		return
+	end
+
+	return response.PriceInRobux
+end
+
+--[[
 @param     AssetData    asset       | The asset to register.
 @param     string       category    | The asset category.
 @return    void
 
 Attempts to register the asset to MonetizationService.
 ]]
-local function tryRegisterAsset(asset: AssetData, category: string)
-	local registry = categorizedAssets[category]
-	if registry[asset.Id] then
+local function tryRegisterAsset(asset: AssetData, category: keyof<CategorizedAssets>)
+	local assets = categorizedAssets[category]
+	if assets[asset.Id] then
 		error(`{category} {asset.Id} has already been implemented.`, 3)
 	end
 
 	asset.Price = getPriceInRobuxAsync(asset.Id, Enum.InfoType[category])
 
-	registry[asset.Id] = asset
+	assets[asset.Id] = table.clone(asset)
 end
 
 
@@ -163,8 +169,8 @@ end
 
 Attempts to run the game-pass' handler function on the given player.
 ]]
-local function tryLoadGamePass(player: Player, gamePass: AssetData)
-	if MarketplaceService.userOwnsGamePassAsync(player.UserId, gamePass.Id) then
+function MonetizationService.tryLoadGamePass(player: Player, gamePass: AssetData)
+	if MonetizationService.userOwnsGamePassAsync(player.UserId, gamePass.Id) then
 		task.defer(gamePass.Handler, player)
 	end
 end
@@ -176,9 +182,9 @@ end
 
 Attempts to run the game-pass' handler function on all players.
 ]]
-local function tryLoadGamePassForAll(gamePass: AssetData)
-	for _, player in Players do
-		tryLoadGamePass(player, gamePass)
+function MonetizationService.tryLoadGamePassForAll(gamePass: AssetData)
+	for _, player in Players:GetPlayers() do
+		MonetizationService.tryLoadGamePass(player, gamePass)
 	end
 end
 
@@ -187,17 +193,15 @@ end
 @param     Player    player    | The player who joined the game.
 @return    void
 
-Attempts to load all game-passes for the player.
+Initializes a game-pass ownership cache for the player.
 ]]
 local function onPlayerAdded(player: Player)
-	for _, gamePass in categorizedAssets.GamePass do
-		tryLoadGamePass(player, gamePass)
-	end
+	gamePassOwnershipCache[player] = {}
 end
 
 
 --[[
-@param     Player    player    | The player who joined the game.
+@param     Player    player    | The player who's leaving the game.
 @return    void
 
 Invalidates the cache associated with the player.
@@ -205,6 +209,24 @@ Invalidates the cache associated with the player.
 local function onPlayerRemoving(player: Player)
 	gamePassOwnershipCache[player] = nil
 end
+
+
+--[[
+@param     Player     player    | The player to query.
+@return    boolean
+@throws
+
+Returns whether or not the game-pass is unofficially owned.
+]]
+local function getUnofficialOwnership(player: Player, gamePassId: number): boolean
+	local gamePassIds = UnofficialGamePassOwners:GetAsync(player.UserId) :: GamePassOwnershipMap?
+	if not gamePassIds then
+		return false
+	end
+	
+	return gamePassIds[gamePassId] ~= nil
+end
+
 
 
 --[[
@@ -223,18 +245,16 @@ function MonetizationService.userOwnsGamePassAsync(userId: number, gamePassId: n
 
 	local player = Players:GetPlayerByUserId(userId)
 	if not player then
-		return MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId)
+		return MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) or getUnofficialOwnership(player, gamePassId)
+	end
+	
+	local cache = gamePassOwnershipCache[player]
+	
+	if not cache[gamePassId] then
+		cache[gamePassId] = MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) or getUnofficialOwnership(player, gamePassId)
 	end
 
-	if not gamePassOwnershipCache[player] then
-		gamePassOwnershipCache[player] = {}
-	end
-
-	if not gamePassOwnershipCache[player][gamePassId] then
-		gamePassOwnershipCache[player][gamePassId] = MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId)
-	end
-
-	return gamePassOwnershipCache[player][gamePassId]
+	return cache[gamePassId]
 end
 
 
@@ -248,7 +268,8 @@ load the game-pass for all players.
 ]]
 function MonetizationService.registerGamePass(gamePass: AssetData)
 	tryRegisterAsset(gamePass, "GamePass")
-	tryLoadGamePassForAll(gamePass)
+	
+	MonetizationService.tryLoadGamePassForAll(gamePass)
 end
 
 
@@ -264,14 +285,60 @@ function MonetizationService.registerDeveloperProduct(product: AssetData)
 end
 
 
+--[[
+@return    {AssetData}    
 
-for _, player in Players:GetPlayers() do
-	task.spawn(onPlayerAdded, player)	
+Returns a copy of the game-pass assets. 
+]]
+function MonetizationService.getGamePasses(): {AssetData}
+	return table.clone(categorizedAssets.GamePass)
 end
+
+
+--[[
+@return    {AssetData}    
+
+Returns a copy of the product assets. 
+]]
+function MonetizationService.getProducts(): {AssetData}
+	return table.clone(categorizedAssets.Product)
+end
+
+
+--[[
+@param     number     userId        | The user ID of the player.
+@param     number     gamePassId    | The asset ID of the game-pass.
+@return    void    
+@throws
+
+Attempts to give the player the game-pass.
+]]
+function MonetizationService.tryGiveGamePass(userId: number, gamePassId: number)
+	local gamePass = categorizedAssets.GamePass[gamePassId]
+	if not gamePass then
+		error(`Unregistered game-pass {gamePassId}`)
+	end
 	
+	local player = Players:GetPlayerByUserId(userId)
+	if player then
+		gamePassOwnershipCache[player][gamePassId] = true
+		
+		MonetizationService.tryLoadGamePass(player, gamePass)
+	end
+	
+	UnofficialGamePassOwners:UpdateAsync(userId, function(gamePassIds: OwnershipMap)
+		gamePassIds = gamePassIds or {}
+		gamePassIds[gamePassId] = true
+		
+		return gamePassIds
+	end)
+end
+
+
+
 Players.PlayerAdded:Connect(onPlayerAdded)
 Players.PlayerRemoving:Connect(onPlayerRemoving)
-	
+
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(onGamePassPurchaseFinished)
 MarketplaceService.ProcessReceipt = onProductPurchaseFinished
 
