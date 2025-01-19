@@ -1,49 +1,12 @@
 --[[
 Author     Ziffixture (74087102)
 Date       01/18/2024 (MM/DD/YYYY)
-Version    2.0.4
+Version    2.0.2
 ]]
 
 
 
 --!strict
-type GamePassOwnershipMap = {
-	[number]: true,
-}
-
-type GamePassOwnershipCache = {
-	[Player]: GamePassOwnershipMap,
-}
-
-type AssetData = {
-	Id      : number,
-	Name    : string,
-	Price   : number?,
-	Handler : (Player) -> (),
-
-}
-
-type AssetIdMap = {
-	[number]: AssetData,
-}
-
-type CategorizedAssets = {
-	GamePass : AssetIdMap,
-	Product  : AssetIdMap,
-}
-
--- In accordance with https://create.roblox.com/docs/reference/engine/classes/MarketplaceService#ProcessReceipt (05/11/2024)
-type ProductReceipt = {
-	PurchaseId            : number,
-	PlayerId              : number,
-	ProductId             : number,
-	PlaceIdWherePurchased : number,
-	CurrencySpent         : number,
-	CurrencyType          : Enum.CurrencyType,
-}
-
-
-
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage  = game:GetService("ReplicatedStorage")
 local DataStoreService   = game:GetService("DataStoreService")
@@ -57,7 +20,9 @@ local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
 
 local MonetizationService = {}
 
-local Feature               = script.Parent
+local Feature = script.Parent
+local Types   = require(Feature.Types)
+
 local Configuration         = Feature.Configuration
 local OwnGamePassesInStudio = Configuration.OwnGamePassesInStudio 
 
@@ -150,7 +115,7 @@ end
 
 Attempts to register the asset to MonetizationService.
 ]]
-local function tryRegisterAsset(asset: AssetData, category: keyof<CategorizedAssets>)
+local function tryRegisterAsset(asset: Types.AssetData, category: keyof<CategorizedAssets>)
 	local assets = categorizedAssets[category]
 	if assets[asset.Id] then
 		error(`{category} {asset.Id} has already been implemented.`, 3)
@@ -163,13 +128,25 @@ end
 
 
 --[[
+@param     number     assetId     | The asset ID to query.
+@param     string     category    | The asset category.
+@return    boolean    
+
+Returns whether or not the asset is registered.
+]]
+local function isAssetRegistered(assetId: number, category: keyof<CategorizedAssets>): boolean
+	return categorizedAssets[category][assetId] ~= nil
+end
+
+
+--[[
 @param     Player       player      | The owner of the game-pass.
 @param     AssetData    gamePass    | The game-pass to load.
 @return    void
 
 Attempts to run the game-pass' handler function on the given player.
 ]]
-function MonetizationService.tryLoadGamePass(player: Player, gamePass: AssetData)
+function MonetizationService.tryLoadGamePass(player: Player, gamePass: Types.AssetData)
 	if MonetizationService.userOwnsGamePassAsync(player.UserId, gamePass.Id) then
 		task.defer(gamePass.Handler, player)
 	end
@@ -182,7 +159,7 @@ end
 
 Attempts to run the game-pass' handler function on all players.
 ]]
-function MonetizationService.tryLoadGamePassForAll(gamePass: AssetData)
+function MonetizationService.tryLoadGamePassForAll(gamePass: Types.AssetData)
 	for _, player in Players:GetPlayers() do
 		MonetizationService.tryLoadGamePass(player, gamePass)
 	end
@@ -266,7 +243,7 @@ end
 Attempts to register the game-pass to MonetizationService. If successful, attempts to
 load the game-pass for all players.
 ]]
-function MonetizationService.registerGamePass(gamePass: AssetData)
+function MonetizationService.registerGamePass(gamePass: Types.AssetData)
 	tryRegisterAsset(gamePass, "GamePass")
 	
 	MonetizationService.tryLoadGamePassForAll(gamePass)
@@ -280,8 +257,30 @@ end
 
 Attempts to register the product to MonetizationService.
 ]]
-function MonetizationService.registerDeveloperProduct(product: AssetData)
+function MonetizationService.registerDeveloperProduct(product: Types.AssetData)
 	tryRegisterAsset(product, "Product")
+end
+
+
+--[[
+@param     number     gamePassId    | The game-pass ID to query.
+@return    boolean    
+
+Returns whether or not the game-pass is registered.
+]]
+function MonetizationService.isGamePassRegistered(gamePassId: number): boolean
+	return categorizedAssets.GamePass[gamePassId] ~= nil
+end
+
+
+--[[
+@param     number     productId    | The product ID to query.
+@return    boolean    
+
+Returns whether or not the product is registered.
+]]
+function MonetizationService.isProductRegistered(productId: number): boolean
+	return isAssetRegistered(productId, "Product")
 end
 
 
@@ -290,7 +289,7 @@ end
 
 Returns a copy of the game-pass assets. 
 ]]
-function MonetizationService.getGamePasses(): {AssetData}
+function MonetizationService.getGamePasses(): {Types.AssetData}
 	return table.clone(categorizedAssets.GamePass)
 end
 
@@ -300,7 +299,7 @@ end
 
 Returns a copy of the product assets. 
 ]]
-function MonetizationService.getProducts(): {AssetData}
+function MonetizationService.getProducts(): {Types.AssetData}
 	return table.clone(categorizedAssets.Product)
 end
 
@@ -341,6 +340,34 @@ Players.PlayerRemoving:Connect(onPlayerRemoving)
 
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(onGamePassPurchaseFinished)
 MarketplaceService.ProcessReceipt = onProductPurchaseFinished
+
+
+type GamePassOwnershipMap = {
+	[number]: true,
+}
+
+type GamePassOwnershipCache = {
+	[Player]: GamePassOwnershipMap,
+}
+
+type AssetDataMap = {
+	[number]: Types.AssetData,
+}
+
+type CategorizedAssets = {
+	GamePass : AssetDataMap,
+	Product  : AssetDataMap,
+}
+
+-- In accordance with https://create.roblox.com/docs/reference/engine/classes/MarketplaceService#ProcessReceipt (05/11/2024)
+type ProductReceipt = {
+	PurchaseId            : number,
+	PlayerId              : number,
+	ProductId             : number,
+	PlaceIdWherePurchased : number,
+	CurrencySpent         : number,
+	CurrencyType          : Enum.CurrencyType,
+}
 
 
 return MonetizationService
