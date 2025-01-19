@@ -20,11 +20,9 @@ local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
 
 local MonetizationService = {}
 
-local Feature = script.Parent
-local Types   = require(Feature.Types)
-
-local Configuration         = Feature.Configuration
-local OwnGamePassesInStudio = Configuration.OwnGamePassesInStudio 
+local Feature       = script.Parent
+local Types         = require(Feature.Types)
+local Configuration = Feature.Configuration
 
 local UnofficialGamePassOwners = DataStoreService:GetDataStore("UnofficialGamePassOwners", "Test1") 
 
@@ -121,21 +119,8 @@ local function tryRegisterAsset(asset: Types.AssetData, category: keyof<Categori
 		error(`{category} {asset.Id} has already been implemented.`, 3)
 	end
 
-	asset.Price = getPriceInRobuxAsync(asset.Id, Enum.InfoType[category])
-
+	asset.Price      = getPriceInRobuxAsync(asset.Id, Enum.InfoType[category])
 	assets[asset.Id] = table.clone(asset)
-end
-
-
---[[
-@param     number     assetId     | The asset ID to query.
-@param     string     category    | The asset category.
-@return    boolean    
-
-Returns whether or not the asset is registered.
-]]
-local function isAssetRegistered(assetId: number, category: keyof<CategorizedAssets>): boolean
-	return categorizedAssets[category][assetId] ~= nil
 end
 
 
@@ -216,7 +201,7 @@ Acts as a wrapper function to MarketplaceService:UserOwnsGamePassAsync, where Ro
 replaced with a dynamic cache.
 ]]
 function MonetizationService.userOwnsGamePassAsync(userId: number, gamePassId: number): boolean
-	if RunService:IsStudio() and OwnGamePassesInStudio.Value then
+	if RunService:IsStudio() and Configuration.OwnGamePassesInStudio.Value then
 		return true
 	end
 
@@ -263,28 +248,6 @@ end
 
 
 --[[
-@param     number     gamePassId    | The game-pass ID to query.
-@return    boolean    
-
-Returns whether or not the game-pass is registered.
-]]
-function MonetizationService.isGamePassRegistered(gamePassId: number): boolean
-	return categorizedAssets.GamePass[gamePassId] ~= nil
-end
-
-
---[[
-@param     number     productId    | The product ID to query.
-@return    boolean    
-
-Returns whether or not the product is registered.
-]]
-function MonetizationService.isProductRegistered(productId: number): boolean
-	return isAssetRegistered(productId, "Product")
-end
-
-
---[[
 @return    {AssetData}    
 
 Returns a copy of the game-pass assets. 
@@ -301,6 +264,38 @@ Returns a copy of the product assets.
 ]]
 function MonetizationService.getProducts(): {Types.AssetData}
 	return table.clone(categorizedAssets.Product)
+end
+
+
+--[[
+@param     number        gamePassId    | The game-pass ID to query.
+@return    AssetData?    
+
+Returns a copy of the game-pass.
+]]
+function MonetizationService.getGamePass(gamePassId: number): Types.AssetData?
+	local gamePass = categorizedAssets.GamePass[gamePassId]
+	if not gamePass then
+		return
+	end
+	
+	return table.clone(gamePass)
+end
+
+
+--[[
+@param     number        productId    | The product ID to query.
+@return    AssetData?    
+
+Returns a copy of the product.
+]]
+function MonetizationService.getProduct(productId: number): Types.AssetData?
+	local product = categorizedAssets.Product[productId]
+	if not product then
+		return
+	end
+
+	return table.clone(product)
 end
 
 
@@ -326,7 +321,7 @@ function MonetizationService.tryGiveGamePass(userId: number, gamePassId: number)
 	end
 	
 	UnofficialGamePassOwners:UpdateAsync(userId, function(gamePassIds: GamePassOwnershipMap)
-		gamePassIds = gamePassIds or {}
+		gamePassIds             = gamePassIds or {}
 		gamePassIds[gamePassId] = true
 		
 		return gamePassIds
