@@ -18,18 +18,23 @@ local NOT_PROCESSED_YET = Enum.ProductPurchaseDecision.NotProcessedYet
 local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
 
 
-local MonetizationService = {}
+local UnofficialGamePassOwners = DataStoreService:GetDataStore("UnofficialGamePassOwners", "Test1") 
 
 local Feature       = script.Parent
 local Types         = require(Feature.Types)
 local Configuration = Feature.Configuration
 
-local UnofficialGamePassOwners = DataStoreService:GetDataStore("UnofficialGamePassOwners", "Test1") 
+local Vendor = ReplicatedStorage.Vendor
+local Signal = require(Vendor.Signal)
+
+local MonetizationService = {}
+MonetizationService.GamePassRegistered = Signal.new() :: Types.AssetRegisteredSignal
+MonetizationService.ProductRegistered  = Signal.new() :: Types.AssetRegisteredSignal
 
 
 local gamePassOwnershipCache = {} :: GamePassOwnershipCache
 
-local categorizedAssets    = {} :: CategorizedAssets
+local categorizedAssets = {} :: CategorizedAssets
 categorizedAssets.GamePass = {}
 categorizedAssets.Product  = {}
 
@@ -232,6 +237,7 @@ function MonetizationService.registerGamePass(gamePass: Types.AssetData)
 	tryRegisterAsset(gamePass, "GamePass")
 	
 	MonetizationService.tryLoadGamePassForAll(gamePass)
+	MonetizationService.GamePassRegistered:Fire(table.clone(gamePass))
 end
 
 
@@ -244,6 +250,8 @@ Attempts to register the product to MonetizationService.
 ]]
 function MonetizationService.registerDeveloperProduct(product: Types.AssetData)
 	tryRegisterAsset(product, "Product")
+	
+	MonetizationService.ProductRegistered:Fire(table.clone(product))
 end
 
 
