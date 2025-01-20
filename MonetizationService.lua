@@ -32,12 +32,53 @@ MonetizationService.GamePassRegistered = Signal.new() :: Types.AssetRegisteredSi
 MonetizationService.ProductRegistered  = Signal.new() :: Types.AssetRegisteredSignal
 
 
-local gamePassOwnershipCache = {} :: GamePassOwnershipCache
-
 local categorizedAssets = {} :: CategorizedAssets
 categorizedAssets.GamePass = {}
 categorizedAssets.Product  = {}
 
+local gamePassOwnershipCache = {} :: GamePassOwnershipCache
+
+
+
+
+--[[
+@param     Player    player    | The player to query.
+@return    void
+
+Returns the cache associated with the player. If one doesn't exist, one is created.
+]]
+local function getCache(player: Player)
+	if not gamePassOwnershipCache[player] then
+		gamePassOwnershipCache[player] = {}
+	end
+	
+	return gamePassOwnershipCache[player]
+end
+
+
+--[[
+@param     Player    player    | The player who's leaving the game.
+@return    void
+
+Invalidates the cache associated with the player.
+]]
+local function deleteCache(player: Player)
+	gamePassOwnershipCache[player] = nil
+end
+
+
+--[[
+@param     AssetData    asset    | The asset whose handler to run.
+@param     ...
+@return    void
+
+If present, runs the asset's handler function.
+]]
+local function tryRunHandler(asset: Types.AssetData, ...)
+	if asset.Handler then
+		asset.Handler(...)
+	end
+end
 
 
 --[[
@@ -60,8 +101,8 @@ local function onGamePassPurchaseFinished(player: Player, gamePassId: number, wa
 		return
 	end
 
-	gamePassOwnershipCache[player][gamePassId] = true
-	gamePass.Handler(player)
+	getCache(player)[gamePassId] = true
+	tryRunHandler(gamePass, player)
 end
 
 
@@ -84,7 +125,7 @@ local function onProductPurchaseFinished(receipt: ProductReceipt): Enum.ProductP
 		return NOT_PROCESSED_YET
 	end
 
-	product.Handler(player)
+	tryRunHandler(product, player)
 
 	return PURCHASE_GRANTED
 end
@@ -126,6 +167,8 @@ local function tryRegisterAsset(asset: Types.AssetData, category: keyof<Categori
 
 	asset.Price      = getPriceInRobuxAsync(asset.Id, Enum.InfoType[category])
 	assets[asset.Id] = table.clone(asset)
+	
+	MonetizationService[`{category}Registered`]:Fire(table.clone(asset))
 end
 
 
@@ -138,7 +181,7 @@ Attempts to run the game-pass' handler function on the given player.
 ]]
 function MonetizationService.tryLoadGamePass(player: Player, gamePass: Types.AssetData)
 	if MonetizationService.userOwnsGamePassAsync(player.UserId, gamePass.Id) then
-		task.defer(gamePass.Handler, player)
+		task.defer(tryRunHandler, gamePass, player)
 	end
 end
 
@@ -157,28 +200,6 @@ end
 
 
 --[[
-@param     Player    player    | The player who joined the game.
-@return    void
-
-Initializes a game-pass ownership cache for the player.
-]]
-local function onPlayerAdded(player: Player)
-	gamePassOwnershipCache[player] = {}
-end
-
-
---[[
-@param     Player    player    | The player who's leaving the game.
-@return    void
-
-Invalidates the cache associated with the player.
-]]
-local function onPlayerRemoving(player: Player)
-	gamePassOwnershipCache[player] = nil
-end
-
-
---[[
 @param     Player     player    | The player to query.
 @return    boolean
 @throws
@@ -186,12 +207,12 @@ end
 Returns whether or not the game-pass is unofficially owned.
 ]]
 local function getUnofficialOwnership(player: Player, gamePassId: number): boolean
-	local gamePassIds = UnofficialGamePassOwners:GetAsync(player.UserId) :: GamePassOwnershipMap?
+	local gamePassIds = UnofficialGamePassOwners:GetAsync(player.UserId) :: GamePassOwnershipMap
 	if not gamePassIds then
 		return false
 	end
 	
-	return gamePassIds[gamePassId] ~= nil
+	return gamePassIds[tostring(gamePassId)] ~= nil
 end
 
 
@@ -215,7 +236,7 @@ function MonetizationService.userOwnsGamePassAsync(userId: number, gamePassId: n
 		return MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) or getUnofficialOwnership(player, gamePassId)
 	end
 	
-	local cache = gamePassOwnershipCache[player]
+	local cache = getCache(player)
 	
 	if not cache[gamePassId] then
 		cache[gamePassId] = MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) or getUnofficialOwnership(player, gamePassId)
@@ -235,9 +256,6 @@ load the game-pass for all players.
 ]]
 function MonetizationService.registerGamePass(gamePass: Types.AssetData)
 	tryRegisterAsset(gamePass, "GamePass")
-	
-	MonetizationService.tryLoadGamePassForAll(gamePass)
-	MonetizationService.GamePassRegistered:Fire(table.clone(gamePass))
 end
 
 
@@ -250,8 +268,6 @@ Attempts to register the product to MonetizationService.
 ]]
 function MonetizationService.registerDeveloperProduct(product: Types.AssetData)
 	tryRegisterAsset(product, "Product")
-	
-	MonetizationService.ProductRegistered:Fire(table.clone(product))
 end
 
 
@@ -308,8 +324,8 @@ end
 
 
 --[[
-@param     number     userId        | The user ID of the player.
-@param     number     gamePassId    | The asset ID of the game-pass.
+@param     number    userId        | The user ID of the player.
+@param     number    gamePassId    | The asset ID of the game-pass.
 @return    void    
 @throws
 
@@ -323,7 +339,7 @@ function MonetizationService.tryGiveGamePass(userId: number, gamePassId: number)
 	
 	local player = Players:GetPlayerByUserId(userId)
 	if player then
-		gamePassOwnershipCache[player][gamePassId] = true
+		getCache(player)[gamePassId] = true
 		
 		MonetizationService.tryLoadGamePass(player, gamePass)
 	end
@@ -338,15 +354,13 @@ end
 
 
 
-Players.PlayerAdded:Connect(onPlayerAdded)
-Players.PlayerRemoving:Connect(onPlayerRemoving)
-
+Players.PlayerRemoving:Connect(deleteCache)
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(onGamePassPurchaseFinished)
 MarketplaceService.ProcessReceipt = onProductPurchaseFinished
 
 
 type GamePassOwnershipMap = {
-	[number]: true,
+	[number | string]: true,
 }
 
 type GamePassOwnershipCache = {
