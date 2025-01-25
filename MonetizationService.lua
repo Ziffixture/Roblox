@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       01/24/2024 (MM/DD/YYYY)
-Version    2.1.5
+Version    2.1.7
 ]]
 
 
@@ -91,9 +91,9 @@ end
 @return    boolean
 @throws
 
-Returns whether or not the game-pass is unofficially owned.
+Returns whether or not the game-pass is owned unofficially.
 ]]
-local function getUnofficialOwnership(userId: number, gamePassId: number): boolean
+local function ownsUnofficially(userId: number, gamePassId: number): boolean
 	local gamePassIds = UnofficialGamePassOwners:GetAsync(userId) :: GamePassOwnershipMap
 	if not gamePassIds then
 		return false
@@ -101,6 +101,42 @@ local function getUnofficialOwnership(userId: number, gamePassId: number): boole
 
 	return gamePassIds[tostring(gamePassId)] ~= nil
 end
+
+
+--[[
+@param     number     userId        | The user ID of the player.
+@param     number     gamePassId    | The asset ID of the game-pass.
+@return    boolean
+@throws
+
+Returns whether or not the game-pass is owned Roblox Studio.
+]]
+local function ownsGamePassInStudio(userId: number, gamePassId: number): boolean
+	if RunService:IsStudio() 
+		and Players:GetPlayerByUserId(userId)
+		and Configuration.OwnGamePassesInStudio.Value 
+	then
+		return true
+	end
+	
+	return false
+end
+
+
+--[[
+@param     number     userId        | The user ID of the player.
+@param     number     gamePassId    | The asset ID of the game-pass.
+@return    boolean
+@throws
+
+Returns whether or not the game-pass is owned.
+]]
+local function ownsGamePassAsync(userId: number, gamePassId: number): boolean
+	return ownsGamePassInStudio(userId, gamePassId) 
+		       or MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) 
+		       or ownsUnofficially(userId, gamePassId)
+end
+
 
 
 
@@ -246,15 +282,11 @@ Acts as a wrapper function to MarketplaceService:UserOwnsGamePassAsync, where Ro
 replaced with a dynamic cache.
 ]]
 function MonetizationService.userOwnsGamePassAsync(userId: number, gamePassId: number): boolean
-	if RunService:IsStudio() and Configuration.OwnGamePassesInStudio.Value then
-		return true
-	end
+	local owned = ownsGamePassAsync(userId, gamePassId)
 
-	local owned = MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) or getUnofficialOwnership(userId, gamePassId)
-	
 	local player = Players:GetPlayerByUserId(userId)
 	if player then
-		setGamePassOwned(player, gamePassId, true)
+		setGamePassOwned(player, gamePassId, owned)
 	end
 
 	return owned
