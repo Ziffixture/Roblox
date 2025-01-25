@@ -93,7 +93,7 @@ end
 
 Returns whether or not the game-pass is owned unofficially.
 ]]
-local function ownsUnofficially(userId: number, gamePassId: number): boolean
+local function ownsGamePassUnofficially(userId: number, gamePassId: number): boolean
 	local gamePassIds = UnofficialGamePassOwners:GetAsync(userId) :: GamePassOwnershipMap
 	if not gamePassIds then
 		return false
@@ -134,7 +134,7 @@ Returns whether or not the game-pass is owned.
 local function ownsGamePassAsync(userId: number, gamePassId: number): boolean
 	return ownsGamePassInStudio(userId, gamePassId) 
 		       or MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) 
-		       or ownsUnofficially(userId, gamePassId)
+		       or ownsGamePassUnofficially(userId, gamePassId)
 end
 
 
