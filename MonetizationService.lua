@@ -93,7 +93,7 @@ end
 
 Returns whether or not the game-pass is owned unofficially.
 ]]
-local function ownsGamePassUnofficially(userId: number, gamePassId: number): boolean
+local function ownsGamePassUnofficiallyAsync(userId: number, gamePassId: number): boolean
 	local gamePassIds = UnofficialGamePassOwners:GetAsync(userId) :: GamePassOwnershipMap
 	if not gamePassIds then
 		return false
@@ -134,7 +134,7 @@ Returns whether or not the game-pass is owned.
 local function ownsGamePassAsync(userId: number, gamePassId: number): boolean
 	return ownsGamePassInStudio(userId, gamePassId) 
 		       or MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) 
-		       or ownsGamePassUnofficially(userId, gamePassId)
+		       or ownsGamePassUnofficiallyAsync(userId, gamePassId)
 end
 
 
@@ -232,7 +232,7 @@ end
 
 Attempts to register the asset to MonetizationService.
 ]]
-local function tryRegisterAsset(asset: Types.AssetData, category: keyof<CategorizedAssets>)
+local function tryRegisterAssetAsync(asset: Types.AssetData, category: keyof<CategorizedAssets>)
 	local assets = categorizedAssets[category]
 	if assets[asset.Id] then
 		error(`{category} {asset.Id} has already been implemented.`)
@@ -252,7 +252,7 @@ end
 
 Attempts to run the game-pass' handler function on the given player.
 ]]
-function MonetizationService.tryLoadGamePass(player: Player, gamePass: Types.AssetData)
+function MonetizationService.tryLoadGamePassAsync(player: Player, gamePass: Types.AssetData)
 	if MonetizationService.userOwnsGamePassAsync(player.UserId, gamePass.Id) then
 		task.defer(tryRunHandler, gamePass, player)
 	end
@@ -265,9 +265,9 @@ end
 
 Attempts to run the game-pass' handler function on all players.
 ]]
-function MonetizationService.tryLoadGamePassForAll(gamePass: Types.AssetData)
+function MonetizationService.tryLoadGamePassForAllAsync(gamePass: Types.AssetData)
 	for _, player in Players:GetPlayers() do
-		MonetizationService.tryLoadGamePass(player, gamePass)
+		MonetizationService.tryLoadGamePassAsync(player, gamePass)
 	end
 end
 
@@ -301,8 +301,8 @@ end
 Attempts to register the game-pass to MonetizationService. If successful, attempts to
 load the game-pass for all players.
 ]]
-function MonetizationService.registerGamePass(gamePass: Types.AssetData)
-	tryRegisterAsset(gamePass, "GamePass")
+function MonetizationService.registerGamePassAsync(gamePass: Types.AssetData)
+	tryRegisterAssetAsync(gamePass, "GamePass")
 end
 
 
@@ -313,8 +313,8 @@ end
 
 Attempts to register the product to MonetizationService.
 ]]
-function MonetizationService.registerDeveloperProduct(product: Types.AssetData)
-	tryRegisterAsset(product, "Product")
+function MonetizationService.registerDeveloperProductAsync(product: Types.AssetData)
+	tryRegisterAssetAsync(product, "Product")
 end
 
 
@@ -378,7 +378,7 @@ end
 
 Attempts to give the player the game-pass.
 ]]
-function MonetizationService.tryGiveGamePass(userId: number, gamePassId: number)
+function MonetizationService.tryGiveGamePassAsync(userId: number, gamePassId: number)
 	local gamePass = categorizedAssets.GamePass[gamePassId]
 	if not gamePass then
 		error(`Unregistered game-pass {gamePassId}`)
