@@ -52,7 +52,7 @@ local function getCache(player: Player)
 	if not gamePassOwnershipCache[player] then
 		gamePassOwnershipCache[player] = {}
 	end
-	
+
 	return gamePassOwnershipCache[player]
 end
 
@@ -78,7 +78,7 @@ If present, runs the asset's handler function.
 ]]
 local function setGamePassOwned(player: Player, gamePassId: number, owned: boolean)
 	getCache(player)[gamePassId] = owned
-	
+
 	if owned then
 		MonetizationService.GamePassOwned:Fire(player, MonetizationService.getGamePass(gamePassId))
 	end
@@ -90,6 +90,7 @@ end
 @param     number     gamePassId    | The asset ID of the game-pass.
 @return    boolean
 @throws
+@yields
 
 Returns whether or not the game-pass is owned unofficially.
 ]]
@@ -108,6 +109,7 @@ end
 @param     number     gamePassId    | The asset ID of the game-pass.
 @return    boolean
 @throws
+@yields
 
 Returns whether or not the game-pass is owned Roblox Studio.
 ]]
@@ -118,7 +120,7 @@ local function ownsGamePassInStudio(userId: number, gamePassId: number): boolean
 	then
 		return true
 	end
-	
+
 	return false
 end
 
@@ -128,13 +130,14 @@ end
 @param     number     gamePassId    | The asset ID of the game-pass.
 @return    boolean
 @throws
+@yields
 
 Returns whether or not the game-pass is owned.
 ]]
 local function ownsGamePassAsync(userId: number, gamePassId: number): boolean
 	return ownsGamePassInStudio(userId, gamePassId) 
-		       or MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) 
-		       or ownsGamePassUnofficiallyAsync(userId, gamePassId)
+		or MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) 
+		or ownsGamePassUnofficiallyAsync(userId, gamePassId)
 end
 
 
@@ -193,7 +196,7 @@ local function onProductPurchaseFinished(receipt: ProductReceipt): Enum.ProductP
 
 	local product = categorizedAssets.Product[receipt.ProductId]
 	if not product then
-		warn(`Unregistered developer product {receipt.ProductId}.`)
+		warn(`Unregistered product {receipt.ProductId}.`)
 
 		return NOT_PROCESSED_YET
 	end
@@ -208,6 +211,8 @@ end
 @param     number           assetId     | The Id of the asset whose price to query.
 @param     Enum.InfoType    infoType    | The InfoType of the asset being queried.
 @return    number?
+@throws
+@yields
 
 Attempts to retrieve the price of the given asset in Robux.
 ]]
@@ -229,6 +234,8 @@ end
 @param     AssetData    asset       | The asset to register.
 @param     string       category    | The asset category.
 @return    void
+@throws
+@yields
 
 Attempts to register the asset to MonetizationService.
 ]]
@@ -240,7 +247,7 @@ local function tryRegisterAssetAsync(asset: Types.AssetData, category: keyof<Cat
 
 	asset.Price      = getPriceInRobuxAsync(asset.Id, Enum.InfoType[category])
 	assets[asset.Id] = table.clone(asset)
-	
+
 	MonetizationService[`{category}Registered`]:Fire(table.clone(asset))
 end
 
@@ -249,6 +256,8 @@ end
 @param     Player       player      | The owner of the game-pass.
 @param     AssetData    gamePass    | The game-pass to load.
 @return    void
+@throws
+@yields
 
 Attempts to run the game-pass' handler function on the given player.
 ]]
@@ -262,6 +271,8 @@ end
 --[[
 @param     AssetData    gamePass    | The game-pass to load.
 @return    void
+@throws
+@yields
 
 Attempts to run the game-pass' handler function on all players.
 ]]
@@ -277,6 +288,7 @@ end
 @param     number     gamePassId    | The asset ID of the game-pass.
 @return    boolean    
 @throws
+@yields
 
 Acts as a wrapper function to MarketplaceService:UserOwnsGamePassAsync, where Roblox's static cache is
 replaced with a dynamic cache.
@@ -294,9 +306,43 @@ end
 
 
 --[[
+@param     Player     player       | The player to prompt.
+@param     number     productId    | The asset ID of the product.
+@return    boolean    
+@throws
+@yields
+
+Prompts the player to buy a product. Returns whether or not the product was purchased
+]]
+function MonetizationService.promptProductPurchaseAsync(player: Player, productId: number): boolean
+	MarketplaceService:PromptProductPurchase(player, productId)
+	
+	local connection: RBXScriptConnection
+	local thread = coroutine.running()
+	
+	connection = MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId: number, productId: number, wasPurchased: boolean)
+		if userId ~= player.UserId then
+			return
+		end
+		
+		if productId ~= productId then
+			return
+		end
+
+		connection:Disconnect()
+		
+		coroutine.resume(thread, wasPurchased)
+	end)
+	
+	return coroutine.yield()
+end
+
+
+--[[
 @param     AssetData    gamePass    | The game-pass to register.
 @return    void    
 @throws
+@yields
 
 Attempts to register the game-pass to MonetizationService. If successful, attempts to
 load the game-pass for all players.
@@ -310,10 +356,11 @@ end
 @param     AssetData    product    | The product to register.
 @return    void    
 @throws
+@yields
 
 Attempts to register the product to MonetizationService.
 ]]
-function MonetizationService.registerDeveloperProductAsync(product: Types.AssetData)
+function MonetizationService.registerProductAsync(product: Types.AssetData)
 	tryRegisterAssetAsync(product, "Product")
 end
 
@@ -349,7 +396,7 @@ function MonetizationService.getGamePass(gamePassId: number): Types.AssetData?
 	if not gamePass then
 		return
 	end
-	
+
 	return table.clone(gamePass)
 end
 
@@ -375,6 +422,7 @@ end
 @param     number    gamePassId    | The asset ID of the game-pass.
 @return    void    
 @throws
+@yields
 
 Attempts to give the player the game-pass.
 ]]
@@ -383,18 +431,18 @@ function MonetizationService.tryGiveGamePassAsync(userId: number, gamePassId: nu
 	if not gamePass then
 		error(`Unregistered game-pass {gamePassId}`)
 	end
-	
+
 	local player = Players:GetPlayerByUserId(userId)
 	if player then
 		setGamePassOwned(player, gamePassId, true)
-		
-		MonetizationService.tryLoadGamePass(player, gamePass)
+
+		MonetizationService.tryLoadGamePassAsync(player, gamePass)
 	end
-	
+
 	UnofficialGamePassOwners:UpdateAsync(userId, function(gamePassIds: GamePassOwnershipMap)
 		gamePassIds             = gamePassIds or {}
 		gamePassIds[gamePassId] = true
-		
+
 		return gamePassIds
 	end)
 end
