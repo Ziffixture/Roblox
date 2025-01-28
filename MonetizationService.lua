@@ -98,7 +98,7 @@ end
 Returns whether or not the game-pass is owned unofficially.
 ]]
 local function ownsGamePassUnofficiallyAsync(userId: number, gamePassId: number): boolean
-	local gamePassIds = UnofficialGamePassOwners:GetAsync(userId) :: GamePassOwnershipMap
+	local gamePassIds = UnofficialGamePassOwners:GetAsync(userId) :: SharedTypes.GamePassOwnershipMap
 	if not gamePassIds then
 		return false
 	end
@@ -380,7 +380,7 @@ end
 --[[
 @return    {AssetData}    
 
-Returns a copy of the product assets. 
+Returns a copy of the product. 
 ]]
 function MonetizationService.getProducts(): {Types.AssetData}
 	return table.clone(categorizedAssets.Product)
@@ -420,6 +420,21 @@ end
 
 
 --[[
+@return    {AssetData}    
+
+Returns a copy of the asset. 
+]]
+function MonetizationService.getAsset(assetId: number): Types.AssetData?
+	local asset = MonetizationService.getGamePass(assetId) or MonetizationService.getProduct(assetId)
+	if not asset then
+		return
+	end
+
+	return asset
+end
+
+
+--[[
 @param     number    userId        | The user ID of the player.
 @param     number    gamePassId    | The asset ID of the game-pass.
 @return    void    
@@ -441,7 +456,7 @@ function MonetizationService.tryGiveGamePassAsync(userId: number, gamePassId: nu
 		MonetizationService.tryLoadGamePassAsync(player, gamePass)
 	end
 
-	UnofficialGamePassOwners:UpdateAsync(userId, function(gamePassIds: GamePassOwnershipMap)
+	UnofficialGamePassOwners:UpdateAsync(userId, function(gamePassIds: SharedTypes.GamePassOwnershipMap)
 		gamePassIds             = gamePassIds or {}
 		gamePassIds[gamePassId] = true
 
