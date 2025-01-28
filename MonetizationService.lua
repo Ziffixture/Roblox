@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       01/24/2024 (MM/DD/YYYY)
-Version    2.1.7
+Date       01/26/2024 (MM/DD/YYYY)
+Version    2.2.1
 ]]
 
 
@@ -18,7 +18,7 @@ local NOT_PROCESSED_YET = Enum.ProductPurchaseDecision.NotProcessedYet
 local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
 
 
-local UnofficialGamePassOwners = DataStoreService:GetDataStore("UnofficialGamePassOwners", "Production") 
+local UnofficialGamePassOwners = DataStoreService:GetDataStore("UnofficialGamePassOwners", "Test1") 
 
 local Vendor = ReplicatedStorage.Vendor
 local Signal = require(Vendor.Signal)
@@ -26,6 +26,9 @@ local Signal = require(Vendor.Signal)
 local Feature       = script.Parent
 local Types         = require(Feature.Types)
 local Configuration = Feature.Configuration
+
+local SharedFeature = ReplicatedStorage.Monetization
+local SharedTypes   = require(SharedFeature.Types)
 
 local MonetizationService = {}
 MonetizationService.GamePassRegistered = Signal.new() :: Types.AssetRegisteredSignal
@@ -315,10 +318,8 @@ end
 Prompts the player to buy a product. Returns whether or not the product was purchased
 ]]
 function MonetizationService.promptProductPurchaseAsync(player: Player, productId: number): boolean
-	MarketplaceService:PromptProductPurchase(player, productId)
-	
 	local connection: RBXScriptConnection
-	local thread = coroutine.running()
+	local finished = Signal.new()
 	
 	connection = MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId: number, productId: number, wasPurchased: boolean)
 		if userId ~= player.UserId then
@@ -330,11 +331,12 @@ function MonetizationService.promptProductPurchaseAsync(player: Player, productI
 		end
 
 		connection:Disconnect()
-		
-		coroutine.resume(thread, wasPurchased)
+		finished:Fire(wasPurchased)
 	end)
 	
-	return coroutine.yield()
+	MarketplaceService:PromptProductPurchase(player, productId)
+	
+	return finished:Wait()
 end
 
 
@@ -454,12 +456,8 @@ MarketplaceService.PromptGamePassPurchaseFinished:Connect(onGamePassPurchaseFini
 MarketplaceService.ProcessReceipt = onProductPurchaseFinished
 
 
-type GamePassOwnershipMap = {
-	[number | string]: boolean,
-}
-
 type GamePassOwnershipCache = {
-	[Player]: GamePassOwnershipMap,
+	[Player]: SharedTypes.GamePassOwnershipMap,
 }
 
 type AssetDataMap = {
