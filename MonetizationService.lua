@@ -420,7 +420,8 @@ end
 
 
 --[[
-@return    {AssetData}    
+@param     number        assetId    | The asset ID to query.
+@return    AssetData? 
 
 Returns a copy of the asset. 
 ]]
