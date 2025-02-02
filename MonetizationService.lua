@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       01/26/2024 (MM/DD/YYYY)
-Version    2.2.1
+Date       02/01/2025 (MM/DD/YYYY)
+Version    2.2.4
 ]]
 
 
@@ -33,15 +33,15 @@ local SharedTypes   = require(SharedFeature.Types)
 local MonetizationService = {}
 MonetizationService.GamePassRegistered = Signal.new() :: Types.AssetRegisteredSignal
 MonetizationService.ProductRegistered  = Signal.new() :: Types.AssetRegisteredSignal
+MonetizationService.AssetRegistered    = Signal.new() :: Types.AssetRegisteredSignal
 MonetizationService.GamePassOwned      = Signal.new() :: Types.GamePassOwnedSignal
-
 
 local categorizedAssets = {} :: CategorizedAssets
 categorizedAssets.GamePass = {}
 categorizedAssets.Product  = {}
 
 local gamePassOwnershipCache = {} :: GamePassOwnershipCache
-
+local assetRegisteredSignals = {} :: {Signal.Signal<Types.AssetData>}
 
 
 
@@ -233,6 +233,7 @@ local function getPriceInRobuxAsync(assetId: number, infoType: Enum.InfoType): n
 	return response.PriceInRobux
 end
 
+
 --[[
 @param     AssetData    asset       | The asset to register.
 @param     string       category    | The asset category.
@@ -251,7 +252,70 @@ local function tryRegisterAssetAsync(asset: Types.AssetData, category: keyof<Cat
 	asset.Price      = getPriceInRobuxAsync(asset.Id, Enum.InfoType[category])
 	assets[asset.Id] = table.clone(asset)
 
+	MonetizationService.AssetRegistered:Fire(table.clone(asset))
 	MonetizationService[`{category}Registered`]:Fire(table.clone(asset))
+	
+	local assetRegisteredSignal = assetRegisteredSignals[asset.Id]
+	if not assetRegisteredSignal then
+		return
+	end
+
+	assetRegisteredSignal:Fire(table.clone(asset))
+	assetRegisteredSignal:Destroy()
+
+	assetRegisteredSignal[asset.Id] = nil
+end
+
+
+--[[
+@param     number                 assetId    | The asset ID.
+@return    Signal.Connection<>    
+@throws
+
+Schedules a callback for the registration of a particular asset.
+]]
+function MonetizationService.listenForAssetRegistered(assetId: number, callback: (asset: Types.AssetData) -> ()): Signal.Connection<>
+	if MonetizationService.isAsset(assetId) then
+		error(`Asset {assetId} is already registered.`)
+	end
+	
+	if not assetRegisteredSignals[assetId] then
+		assetRegisteredSignals[assetId] = Signal.new()
+	end
+
+	return assetRegisteredSignals[assetId]:Connect(callback)
+end
+
+
+--[[
+@param      {number}    assetIds    | A list of asset IDs to await.
+@returns    void
+@yields
+
+Awaits the registration of a series of asset IDs.
+]]
+function MonetizationService.awaitAssets(assetIds: {number})
+	local thread = coroutine.running()
+	local tasks  = 0
+
+	for _, assetId in assetIds do
+		if MonetizationService.isAsset(assetId) then
+			continue
+		end
+
+		MonetizationService.listenForAssetRegistered(assetId, function()
+			tasks -= 1
+			if tasks == 0 then
+				coroutine.resume(thread)
+			end
+		end)
+
+		tasks += 1
+	end
+
+	if tasks > 0 then
+		coroutine.yield()
+	end
 end
 
 
@@ -420,8 +484,8 @@ end
 
 
 --[[
-@param     number        assetId    | The asset ID to query.
-@return    AssetData? 
+@param     number         assetId    | The asset ID to query.
+@return    {AssetData}    
 
 Returns a copy of the asset. 
 ]]
@@ -432,6 +496,39 @@ function MonetizationService.getAsset(assetId: number): Types.AssetData?
 	end
 
 	return asset
+end
+
+
+--[[
+@param     number     assetId    | The game-pass ID to query.
+@return    boolean 
+
+Returns whether or not the asset ID is recognized as a game-pass.
+]]
+function MonetizationService.isGamePass(assetId: number): boolean
+	return categorizedAssets.GamePass[assetId] ~= nil
+end
+
+
+--[[
+@param     number     assetId    | The product ID to query.
+@return    boolean 
+
+Returns whether or not the asset ID is recognized as a game-pass.
+]]
+function MonetizationService.isProduct(assetId: number): boolean
+	return categorizedAssets.Product[assetId] ~= nil
+end
+
+
+--[[
+@param     number     assetId    | The asset ID to query.
+@return    boolean 
+
+Returns whether or not the asset ID is recognized as an asset.
+]]
+function MonetizationService.isAsset(assetId: number): boolean
+	return MonetizationService.isGamePass(assetId) or MonetizationService.isProduct(assetId)
 end
 
 
@@ -466,6 +563,24 @@ function MonetizationService.tryGiveGamePassAsync(userId: number, gamePassId: nu
 end
 
 
+--[[
+@param     Player    player       | The player to give the product.
+@param     number    productId    | The asset ID of the product.
+@return    void    
+@throws
+
+Attempts to give the player the game-pass.
+]]
+function MonetizationService.tryGiveProduct(player: Player, productId: number)
+	local product = categorizedAssets.Product[productId]
+	if not product then
+		error(`Unregistered product {product}`)
+	end
+
+	task.defer(tryRunHandler, product, player)
+end
+
+
 
 Players.PlayerRemoving:Connect(deleteCache)
 MarketplaceService.PromptGamePassPurchaseFinished:Connect(onGamePassPurchaseFinished)
@@ -496,4 +611,4 @@ type ProductReceipt = {
 }
 
 
-return MonetizationService
+return table.freeze(MonetizationService)
