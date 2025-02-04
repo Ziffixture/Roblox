@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       02/01/2025 (MM/DD/YYYY)
-Version    2.2.4
+Date       02/04/2025 (MM/DD/YYYY)
+Version    2.2.5
 ]]
 
 
@@ -49,14 +49,14 @@ local assetRegisteredSignals = {} :: {Signal.Signal<Types.AssetData>}
 @param     Player    player    | The player to query.
 @return    void
 
-Returns the cache associated with the player. If one doesn't exist, one is created.
+Returns the cache associated with the player's user ID. If one doesn't exist, one is created.
 ]]
 local function getCache(player: Player)
-	if not gamePassOwnershipCache[player] then
-		gamePassOwnershipCache[player] = {}
+	if not gamePassOwnershipCache[player.UserId] then
+		gamePassOwnershipCache[player.UserId] = {}
 	end
 
-	return gamePassOwnershipCache[player]
+	return gamePassOwnershipCache[player.UserId]
 end
 
 
@@ -67,7 +67,7 @@ end
 Invalidates the cache associated with the player.
 ]]
 local function deleteCache(player: Player)
-	gamePassOwnershipCache[player] = nil
+	gamePassOwnershipCache[player.UserId] = nil
 end
 
 
@@ -135,10 +135,30 @@ end
 @throws
 @yields
 
+Returns whether or not the game-pass is owned in the cache.
+]]
+local function ownsGamePassInCache(userId: number, gamePassId: number): boolean
+	local player = Players:GetPlayerByUserId(userId)
+	if not player then
+		return false
+	end
+	
+	return getCache(player)[gamePassId] == true
+end
+
+
+--[[
+@param     number     userId        | The user ID of the player.
+@param     number     gamePassId    | The asset ID of the game-pass.
+@return    boolean
+@throws
+@yields
+
 Returns whether or not the game-pass is owned.
 ]]
 local function ownsGamePassAsync(userId: number, gamePassId: number): boolean
-	return ownsGamePassInStudio(userId, gamePassId) 
+	return ownsGamePassInCache(userId, gamePassId) 
+		or ownsGamePassInStudio(userId, gamePassId) 
 		or MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) 
 		or ownsGamePassUnofficiallyAsync(userId, gamePassId)
 end
@@ -181,7 +201,7 @@ local function onGamePassPurchaseFinished(player: Player, gamePassId: number, wa
 	end
 
 	setGamePassOwned(player, gamePassId, true)
-	tryRunHandler(gamePass, player)
+	tryRunHandler(gamePass, player, false)
 end
 
 
@@ -268,6 +288,23 @@ end
 
 
 --[[
+@param     Player       player      | The owner of the game-pass.
+@param     AssetData    gamePass    | The game-pass to load.
+@return    void
+@throws
+@yields
+
+Attempts to run the game-pass' handler function on the given player. Offers context into
+whether or not the game-pass was already owned.
+]]
+local function tryLoadGamePassAsync(player: Player, gamePass: Types.AssetData, alreadyOwned: boolean)
+	if MonetizationService.userOwnsGamePassAsync(player.UserId, gamePass.Id) then
+		task.defer(tryRunHandler, gamePass, player, alreadyOwned)
+	end
+end
+
+
+--[[
 @param     number                 assetId    | The asset ID.
 @return    Signal.Connection<>    
 @throws
@@ -329,9 +366,7 @@ end
 Attempts to run the game-pass' handler function on the given player.
 ]]
 function MonetizationService.tryLoadGamePassAsync(player: Player, gamePass: Types.AssetData)
-	if MonetizationService.userOwnsGamePassAsync(player.UserId, gamePass.Id) then
-		task.defer(tryRunHandler, gamePass, player)
-	end
+	tryLoadGamePassAsync(player, gamePass, true)
 end
 
 
@@ -547,11 +582,14 @@ function MonetizationService.tryGiveGamePassAsync(userId: number, gamePassId: nu
 		error(`Unregistered game-pass {gamePassId}`)
 	end
 
+	if MonetizationService.userOwnsGamePassAsync(userId, gamePassId) then
+		return
+	end
+
 	local player = Players:GetPlayerByUserId(userId)
 	if player then
 		setGamePassOwned(player, gamePassId, true)
-
-		MonetizationService.tryLoadGamePassAsync(player, gamePass)
+		tryLoadGamePassAsync(player, gamePass, false)
 	end
 
 	UnofficialGamePassOwners:UpdateAsync(userId, function(gamePassIds: SharedTypes.GamePassOwnershipMap)
@@ -588,7 +626,7 @@ MarketplaceService.ProcessReceipt = onProductPurchaseFinished
 
 
 type GamePassOwnershipCache = {
-	[Player]: SharedTypes.GamePassOwnershipMap,
+	[number]: SharedTypes.GamePassOwnershipMap,
 }
 
 type AssetDataMap = {
