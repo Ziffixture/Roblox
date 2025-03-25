@@ -157,8 +157,8 @@ end
 Returns whether or not the game-pass is owned.
 ]]
 local function ownsGamePassAsync(userId: number, gamePassId: number): boolean
-	return ownsGamePassInCache(userId, gamePassId) 
-		or ownsGamePassInStudio(userId, gamePassId) 
+	return ownsGamePassInStudio(userId, gamePassId)
+		or ownsGamePassInCache(userId, gamePassId)
 		or MarketplaceService:UserOwnsGamePassAsync(userId, gamePassId) 
 		or ownsGamePassUnofficiallyAsync(userId, gamePassId)
 end
