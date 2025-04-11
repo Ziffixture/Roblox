@@ -98,5 +98,4 @@ type RemoteRegistry = {
 }
 
 
-
 return RemoteProximityPrompt
