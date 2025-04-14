@@ -207,7 +207,7 @@ local function viewGamePass(gamePass: MonetizationTypes.AssetData)
 end
 
 local function loadGamePass(gamePass: MonetizationTypes.AssetData)
-	if GamePassFrame.GamePassContainer:FindFirstChild(gamePass.DisplayName) then
+	if GamePassFrame.GamePassContainer:FindFirstChild(gamePass.Name) then
 		return
 	end
 	
