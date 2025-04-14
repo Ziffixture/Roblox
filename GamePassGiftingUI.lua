@@ -162,9 +162,6 @@ end
 
 local function onGamePassOwned(gamePass: MonetizationTypes.AssetData)
 	local gui = GamePassFrame.GamePassContainer:FindFirstChild(gamePass.Name)
-	if not gui then
-		return
-	end
 
 	gui.Owned.Visible = true
 
@@ -207,10 +204,6 @@ local function viewGamePass(gamePass: MonetizationTypes.AssetData)
 end
 
 local function loadGamePass(gamePass: MonetizationTypes.AssetData)
-	if GamePassFrame.GamePassContainer:FindFirstChild(gamePass.Name) then
-		return
-	end
-	
 	if not gamePass.Metadata then
 		warn(`Game-pass {gamePass.Id} is lacking metadata field.`)
 
