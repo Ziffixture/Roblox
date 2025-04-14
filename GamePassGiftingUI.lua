@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       01/24/2024 (MM/DD/YYYY)
-Version    2.1.6
+Date       04/14/2025 (MM/DD/YYYY)
+Version    2.1.7
 ]]
 
 
@@ -240,12 +240,6 @@ local function handleGamePassLoading()
 	GamePassFrame.GamePassContainer.ChildAdded:Once(function()
 		GamePassFrame.NoResults.Visible = false
 	end)
-	
-	local gamePasses = MonetizationRemotes.GetGamePasses:InvokeServer() :: {MonetizationTypes.AssetData}
-
-	for _, gamePass in gamePasses do
-		loadGamePass(gamePass)
-	end
 	
 	MonetizationRemotes.GamePassRegistered.OnClientEvent:Connect(loadGamePass)
 end
