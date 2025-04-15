@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       01/14/2025 (MM/DD/YYYY)
-Version    1.3.1
+Version    1.3.2
 ]]
 
 
@@ -15,8 +15,8 @@ local Players              = game:GetService("Players")
 
 local PLAYER_MOVEMENT_DISABLE_FLAG = "DisablePlayerMovement"
 
-local CURRENT_CAMERA = workspace.CurrentCamera
-local LOCAL_PLAYER   = Players.LocalPlayer
+local CurrentCamera = workspace.CurrentCamera
+local LocalPlayer   = Players.LocalPlayer
 
 
 local Vendor  = ReplicatedStorage:WaitForChild("Vendor")
@@ -26,7 +26,7 @@ local Signal  = require(Vendor:WaitForChild("Signal")) -- https://github.com/Dat
 local Feature = script.Parent
 local Types   = require(Feature:WaitForChild("Types"))
 
-local Gui       = LOCAL_PLAYER.PlayerGui:WaitForChild("Spectate")
+local Gui       = LocalPlayer.PlayerGui:WaitForChild("Spectate")
 local Spectate  = Gui:WaitForChild("Spectate")
 local Container = Gui:WaitForChild("Container")
 
@@ -150,12 +150,12 @@ local function trySetCameraToCharacter(character: Types.Character?)
 
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if humanoid then
-		CURRENT_CAMERA.CameraSubject = humanoid
+		CurrentCamera.CameraSubject = humanoid
 	end
 end
 
 local function stopSpectating()
-	trySetCameraToCharacter(LOCAL_PLAYER.Character)
+	trySetCameraToCharacter(LocalPlayer.Character)
 	enablePlayerMovement()
 
 	;(tray.CharacterRemovedConnection :: Signal.Connection<>):Disconnect()
@@ -168,7 +168,7 @@ local function stopSpectating()
 end
 
 local function tryStartSpectating()
-	local characters, _, characterRemoved = getTrackedCharactersInWorkspace({LOCAL_PLAYER})
+	local characters, _, characterRemoved = getTrackedCharactersInWorkspace({LocalPlayer})
 	if not characters then
 		return
 	end
