@@ -15,9 +15,9 @@ local Players              = game:GetService("Players")
 
 local PLAYER_MOVEMENT_DISABLE_FLAG = "DisablePlayerMovement"
 
+
 local CurrentCamera = workspace.CurrentCamera
 local LocalPlayer   = Players.LocalPlayer
-
 
 local Vendor  = ReplicatedStorage:WaitForChild("Vendor")
 local Connect = require(Vendor:WaitForChild("Connect")) -- https://github.com/SolarScuffle-Bot/ConnectUtil
