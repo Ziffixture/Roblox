@@ -12,7 +12,7 @@ type Node = {
 	word      : string,
 	isWord    : boolean,
 	character : string,
-	
+
 	parent   : Node,
 	children : {Node},
 }
@@ -102,8 +102,12 @@ function TriePrototype:RemoveWords(prefix: string)
 end
 
 function TriePrototype:GetWords(prefix: string?): {}
-	local node  = if prefix	then getLastNode(self.root, string.lower(prefix)) else self.root
+	local node  = if prefix then getLastNode(self.root, string.lower(prefix)) else self.root
 	local words = {}
+	
+	if prefix and node == self.root then
+		return {}
+	end
 
 	local function getWords(parent: Node)
 		if parent.isWord then
