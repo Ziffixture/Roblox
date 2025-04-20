@@ -283,14 +283,7 @@ function MonetizationService.listenForAssetRegistered(assetId: number, callback:
 		assetRegisteredSignals[assetId] = Signal.new()
 	end
 
-	return assetRegisteredSignals[assetId]:Once(function(asset: Types.AssetData)
-		if assetRegisteredSignals[assetId] then
-			assetRegisteredSignals[assetId]:Destroy()
-			assetRegisteredSignals[assetId] = nil
-		end
-		
-		callback(asset)
-	end)
+	return assetRegisteredSignals[assetId]:Once(callback)
 end
 
 
