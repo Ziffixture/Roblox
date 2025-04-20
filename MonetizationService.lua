@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       04/20/2025 (MM/DD/YYYY)
-Version    2.2.5
+Date       02/01/2025 (MM/DD/YYYY)
+Version    2.2.4
 ]]
 
 
@@ -284,8 +284,10 @@ function MonetizationService.listenForAssetRegistered(assetId: number, callback:
 	end
 
 	return assetRegisteredSignals[assetId]:Once(function(asset: Types.AssetData)
-		assetRegisteredSignals[assetId]:Destroy()
-		assetRegisteredSignals[assetId] = nil
+		if assetRegisteredSignals[assetId] then
+			assetRegisteredSignals[assetId]:Destroy()
+			assetRegisteredSignals[assetId] = nil
+		end
 		
 		callback(asset)
 	end)
