@@ -13,6 +13,8 @@ local function onAllChildren<T>(parent: Instance, callback: (T, ...any) -> (), .
 	for _, child in parent:GetChildren() do
 		callback(child :: any, ...)
 	end
+
+	parent.ChildAdded:Connect(callback)
 end
 
 local function onMouseButton1(inputEvent: RBXScriptSignal, callback: () -> ()): RBXScriptConnection
