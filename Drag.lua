@@ -75,18 +75,18 @@ local function createDraggableCopy(guiObject: GuiObject): GuiObject
 	return draggable
 end
 
-local function tryInitializeSlot(slot: GuiObject, hotbarSlots)
-	if slot.ClassName ~= "ImageLabel" then
+local function tryInitializeSourceSlot(container: ImageLabel, hotbarSlots)
+	if container.ClassName ~= "ImageLabel" then
 		return
 	end
 
-	local imageLabel = slot:WaitForChild("ImageLabel") :: ImageLabel
+	local slot = container:WaitForChild("Slot") :: ImageLabel
 	
 	local dragConnection
 	local dragCopy
 	
-	onMouseButton1(imageLabel.InputBegan, function()
-		dragCopy = createDraggableCopy(imageLabel)
+	onMouseButton1(slot.InputBegan, function()
+		dragCopy = createDraggableCopy(slot)
 
 		dragConnection = UserInputService.InputChanged:Connect(function(input: InputObject)
 			if input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -95,7 +95,7 @@ local function tryInitializeSlot(slot: GuiObject, hotbarSlots)
 		end)
 	end)
 	
-	onMouseButton1(imageLabel.InputEnded, function()
+	onMouseButton1(slot.InputEnded, function()
 		dragConnection:Disconnect()
 
 		local closestSlot = getClosestHotbarSlot(dragCopy, hotbarSlots)
@@ -107,9 +107,9 @@ local function tryInitializeSlot(slot: GuiObject, hotbarSlots)
 	end)
 end
 
-local function tryRegisterHotbarSlot(slot: GuiObject, hotbarSlots)
+local function tryRegisterHotbarSlot(container: GuiObject, hotbarSlots)
 	if slot:IsA("GuiObject") then
-		table.insert(hotbarSlots, slot)
+		table.insert(hotbarSlots, container)
 	end
 end
 
@@ -125,7 +125,7 @@ local function tryInitializeSelection(selection: GuiObject)
 	local hotbarSlots = {}
 	
 	onAllChildren(hotbar, tryRegisterHotbarSlot, hotbarSlots)
-	onAllChildren(units, tryInitializeSlot, hotbarSlots)
+	onAllChildren(units, tryInitializeSourceSlot, hotbarSlots)
 end
 
 
