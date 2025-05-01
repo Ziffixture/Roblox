@@ -107,9 +107,9 @@ local function tryInitializeSourceSlot(container: ImageLabel, hotbarSlots)
 	end)
 end
 
-local function tryRegisterHotbarSlot(container: GuiObject, hotbarSlots)
+local function tryRegisterHotbarSlot(slot: GuiObject, hotbarSlots)
 	if slot:IsA("GuiObject") then
-		table.insert(hotbarSlots, container)
+		table.insert(hotbarSlots, slot)
 	end
 end
 
