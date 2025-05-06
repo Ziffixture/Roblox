@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/03/29
-Version    1.5.0b
+Date       03/29/2024 (MM/DD/YYYY)
+Version    1.5.0
 
 A closure-based object that holds a player-involved vote.
 ]]
@@ -14,7 +14,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Vendor = ReplicatedStorage.Vendor
 local Signal = require(Vendor.Signal) -- https://github.com/Data-Oriented-House/LemonSignal
-
 
 local PlayerVote = {}
 
@@ -102,16 +101,16 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 	options under the highest vote, one is chosen at random.
 	]]
 	function self:GetWinner(): T
-        local highestVote    : number = 0
-        local highestOptions : {T}    = {}
-		
+		local highestVote    : number = 0
+		local highestOptions : {T}    = {}
+
 		for option, votes in poll do
-            if highestVote < votes then
-                highestVote    = votes
-                highestOptions = {option}
-            else
-                table.insert(highestOptions, option)
-            end
+			if highestVote < votes then
+				highestVote    = votes
+				highestOptions = {option}
+			elseif highestVote == votes then
+				table.insert(highestOptions, option)
+			end
 		end
 
 		return highestOptions[math.random(#highestOptions)]
@@ -152,8 +151,8 @@ function PlayerVote.new<T>(options: {T}): PlayerVote<T>
 
 		return poll[option]
 	end
-	
-	
+
+
 	--[[
 	@param     T          option    | The option to check.
 	@return    boolean
@@ -170,7 +169,15 @@ end
 
 
 
-type PlayerVote<T> = {
+type PlayerVoteLookup<T> = {
+	[Player]: T,
+}
+
+export type Poll<T> = {
+	[T]: number,
+}
+
+export type PlayerVote<T> = {
 	Cast   : (self: PlayerVote<T>, player: Player, option: T) -> (),
 	Revoke : (self: PlayerVote<T>, player: Player) -> T?, 
 
@@ -178,18 +185,10 @@ type PlayerVote<T> = {
 	GetPoll    : (self: PlayerVote<T>) -> Poll<T>,
 	GetOptions : (self: PlayerVote<T>) -> {T},
 	GetVotes   : (self: PlayerVote<T>, option: T) -> number,
-	
+
 	HasOption : (self: PlayerVote<T>, option: T) -> boolean,
 
 	Changed : Signal.Signal<T, number>,
-}
-
-type PlayerVoteLookup<T> = {
-	[Player]: T,
-}
-
-export type Poll<T> = {
-	[T]: number,
 }
 
 
