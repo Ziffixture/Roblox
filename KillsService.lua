@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       24/04/24 (YY/MM/DD)
-Version    1.2.0b
+Date       05/25/2025 (MM/DD/YYYY)
+Version    1.2.1
 ]]
 
 
@@ -32,8 +32,9 @@ export type DeathSummary = {
 export type DamageParameters = {
 	Target           : Player,
 	Dealer           : Player?,
-	Amount           : number,
 	Cause            : string,
+	Amount           : number,
+	SetAmount        : boolean?,
 	FriendlyFire     : boolean?,
 	BypassForceField : boolean?,
 }
@@ -145,12 +146,12 @@ local function isFriendlyFire(damageParameters: DamageParameters): boolean
 	if not damageParameters.Dealer then
 		return false
 	end
-	
+
 	local allowed = FriendlyFire.Value and damageParameters.FriendlyFire
 	if allowed then
 		return false
 	end
-	
+
 	local playerA = damageParameters.Dealer
 	local playerB = damageParameters.Target
 
@@ -167,11 +168,11 @@ Checks if the target's force field is active, and whether or not that matters.
 local function isForceFieldActive(damageParameters: DamageParameters): boolean
 	local character = damageParameters.Target.Character
 	local bypass    = damageParameters.BypassForceField
-	
+
 	if not character or bypass then
 		return false
 	end
-	
+
 	return character:FindFirstChildOfClass("ForceField") ~= nil 
 end
 
@@ -187,14 +188,14 @@ function KillsService.dealDamage(damageParameters: DamageParameters)
 	if isFriendlyFire(damageParameters) or isForceFieldActive(damageParameters) then
 		return
 	end
-	
+
 	local attackedHumanoid = PlayerEssentials.getHumanoid(damageParameters.Target)
 	if not attackedHumanoid then
 		warn(`Unable to damage {damageParameters.Target.Name} (Humanoid unavailable)`)
 
 		return
 	end
-	
+
 	if attackedHumanoid.Health == 0 then
 		return
 	end
@@ -209,8 +210,12 @@ function KillsService.dealDamage(damageParameters: DamageParameters)
 	else
 		warn(`Damage is not being tracked for {damageParameters.Target.Name}; consider calling KillsService.trackDamage on this target.`)
 	end
-
-	attackedHumanoid.Health -= damageParameters.Amount
+	
+	if damageParameters.SetAmount then
+		attackedHumanoid.Health = damageParameters.Amount
+	else
+		attackedHumanoid.Health -= damageParameters.Amount
+	end
 end
 
 
@@ -268,7 +273,7 @@ function KillsService.trackDamage(player: Player)
 	humanoid.Died:Once(function()
 		KillsService.PlayerKilled:Fire(player, buildDeathSummary(damageHistory))
 	end)
-	
+
 	humanoid.Destroying:Once(function()
 		damageHistories[humanoid] = nil
 	end)
