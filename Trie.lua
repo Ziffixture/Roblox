@@ -1,6 +1,6 @@
 --[[
 Author     Ziffix (74087102)
-Date       01/11/2024 (MM/DD/YYYY)
+Date       05/27/2025 (MM/DD/YYYY)
 Version    1.0.4
 
 Grassroots, case-insensitive Trie implementation.
