@@ -1,24 +1,14 @@
 --[[
 Author     Ziffix (74087102)
-Date       05/27/2025 (MM/DD/YYYY)
-Version    1.0.4
+Date       05/31/2025 (MM/DD/YYYY)
+Version    1.1.0
 
 Grassroots, case-insensitive Trie implementation.
 ]]
 
 
 
-type Node = {
-	word      : string,
-	isWord    : boolean,
-	character : string,
-
-	parent   : Node,
-	children : {Node},
-}
-
-
-
+--!strict
 local Trie          = {}
 local TriePrototype = {}
 
@@ -34,7 +24,7 @@ local function getChild(parent: Node, character): Node?
 	return nil
 end
 
-local function getLastNode(parent: Node, word: string): (Node, {string}, depth)
+local function getLastNode(parent: Node, word: string): (Node, number, {string})
 	local characters = string.split(word, "")
 	local node       = parent
 	local depth      = 0
@@ -54,12 +44,8 @@ end
 
 
 function Trie.new(words: {string}?)
-	local self = {}
-
-	self.root          = {}
-	self.root.children = {}
-
-	setmetatable(self, TriePrototype)
+	local self = (setmetatable({}, TriePrototype) :: any) :: Trie
+	self._root = { children = {} }
 
 	if words then
 		for _, word in words do
@@ -71,11 +57,10 @@ function Trie.new(words: {string}?)
 end
 
 function TriePrototype:AddWord(word: string)
-	local node, depth, characters = getLastNode(self.root, string.lower(word))
+	local node, depth, characters = getLastNode(self._root, string.lower(word))
 
 	for index = depth + 1, #characters do
-		local child = {}
-
+		local child = {} :: Node
 		child.character = characters[index]
 		child.children  = {}
 		child.parent    = node
@@ -90,21 +75,21 @@ function TriePrototype:AddWord(word: string)
 end
 
 function TriePrototype:RemoveWords(prefix: string)
-	local node = getLastNode(self.root, string.lower(prefix))
-	if node == self.root then
+	local node = getLastNode(self._root, string.lower(prefix))
+	if node == self._root then
 		return
 	end
 
-	local siblings = node.parent.children 
+	local siblings = (node.parent :: Node).children 
 	local index    = table.find(siblings, node)
 
 	table.remove(siblings, index)
 end
 
-function TriePrototype:GetWords(prefix: string?): {}
+function TriePrototype:GetWords(prefix: string): {string}
 	prefix = prefix or ""
 	
-	local node, depth = getLastNode(self.root, string.lower(prefix))
+	local node, depth = getLastNode(self._root, string.lower(prefix))
 	local words = {}
 	
 	if depth ~= #prefix then
@@ -113,7 +98,7 @@ function TriePrototype:GetWords(prefix: string?): {}
 
 	local function getWords(parent: Node)
 		if parent.isWord then
-			table.insert(words, parent.word)
+			table.insert(words, parent.word :: string)
 		end
 
 		for _, child in parent.children do
@@ -135,6 +120,23 @@ end
 TriePrototype.__index     = TriePrototype
 TriePrototype.__metatable = "This metatable is locked."
 
+
+type Node = {
+	word      : string?,
+	isWord    : boolean?,
+	character : string?,
+
+	parent   : Node?,
+	children : {Node},
+}
+
+export type Trie = {
+	_root : Node,
+	
+	AddWord     : (self: Trie, word: string) -> (),
+	RemoveWords : (self: Trie, prefix: string) -> (),
+	GetWords    : (self: Trie, prefix: string) -> {string},
+}
 
 
 return Trie
