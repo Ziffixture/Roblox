@@ -7,10 +7,11 @@ Version    1.0.0
 
 
 --!strict
-local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService  = game:GetService("UserInputService")
 
 
-local Vendor = script.Parent
+local Vendor = ReplicatedStorage:WaitForChild("Vendor")
 local Trie   = require(Vendor:WaitForChild("Trie"))
 
 
