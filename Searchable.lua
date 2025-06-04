@@ -97,11 +97,11 @@ local function Searchable(container: SearchContainer, getContent: () -> {GuiObje
 		trie:RemoveWords(content.Name)
 	end
 
-	search:GetPropertyChangedSignal("Text"):Connect(whileFocused(onTextChanged))
-	janitor:Add(UserInputService.InputBegan:Connect(whileFocused(onInputBegan))
-
 	scrollingFrame.ChildAdded:Connect(onContentAdded)
 	scrollingFrame.ChildRemoved:Connect(onContentRemoved)
+	
+	search:GetPropertyChangedSignal("Text"):Connect(whileFocused(onTextChanged))
+	janitor:Add(UserInputService.InputBegan:Connect(whileFocused(onInputBegan))
 
 	janitor:LinkToInstance(container)
 end
