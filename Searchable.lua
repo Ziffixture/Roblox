@@ -1,7 +1,7 @@
 --[[
 Author     Ziffix (74087102)
 Date       05/31/2025 (MM/DD/YYYY)
-Version    1.0.0
+Version    1.0.1
 ]]
 
 
@@ -11,8 +11,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService  = game:GetService("UserInputService")
 
 
-local Vendor = ReplicatedStorage:WaitForChild("Vendor")
-local Trie   = require(Vendor:WaitForChild("Trie"))
+local Vendor  = ReplicatedStorage:WaitForChild("Vendor")
+local Janitor = require(Vendor:WaitForChild("Janitor"))
+local Trie    = require(Vendor:WaitForChild("Trie"))
 
 
 local SUGGESTION_THRESHOLD = 3
@@ -38,7 +39,8 @@ local function makeTrie(searchContent: {GuiObject}): Trie.Trie
 end
 
 local function Searchable(container: SearchContainer, getContent: () -> {GuiObject})
-	local trie = makeTrie(getContent())
+	local janitor = Maid.new()
+	local trie    = makeTrie(getContent())
 	
 	local search         = container.Search
 	local suggestion     = container.Suggestion
@@ -96,11 +98,12 @@ local function Searchable(container: SearchContainer, getContent: () -> {GuiObje
 	end
 
 	search:GetPropertyChangedSignal("Text"):Connect(whileFocused(onTextChanged))
-
-	UserInputService.InputBegan:Connect(whileFocused(onInputBegan))
+	janitor:Add(UserInputService.InputBegan:Connect(whileFocused(onInputBegan))
 
 	scrollingFrame.ChildAdded:Connect(onContentAdded)
 	scrollingFrame.ChildRemoved:Connect(onContentRemoved)
+
+	janitor:LinkToInstance(container)
 end
 
 
