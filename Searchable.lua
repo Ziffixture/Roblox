@@ -11,9 +11,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService  = game:GetService("UserInputService")
 
 
-local Vendor  = ReplicatedStorage:WaitForChild("Vendor")
-local Janitor = require(Vendor:WaitForChild("Janitor"))
-local Trie    = require(Vendor:WaitForChild("Trie"))
+local Vendor = ReplicatedStorage:WaitForChild("Vendor")
+local Trie   = require(Vendor:WaitForChild("Trie"))
 
 
 local SUGGESTION_THRESHOLD = 3
@@ -39,15 +38,19 @@ local function makeTrie(searchContent: {GuiObject}): Trie.Trie
 end
 
 local function Searchable(container: SearchContainer, getContent: () -> {GuiObject})
-	local janitor = Maid.new()
-	local trie    = makeTrie(getContent())
+	local trie = makeTrie(getContent())
 	
 	local search         = container.Search
 	local suggestion     = container.Suggestion
 	local scrollingFrame = container.ScrollingFrame
 	
-	local suggested = nil
+	local suggested           = nil
+	local suggestedConnection = nil
 
+	local function onContainerDestroyed()
+		suggestedConnection:Disconnect()
+	end
+	
 	local function whileFocused(callback: (...any) -> ())
 		return function(...)
 			if UserInputService:GetFocusedTextBox() == search then
@@ -99,11 +102,11 @@ local function Searchable(container: SearchContainer, getContent: () -> {GuiObje
 
 	scrollingFrame.ChildAdded:Connect(onContentAdded)
 	scrollingFrame.ChildRemoved:Connect(onContentRemoved)
-	
-	search:GetPropertyChangedSignal("Text"):Connect(whileFocused(onTextChanged))
-	janitor:Add(UserInputService.InputBegan:Connect(whileFocused(onInputBegan))
 
-	janitor:LinkToInstance(container)
+	suggestedConnection = UserInputService.InputBegan:Connect(whileFocused(onInputBegan))
+	search:GetPropertyChangedSignal("Text"):Connect(whileFocused(onTextChanged))
+
+	container.Destroying:Once(onContainerDestroyed)
 end
 
 
