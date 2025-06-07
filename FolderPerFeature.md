@@ -45,6 +45,8 @@ Shared implementations are joined together with client-sided implementations due
 
 ![image](https://github.com/user-attachments/assets/5290683e-5925-4a22-86d8-5f471b429611)
 
+Anything else related to the feature gets its own subfolder.
+
 <section id="scripting-convention"><h1 style="border: none">Scripting convention</h1></section>
 
 All scripts begin with the following header, filled with my information for demonstration:
@@ -77,19 +79,19 @@ The flow of a script largely follows this outline. Minor adjustments can be made
 8. Type definitions
 9. Exports
 
-### Capitalization
+## Capitalization
 
 Top-level imports will be capitalized using the PascalCase convention. Constants will be capitalized with the UPPER_SNAKE_CASE convention. Variables and the rest will be capitalized with the camelCase convention.
 **All function signatures** must be typed. This means parameters and return values.
 
-### Spacing
+## Spacing
 
 Three spaces are used to separate sections. Two spaces are used to separate subsections, and one space is used to separate unrelated variables from one another. Each subsection is aligned.
 
-### Other
+## Other
 
 **Never-nesting** is enforced. For more information: https://www.youtube.com/watch?v=CFRhGnuXG-4
 
-### Examples:
+## Examples:
 
 https://github.com/Ziffixture/Roblox/blob/main/MonetizationService.lua
