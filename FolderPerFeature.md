@@ -28,8 +28,8 @@ Type definitions are expected of this architecture, and abstracted to a `ModuleS
 
 ![image](https://github.com/user-attachments/assets/fe1c44f5-7167-4e60-acaf-79e1987caa3c)
 
-#### This is the basic structure of a feature.
-#### Anything else related to the feature gets its own subfolder.
+### This is the basic structure of a feature.
+### Anything else related to the feature gets its own subfolder.
 
 <section id="slient-sided-implementation"><h2 style="border: none">Client-sided implementation</h2></section>
 
