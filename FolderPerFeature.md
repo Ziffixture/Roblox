@@ -60,28 +60,23 @@ Version    1.0.0
 ```
 The flow of a script follows this outline:
 
-1). Imports
+#### Section 1
+1. Imports
   - Roblox services
   - Tooling
   - Features
   - Other
-    
-2). Constants
+2. Constants
+3. Variables
 
-3). Variables
+#### Section 2
+4. Helper functions
+5. Functions
 
-
-  
-4). Helper functions
-
-5). Functions
-
- 
-7). Initialization
-
-8). Type definitions
-
-9). Exports
+#### Section 3
+7. Initialization
+8. Type definitions
+9. Exports
 
 ### Capitalization
 
