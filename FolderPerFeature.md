@@ -1,4 +1,4 @@
-### Folder-per-feature 
+# Folder-per-feature 
 
 Folder-per-feature an architecture that aims to compartmentalize game features. Each system is implemented under a folder titled after the system. 
 Systems are implemented using the service/controller pattern, a pattern that creates server-sided APIs and client-sided APIs. Shared APIs can exist within this architecture.
@@ -37,3 +37,17 @@ Shared implementations are joined together with client-sided implementations due
 
 ![image](https://github.com/user-attachments/assets/5290683e-5925-4a22-86d8-5f471b429611)
 
+# Scripting convention
+
+All scripts begin with the following header, filled with my information for demonstration:
+```lua
+--[[
+Author     Ziffixture (74087102)
+Date       06/07/2025 (MM/DD/YYYY)
+Version    1.0.0
+]]
+
+
+
+--!strict
+```
