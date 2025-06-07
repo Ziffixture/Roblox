@@ -28,7 +28,8 @@ Type definitions are expected of this architecture, and abstracted to a `ModuleS
 
 ![image](https://github.com/user-attachments/assets/fe1c44f5-7167-4e60-acaf-79e1987caa3c)
 
-#### This is the basic structure of a feature.
+### This is the basic structure of a feature.
+### Anything else related to the feature gets its own subfolder.
 
 <section id="slient-sided-implementation"><h2 style="border: none">Client-sided implementation</h2></section>
 
@@ -44,8 +45,6 @@ The feature can be initialized by a `LocalScript` named after the feature. Types
 Shared implementations are joined together with client-sided implementations due to their presence in `ReplicatedStorage`. A **shared** `ModuleScript` will be introduced:
 
 ![image](https://github.com/user-attachments/assets/5290683e-5925-4a22-86d8-5f471b429611)
-
-Anything else related to the feature gets its own subfolder.
 
 <section id="scripting-convention"><h1 style="border: none">Scripting convention</h1></section>
 
