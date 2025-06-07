@@ -68,12 +68,12 @@ The flow of a script follows this outline:
 2. Constants
 3. Variables
 
----
+
   
 4. Helper functions
 5. Functions
 
----
+
    
 7. Initialization
 8. Type definitions
