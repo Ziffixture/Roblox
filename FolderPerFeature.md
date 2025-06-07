@@ -62,10 +62,10 @@ The flow of a script follows this outline:
 
 #### Section 1
 1. Imports
-  - Roblox services
-  - Tooling
-  - Features
-  - Other
+  \- Roblox services
+  \- Tooling
+  \- Features
+  \- Other
 2. Constants
 3. Variables
 
