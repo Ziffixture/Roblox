@@ -62,21 +62,28 @@ The flow of a script follows this outline:
 
 1. Imports
 - Roblox services
+- Tooling
 - Features
 - Other
 2. Constants
 3. Variables
+  
 4. Helper functions
 5. Functions
-6. Initialization
-7. Type definitions
-8. Exports
+   
+7. Initialization
+8. Type definitions
+9. Exports
+
+### Capitalization
 
 Top-level imports will be capitalized using the PascalCase convention. Constants will be capitalized with the UPPER_SNAKE_CASE convention. Variables and the rest will be capitalized with the camelCase convention.
 **All function signatures** must be typed. This means parameters and return values.
 
-## Example
+### Spacing
 
-```lua
+Three spaces are used to separate sections. Two spaces are used to separate subsections, and one space is used to separate unrelated variables from one another. Each subsection is aligned.
 
-```
+### Other
+
+**Never-nesting** is enforced. For more information: https://www.youtube.com/watch?v=CFRhGnuXG-4
