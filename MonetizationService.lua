@@ -14,11 +14,7 @@ local RunService         = game:GetService("RunService")
 local Players            = game:GetService("Players")
 
 
-local NOT_PROCESSED_YET = Enum.ProductPurchaseDecision.NotProcessedYet
-local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
-
-
-local UnofficialGamePassOwners = DataStoreService:GetDataStore("UnofficialGamePassOwners", "Test1") 
+local UnofficialGamePassOwners = DataStoreService:GetDataStore("UnofficialGamePassOwners", "Test1")
 
 local Vendor = ReplicatedStorage.Vendor
 local Signal = require(Vendor.Signal)
@@ -35,6 +31,11 @@ MonetizationService.GamePassRegistered = Signal.new() :: Types.AssetRegisteredSi
 MonetizationService.ProductRegistered  = Signal.new() :: Types.AssetRegisteredSignal
 MonetizationService.AssetRegistered    = Signal.new() :: Types.AssetRegisteredSignal
 MonetizationService.GamePassOwned      = Signal.new() :: Types.GamePassOwnedSignal
+
+
+local NOT_PROCESSED_YET = Enum.ProductPurchaseDecision.NotProcessedYet
+local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
+
 
 local categorizedAssets = {} :: CategorizedAssets
 categorizedAssets.GamePass = {}
