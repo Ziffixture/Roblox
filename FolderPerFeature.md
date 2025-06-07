@@ -58,14 +58,12 @@ Version    1.0.0
 
 --!strict
 ```
-The flow of a script follows this outline:
+The flow of a script largely follows this outline. Minor adjustments can be made to improve readability:
 
 #### Section 1
 1. Imports
 - Roblox services
-- Tooling
-- Features
-- Other
+- Tooling/Features/other
 2. Constants
 3. Variables
 
@@ -90,3 +88,7 @@ Three spaces are used to separate sections. Two spaces are used to separate subs
 ### Other
 
 **Never-nesting** is enforced. For more information: https://www.youtube.com/watch?v=CFRhGnuXG-4
+
+### Examples:
+
+https://github.com/Ziffixture/Roblox/blob/main/MonetizationService.lua
