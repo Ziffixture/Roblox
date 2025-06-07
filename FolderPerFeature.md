@@ -7,10 +7,11 @@
 
 <section id="introduction"><h1 style="border: none">Introduction</h1></section>
 
-Folder-per-feature an architecture that aims to compartmentalize game features. Each system is implemented under a folder titled after the system. 
-Systems are implemented using the service/controller pattern, a pattern that creates server-sided APIs and client-sided APIs. Shared APIs can exist within this architecture.
-Each feature is initialized by a **single** `Script` or `LocalScript`, depending on which end of the network the feature implementation puts focus on. These scripts are not always
-**necessary**, as their primary purpose is describe the feature's explicit involvement in the codebase, should the feature be not solely used elsewhere.
+Folder-per-feature is an architectural pattern that aims to compartmentalize game features. Each system is organized within a folder named after the feature it represents.
+Systems are implemented using the service/controller pattern, which defines separate APIs for server and client functionality. Shared APIs can also exist within this architecture.
+
+Each feature is initialized by a single Script or LocalScript, depending on whether the feature is focused on server-side or client-side logic. 
+These scripts are not always necessary; their primary purpose is to make the feature’s presence explicit in the codebase when it is not exclusively used elsewhere.
 
 <section id="server-sided-implementation"><h2 style="border: none">Server-sided implementation</h2></section>
 
