@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       05/30/2025 (MM/DD/YYYY)
-Version    1.1.3
+Date       06/12/2025 (MM/DD/YYYY)
+Version    1.1.4
 ]]
 
 
@@ -57,13 +57,14 @@ end
 function Caller.register(player: Player): Caller
 	local self = (setmetatable({}, CallerPrototype) :: any) :: Caller
 
-	self._Player    = player
-	self._Recipient = nil
-	self._Dialing   = nil
-	self._Receiving = {}
-	self._Accepting = true
-	self._Anonymous = false
-	self._Maid      = Maid.new()
+	self._Player     = player
+	self._Recipient  = nil
+	self._Dialing    = nil
+	self._Receiving  = {}
+	self._Accepting  = true
+	self._Anonymous  = false
+	self._Instigator = false
+	self._Maid       = Maid.new()
 	
 	callers[player] = self
 	
@@ -147,8 +148,9 @@ function CallerPrototype.EnterCallWith(self: Caller, caller: Caller)
 	self:StopReceiving(caller)
 	caller:StopDialing()
 	
-	self._Recipient = caller
-	caller._Recipient = self
+	self._Recipient    = caller
+	caller._Recipient  = self
+	caller._Instigator = true
 	
 	self:ReplicateChats()
 	caller:ReplicateChats()
@@ -161,7 +163,7 @@ end
 
 function CallerPrototype.ReplicateChats(self: Caller)
 	local player    = self._Player
-	local anonymous = self._Anonymous
+	local anonymous = self._Anonymous and self._Instigator
 
 	self._Maid:GiveTask(player.Chatted:Connect(function(message: string)
 		local recipient = self._Recipient
@@ -188,8 +190,9 @@ function CallerPrototype.HangUp(self: Caller)
 		return
 	end
 	
-	local recipient = self._Recipient :: Caller
-	self._Recipient = nil
+	local recipient  = self._Recipient :: Caller
+	self._Recipient  = nil
+	self._Instigator = false
 	self._Maid:DoCleaning()
 
 	recipient:HangUp()
@@ -274,13 +277,14 @@ CallerPrototype.__index = CallerPrototype
 
 
 export type Caller = {
-	_Player    : Player,
-	_Recipient : Caller?,
-	_Dialing   : Caller?,
-	_Receiving : {Caller},
-	_Accepting : boolean,
-	_Anonymous : boolean,
-	_Maid      : Maid.Maid,
+	_Player     : Player,
+	_Recipient  : Caller?,
+	_Dialing    : Caller?,
+	_Receiving  : {Caller},
+	_Accepting  : boolean,
+	_Anonymous  : boolean,
+	_Instigator : boolean,
+	_Maid       : Maid.Maid,
 
 	Propagate    : (self: Caller, ...any) -> (),
 	PropagateAll : (self: Caller, ...any) -> (),
