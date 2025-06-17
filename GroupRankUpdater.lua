@@ -1,7 +1,7 @@
 --[[
-Author     Ziffix
-Version    1.4.0 (Untested)
-Date	   24/01/01
+Author     Ziffixture (74087102)
+Date       06/15/2025 (MM/DD/YYYY)
+Version    1.4.1
 ]]
 
 
@@ -13,6 +13,7 @@ local Players      = game:GetService("Players")
 
 local Configuration = require(script.Configuration)
 
+
 local API_AUTHORIZATION_TOKEN = Configuration.API_AUTHORIZATION_TOKEN
 local API_ENDPOINT            = Configuration.API_ENDPOINT
 
@@ -22,6 +23,7 @@ local GROUP_RANK_CAP = Configuration.GROUP_RANK_CAP
 local GROUP_RANK_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve %s's current rank; %s"
 local GROUP_ROLE_RETRIEVAL_FAILURE = "A problem occurred while trying to retrieve group data; %s"
 local GROUP_ROLE_UPDATE_FAILURE	   = "A problem occurred while trying to update %s's role to \"%s\"; %s"
+
 
 local groupRolesCache = nil
 local userRankCache   = {}
@@ -36,23 +38,23 @@ local userRankCache   = {}
 
 Implements assert with error's level argument.
 ]]
-local function _assertLevel(condition: any, message: string, level: number?)
-    if condition == nil then 
-        error("Argument #1 missing or nil.", 2)
-    end
+local function assertLevel(condition: any, message: string, level: number?)
+	if condition == nil then 
+		error("Argument #1 missing or nil.", 2)
+	end
 
-    if message == nil then 
-        error("Argument #2 missing or nil.", 2)
-    end
+	if message == nil then 
+		error("Argument #2 missing or nil.", 2)
+	end
 
-    -- Lifts the error out of this function.
-    level = (level or 1) + 1
+	-- Lifts the error out of this function.
+	level = (level or 1) + 1
 
-    if condition then
-        return condition
-    end
+	if condition then
+		return condition
+	end
 
-    error(message, level)
+	error(message, level)
 end
 
 
@@ -63,21 +65,21 @@ end
 Attempts to make an entry in the userRankCache cache under the given Player instance.
 ]]
 local function initializeRankInCache(player: Player): number?
-    assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
-	
-    local success, response = pcall(function()
-        return player:GetRankInGroup(GROUP_ID)
-    end)
-  
-    if not success then
-        warn(GROUP_RANK_RETRIEVAL_FAILURE:format(player.Name, response))
-    
-        return
-    end
-  
-    userRankCache[player] = response
-	
-    return response
+	assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
+
+	local success, response = pcall(function()
+		return player:GetRankInGroup(GROUP_ID)
+	end)
+
+	if not success then
+		warn(GROUP_RANK_RETRIEVAL_FAILURE:format(player.Name, response))
+
+		return
+	end
+
+	userRankCache[player] = response
+
+	return response
 end
 
 
@@ -88,9 +90,9 @@ end
 Removes the entry in the userRankCache cache associated with the given Player instance.
 ]]
 local function removeRankFromCache(player: Player)
-    assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
-	
-    userRankCache[player] = nil
+	assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
+
+	userRankCache[player] = nil
 end
 
 
@@ -102,9 +104,9 @@ Attempts to retrieve the user's rank from the userRankCache. If the
 entry does not exist, the function will attempt to initialize one.
 ]]
 local function getRank(player: Player): number?
-    assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
-	
-    return userRankCache[player] or initializeRankInCache(player)
+	assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
+
+	return userRankCache[player] or initializeRankInCache(player)
 end
 
 
@@ -115,9 +117,9 @@ end
 Checks if the given rank is an integer within the range of [1, 255].
 ]]
 local function isValidGroupRank(rank: number): boolean
-    assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
-	
-    return rank > 0 and rank < 256 and rank % 1 == 0
+	assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
+
+	return rank > 0 and rank < 256 and rank % 1 == 0
 end
 
 
@@ -127,17 +129,17 @@ end
 Retrieves the "Roles" table returned by GroupService:GetGroupInfoAsync.
 ]]
 local function getGroupRoles(): RoleInfo?
-    local success, response = pcall(function()
-        return GroupService:GetGroupInfoAsync(GROUP_ID)
-    end)
+	local success, response = pcall(function()
+		return GroupService:GetGroupInfoAsync(GROUP_ID)
+	end)
 
-    if not success then
-        warn(GROUP_ROLE_RETRIEVAL_FAILURE:format(response))
+	if not success then
+		warn(GROUP_ROLE_RETRIEVAL_FAILURE:format(response))
 
-        return
-    end
-  
-    return response.Roles
+		return
+	end
+
+	return response.Roles
 end
 
 
@@ -150,19 +152,19 @@ to the given rank. Requires the given rank be be a valid group rank (see isValid
 for the groupRolesCache to be initialized.
 ]]
 local function getRightmostRoleInfo(rank: number): RoleInfo
-    assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
-    assertLevel(isValidGroupRank(rank), "Expected integer in range [1, 255], got " .. rank, 1)
-    assertLevel(groupRolesCache ~= nil, "groupRolesCache has not been initialized; consider adding a check before calling this function.", 1)
-	
-    for index, info in groupRolesCache do
-        if info.Rank == rank then
-            return info
-        end
-    
-        if info.Rank > rank then
-            return groupRolesCache[index - 1]
-        end
-    end
+	assertLevel(rank ~= nil, "Argument #1 missing or nil.", 1)
+	assertLevel(isValidGroupRank(rank), "Expected integer in range [1, 255], got " .. rank, 1)
+	assertLevel(groupRolesCache ~= nil, "groupRolesCache has not been initialized; consider adding a check before calling this function.", 1)
+
+	for index, info in groupRolesCache do
+		if info.Rank == rank then
+			return info
+		end
+
+		if info.Rank > rank then
+			return groupRolesCache[index - 1]
+		end
+	end
 end
 
 
@@ -174,89 +176,79 @@ end
 Attempts to update the player's group role by calling the API endpoint with the given rank.
 ]]
 local function updateRank(player: Player, rank: number): UpdateStatus
-    assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
-    assertLevel(rank ~= nil, "Argument #2 missing or nil.", 1)
+	assertLevel(player ~= nil, "Argument #1 missing or nil.", 1)
+	assertLevel(rank ~= nil, "Argument #2 missing or nil.", 1)
 
-    if not isValidGroupRank(rank) then
-	    return "Rejected"	
-    end
+	if not isValidGroupRank(rank) then
+		return "Rejected"	
+	end
 
-    local currentRank = getRank(player)
-	
-    if not currentRank then
-        return "Failed"
-    end
+	local currentRank = getRank(player)
+	if not currentRank then
+		return "Failed"
+	end
 
-    if currentRank >= GROUP_RANK_CAP or rank > GROUP_RANK_CAP then
-	    return "Rejected"	
-    end
-	
-    local role = "Unkown"
+	if currentRank >= GROUP_RANK_CAP or rank > GROUP_RANK_CAP then
+		return "Rejected"	
+	end
+
+	local role = "Unkown"
 
     --[[
     If available, apply the groupRolesCache to compensate for level-jumping
     and reduce redundant calls made to the API endpoint.
     ]]
-    if groupRolesCache then
-        local info = getRightmostRoleInfo(rank)
-		
-    	if info.Rank == userRankCache[player] then
-		    return "Rejected"
-    	end
+	if groupRolesCache then
+		local info = getRightmostRoleInfo(rank)
+
+		if info.Rank == userRankCache[player] then
+			return "Rejected"
+		end
+
+		role = info.Name
+	end
+
+	local headers = {}
+	headers["Content-Type"]          = "application/json"
+	headers["X-Authorization-Token"] = API_AUTHORIZATION_TOKEN
+
+	local body = {}
+	body["user"] = player.UserId
+	body["rank"] = rank
+
+	local request = {}
+	request["Url"]     = API_ENDPOINT
+	request["Method"]  = "POST"
+	request["Headers"] = headers
+	request["Body"]    = HttpService:JSONEncode(body)
 	
-    	role = info.Name
-    end
+	local success, response = pcall(function()
+		return HttpService:RequestAsync(request)
+	end)
 
-    local body = {
-        user = player.UserId,
-        rank = rank,
-    }
+	if not success then
+		warn(GROUP_ROLE_UPDATE_FAILURE:format(player.Name, role, response))
 
-    local packet = {
-        Url = API_ENDPOINT,
-        Method = "POST",
-        Headers = {
-            ["Content-Type"] = "application/json",
-            ["X-Authorization-Token"] = API_AUTHORIZATION_TOKEN,
-        },
-        Body = HttpService:JSONEncode(body),
-    }
+		return "Failed"
+	end
 
-    local success, response = pcall(function()
-        return HttpService:RequestAsync(packet)
-    end)
-  
-    if not success then
-        warn(GROUP_ROLE_UPDATE_FAILURE:format(player.Name, role, response))
-		
-        return "Failed"
-    end
+	if not response.Success then
+		warn(GROUP_ROLE_UPDATE_FAILURE:format(player.Name, role, "HTTP " .. response.StatusCode .. " " .. response.StatusMessage))
 
-    if not response.Success then
-        warn(GROUP_ROLE_UPDATE_FAILURE:format(player.Name, role, "HTTP " .. response.StatusCode .. " " .. response.StatusMessage))
-		
-        return "Failed"
-    end
+		return "Failed"
+	end
 
     --[[
     Ensures that the entry isn't resurrected if the player had 
     disconnected at the time the thread was suspended.
     ]]
-    if userRankCache[player] then
-        userRankCache[player] = rank -- Trusted to correlate to a valid role if no failures occurred.
-    end
-  
-    return "Success"
+	if userRankCache[player] then
+		userRankCache[player] = rank -- Trusted to correlate to a valid role if no failures occurred.
+	end
+
+	return "Success"
 end
 
-
-
-type RoleInfo = {
-    Name: string,
-    Rank: number,
-}
-
-type UpdateStatus = "Failed" | "Rejected" | "Success"
 
 
 groupRolesCache = getGroupRoles()
@@ -265,6 +257,14 @@ Players.PlayerAdded:Connect(initializeRankInCache)
 Players.PlayerRemoving:Connect(removeRankFromCache)
 
 
+type RoleInfo = {
+	Name: string,
+	Rank: number,
+}
+
+type UpdateStatus = "Failed" | "Rejected" | "Success"
+
+
 return {
-    updateRank = updateRank,
+	updateRank = updateRank,
 }
