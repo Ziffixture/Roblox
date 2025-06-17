@@ -44,7 +44,7 @@ local function updateFlight(deltaTime: number)
 	end
 
 	AlignOrientation.CFrame       = CFrame.lookAlong(HumanoidRootPart.Position, Camera.CFrame.LookVector)
-	LinearVelocity.VectorVelocity = AlignOrientation.CFrame:VectorToWorldSpace(net * Humanoid.WalkSpeed ^ 1.25)
+	LinearVelocity.VectorVelocity = AlignOrientation.CFrame:VectorToWorldSpace(net * Humanoid.WalkSpeed * 2)
 end
 
 local function accomodateGroundTakeoffAsync()
@@ -69,15 +69,17 @@ local function onInputBegan(input: InputObject, gameProcessedEvent: boolean)
 	if flying then
 		accomodateGroundTakeoffAsync()
 		
-		Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running, false)
+		Humanoid:ChangeState(Enum.HumanoidStateType.PlatformStanding)
+		
 		flyingConnection = RunService.PostSimulation:Connect(updateFlight)
 	else
 		flyingConnection:Disconnect()
-
+		
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running, true)
 		Humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
 	end
-
+	
 	LinearVelocity.Enabled   = flying
 	AlignOrientation.Enabled = flying
 end
