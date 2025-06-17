@@ -12,17 +12,22 @@ local RunService       = game:GetService("RunService")
 local Players          = game:GetService("Players")
 
 
-local GRAVITY = Vector3.yAxis * workspace.Gravity
-local FORCE   = 400
-local DRAG    = 2
+local INPUT_MAP = {
+	[Enum.KeyCode.A] = Vector3.new(-1, 0,  0),
+	[Enum.KeyCode.S] = Vector3.new(0,  0,  1),
+	[Enum.KeyCode.W] = Vector3.new(0,  0, -1),
+	[Enum.KeyCode.D] = Vector3.new(1,  0,  0),
+}
 
+
+local Camera = workspace.CurrentCamera
 
 local Character         = script.Parent
 local Humanoid          = Character:FindFirstChildOfClass("Humanoid") :: Humanoid
 local HumanoidRootPart  = Humanoid.RootPart :: BasePart
 local RootRigAttachment = HumanoidRootPart:FindFirstChild("RootRigAttachment") :: Attachment
 
-local VectorForce      = script:WaitForChild("VectorForce")
+local LinearVelocity   = script:WaitForChild("LinearVelocity")
 local AlignOrientation = script:WaitForChild("AlignOrientation")
 
 
@@ -32,49 +37,54 @@ local flying = false
 
 
 local function updateFlight(deltaTime: number)
-	local mass = HumanoidRootPart.AssemblyMass
-	
-	VectorForce.Force = mass * GRAVITY
-	
-	local velocity = HumanoidRootPart.AssemblyLinearVelocity
-	if velocity == Vector3.zero then
-		return
+	local net = Vector3.zero
+
+	for _, input in UserInputService:GetKeysPressed() :: {InputObject} do
+		net += INPUT_MAP[input.KeyCode] or Vector3.zero
 	end
-	
-	local push = Humanoid.MoveDirection * FORCE * mass
-	local drag = -velocity.Unit * velocity.Magnitude ^ 1.2 * DRAG * mass
-	
-	VectorForce.Force += push + drag
+
+	AlignOrientation.CFrame       = CFrame.lookAlong(HumanoidRootPart.Position, Camera.CFrame.LookVector)
+	LinearVelocity.VectorVelocity = AlignOrientation.CFrame:VectorToWorldSpace(net * Humanoid.WalkSpeed ^ 1.25)
+end
+
+local function accomodateGroundTakeoffAsync()
+	if Humanoid.FloorMaterial ~= Enum.Material.Air then
+		Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+		
+		task.wait(0.1)
+	end
 end
 
 local function onInputBegan(input: InputObject, gameProcessedEvent: boolean)
 	if gameProcessedEvent then
 		return
 	end
-	
+
 	if input.KeyCode ~= Enum.KeyCode.F then
 		return
 	end
-	
+
 	flying = not flying
-	
+
 	if flying then
-		Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+		accomodateGroundTakeoffAsync()
 		
+		Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+
 		flyingConnection = RunService.PostSimulation:Connect(updateFlight)
 	else
 		flyingConnection:Disconnect()
-		
+
 		Humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
 	end
-	
-	VectorForce.Enabled      = flying
+
+	LinearVelocity.Enabled   = flying
 	AlignOrientation.Enabled = flying
 end
 
 
 
-VectorForce.Attachment0      = RootRigAttachment
+LinearVelocity.Attachment0   = RootRigAttachment
 AlignOrientation.Attachment0 = RootRigAttachment
 
 UserInputService.InputBegan:Connect(onInputBegan)
