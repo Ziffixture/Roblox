@@ -302,9 +302,7 @@ function protocols.InCall(timestamp: number, caller: Player, anonymous: boolean)
 		while inCall do
 			InCall.Timer.Text = string.format("%d:%02d", secondsElapsed // 60, secondsElapsed % 60)
 			
-			secondsElapsed += 1
-			
-			task.wait(1)
+			secondsElapsed += task.wait(1)
 		end
 	end))
 end
