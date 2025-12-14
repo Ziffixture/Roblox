@@ -150,6 +150,11 @@ local function onMovableSelected(movable: Movable)
 	if movableCurrent then
 		return
 	end
+
+	local filter = createMovableFilter(movable)
+	if not filter then
+		return
+	end
 	
 	setMovableSelected(movable, true)
 	
@@ -163,7 +168,7 @@ local function onMovableSelected(movable: Movable)
 		end
 	end
 	
-	movableFilter              = createMovableFilter(movable)
+	movableFilter              = filter
 	movableCurrent             = movable
 	movableConnection          = RunService.PostSimulation:Connect(updateMovablePosition)
 	movablePlacementConnection = UserInputService.InputBegan:Connect(onTryPlaceMovable)
