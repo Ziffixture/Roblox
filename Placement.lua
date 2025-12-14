@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       12/14/2025 (MM/DD/YYYY)
-Version    1.0.0
+Version    1.0.2
 
 Grassroots placement system demo.
 ]]
