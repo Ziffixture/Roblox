@@ -82,10 +82,6 @@ local function setMovableSelected(movable: Movable, selected: boolean)
 	setMovablesEnabled(not selected)
 	setModelDoesPhysics(movable, not selected)
 	setModelTransparency(movable, selected and 0.5 or 0)
-	
-	if selected then
-		movableCurrent = movable
-	end
 end
 
 local function createMovableFilter(movable: Movable): RaycastParams?
@@ -131,6 +127,7 @@ local function onMovableSelected(movable: Movable)
 	end
 	
 	movableFilter     = createMovableFilter(movable)
+	movableCurrent    = movable
 	movableConnection = RunService.PostSimulation:Connect(updateMovablePosition)
 end
 
