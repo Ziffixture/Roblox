@@ -67,6 +67,7 @@ local movables                      = {}
 local movableFilter: RaycastParams? = nil 
 local movableCurrent: Movable?      = nil
 local movableConnection             = nil
+local movablePlacementConnection    = nil
 
 
 
@@ -109,6 +110,42 @@ local function getNewMovableCFrame(offset: Vector3): CFrame?
 	return newCFrame
 end
 
+local function onMovablePlaced(movable: Movable)
+	do
+		local size          = movable:GetExtentsSize()
+		local size_y_offset = Vector3.yAxis * size.Y / 2
+		
+		local finalCFrame = getNewMovableCFrame(size_y_offset)
+		if finalCFrame then
+			movable:PivotTo(finalCFrame)
+		end
+	end
+	
+	setMovableSelected(movable, false)
+
+	movableConnection:Disconnect()
+	movablePlacementConnection:Disconnect()
+	
+	movableFilter              = nil
+	movableCurrent             = nil
+	movableConnection          = nil
+	movablePlacementConnection = nil
+end
+
+local function onTryPlaceMovable(input: InputObject, gameProcessedInput: boolean)
+	if gameProcessedInput then
+		return
+	end
+	
+	if input.UserInputType ~= MOVABLE_PLACEMENT_BUTTON then
+		return
+	end
+	
+	if movableCurrent then
+		onMovablePlaced(movableCurrent)
+	end
+end
+
 local function onMovableSelected(movable: Movable)
 	if movableCurrent then
 		return
@@ -126,42 +163,10 @@ local function onMovableSelected(movable: Movable)
 		end
 	end
 	
-	movableFilter     = createMovableFilter(movable)
-	movableCurrent    = movable
-	movableConnection = RunService.PostSimulation:Connect(updateMovablePosition)
-end
-
-local function onMovablePlaced(movable: Movable)
-	do
-		local size          = movable:GetExtentsSize()
-		local size_y_offset = Vector3.yAxis * size.Y / 2
-		
-		local finalCFrame = getNewMovableCFrame(size_y_offset)
-		if finalCFrame then
-			movable:PivotTo(finalCFrame)
-		end
-	end
-	
-	setMovableSelected(movable, false)
-	
-	movableFilter  = nil
-	movableCurrent = nil
-	
-	movableConnection:Disconnect()
-end
-
-local function onTryPlaceMovable(input: InputObject, gameProcessedInput: boolean)
-	if gameProcessedInput then
-		return
-	end
-	
-	if input.UserInputType ~= MOVABLE_PLACEMENT_BUTTON then
-		return
-	end
-	
-	if movableCurrent then
-		onMovablePlaced(movableCurrent)
-	end
+	movableFilter              = createMovableFilter(movable)
+	movableCurrent             = movable
+	movableConnection          = RunService.PostSimulation:Connect(updateMovablePosition)
+	movablePlacementConnection = UserInputService.InputBegan:Connect(onTryPlaceMovable)
 end
 
 local function initializeMovable(movable: Movable)
@@ -175,7 +180,6 @@ local function initializeMovables()
 		initializeMovable(movable :: Movable)
 	end
 	
-	UserInputService.InputBegan:Connect(onTryPlaceMovable)
 	CollectionService:GetInstanceAddedSignal("Movable"):Connect(initializeMovable)
 end
 
