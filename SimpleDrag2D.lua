@@ -66,7 +66,7 @@ function SimpleDrag2D:GetMouseLocation(): Vector2
 	return mouseLocation
 end
 
-function SimpleDrag2D:get_dragging_position(): Vector2
+function SimpleDrag2D:GetDraggingPosition(): Vector2
 	local mouseLocation = self:GetMouseLocation()
 
 	local absoluteContainerSize     = self.Container.AbsoluteSize
