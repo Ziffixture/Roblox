@@ -13,6 +13,7 @@ local GuiService        = game:GetService("GuiService")
 
 local Vendor = ReplicatedStorage:WaitForChild("Vendor")
 local Signal = require(Vendor:WaitForChild("Signal"))
+-- https://github.com/Data-Oriented-House/LemonSignal
 
 
 local SimpleDrag2D = {}
