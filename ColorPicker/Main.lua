@@ -131,9 +131,10 @@ end
 
 local function initializePipette(container: PipetteContainer, axes: Vector2, onDrag: () -> ())
 	local pipette     = container:WaitForChild("Pipette") :: Pipette
-	local pipetteDrag = SimpleDrag2D.new(pipette, container, axes)
+	local pipetteDrag = SimpleDrag2D.new(pipette, axes)
 
 	pipetteDrag.Dragged:Connect(onDrag)
+	pipetteDrag:SetDragInstigator(container)
 end
 
 local function onColorPrompted(initialColor: Color3, position: UDim2)
