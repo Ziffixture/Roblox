@@ -162,7 +162,7 @@ onActionColor(Cancel, false)
 handleInputUpdates()
 
 initializePipette(Selector, Vector2.xAxis, onSelectorDragged)
-initializePipette(Adjustment, Vector2.new(1, 1), renderColorFromPipettes)
+initializePipette(Adjustment, Vector2.one, renderColorFromPipettes)
 
 ColorPickerController.ColorPrompted:Connect(onColorPrompted)
 
