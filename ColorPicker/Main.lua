@@ -168,9 +168,7 @@ ColorPickerController.ColorPrompted:Connect(onColorPrompted)
 
 
 
-type Pipette = Frame & {
-	UIDragDetector : UIDragDetector,
-}
+type Pipette  = Frame
 
 type PipetteContainer = GuiObject & {
 	Pipette : Pipette,
