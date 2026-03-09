@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       08/19/2025 (MM/DD/YYYY)
-Version    1.0.2
+Date       02/23/2026 (MM/DD/YYYY)
+Version    1.1.0
 ]]
 
 
@@ -13,37 +13,58 @@ type ObjectPool<T> = {
     get      : (any) -> T,
     get_next : () -> T,
 
-    recycle     : (T) -> (),
-    recycle_all : () -> (),
+    recycle_id       : (any) -> (),
+    recycle_instance : (T) -> (),
+    recycle_all      : () -> (),
+    trash_all        : () -> (),
+
+    size : () -> number,
+
+    iterate : () -> ((...any) -> any, {any}),
 }
 
 
 
-local function object_pool<T>(prefab: T, on_recycle: (T) -> ()): T
+local function object_pool<T>(prefab: T & Instance, on_recycle: ((T) -> ())?): T
     local pool = {} :: ObjectPool<T>
-    pool.active   = {}
-    pool.inactive = {}
+    
+    local size     = 0
+    local active   = {}
+    local inactive = {}
 
 
-    local function new(id: number): T
-        local instance
+    local function get_active_id_by_instance(target: T): any?
+        for id, instance in active do
+            if instance == target then
+                return id
+            end
+        end
 
-        if #pool.inactive > 0 then
-            instance = table.remove(pool.inactive)
+        return nil
+    end
+
+    local function new(id: any?): T
+        local instance: T
+
+        if #inactive > 0 then
+            instance = table.remove(inactive) :: T
         else
             instance = prefab:Clone()
         end
 
-        pool.active[id] = instance
+        if not id then
+            id = instance
+        end
+
+        size       += 1
+        active[id] = instance
 
         return instance
     end
 
-    local function recycle(id: number)
-        local instance = pool.active[id]
+    local function recycle(id: any)
+        local instance = active[id]
         if not instance then
-            warn("Attempt to recycle a non-existent instance.")
-
             return
         end
 
@@ -54,39 +75,60 @@ local function object_pool<T>(prefab: T, on_recycle: (T) -> ()): T
         end
 
         instance.Parent = nil
-        pool.active[id] = nil
 
-        table.insert(pool.inactive, instance)
+        size       -= 1
+        active[id] = nil
+
+        table.insert(inactive, instance)
+    end
+
+    local function trash(container: {T})
+        for _, instance in container do
+            instance:Destroy()
+        end
     end
 
     function pool.get(id: any): T
-        if pool.active[id] then
-            return pool.active[id]
+        if active[id] then
+            return active[id]
         end
 
         return new(id)
     end
 
     function pool.get_next(): T
-        local id = #pool.active + 1
-
-        return new(id)
+        return new(nil)
     end
 
     function pool.recycle_id(id: any)
         recycle(id)
     end
 
-    function pool.recycle_instance(instance: Instance)
-        local id = table.find(pool.active, instance)
-
-        recycle(id)
+    function pool.recycle_instance(instance: T)
+        recycle(get_active_id_by_instance(instance))
     end
 
     function pool.recycle_all()
-        for id in pool.active do
+        for id in active do
             recycle(id)
         end
+    end
+
+    function pool.trash_all()
+        trash(active)
+        trash(inactive)
+
+        size     = 0
+        active   = {}
+        inactive = {}
+    end
+
+    function pool.size(): number
+        return size
+    end
+
+    function pool.iterate(): ((...any) -> any, {any})
+        return next, active
     end
 
 
