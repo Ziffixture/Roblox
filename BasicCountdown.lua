@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
 Date       03/10/2026 (MM/DD/YYYY)
-Version    1.0.0
+Version    1.0.1
 ]]
 
 
@@ -18,7 +18,7 @@ type Maybe<T> = T?
 
 
 
-local function tryExecute(callback: Maybe<(any) -> ()>, ...)
+local function tryExecute<T...>(callback: Maybe<(T...) -> ()>, ...)
 	if callback then
 		callback(...)
 	end
