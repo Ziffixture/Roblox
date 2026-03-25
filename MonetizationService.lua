@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       05/13/2025 (MM/DD/YYYY)
-Version    2.2.6
+Date       03/25/2026 (MM/DD/YYYY)
+Version    2.2.7
 ]]
 
 
@@ -14,7 +14,7 @@ local RunService         = game:GetService("RunService")
 local Players            = game:GetService("Players")
 
 
-local UnofficialGamePassOwners = DataStoreService:GetDataStore("UnofficialGamePassOwners", "Test1")
+local UnofficialGamePassOwners = DataStoreService:GetDataStore("UnofficialGamePassOwners", "Production")
 
 local Vendor = ReplicatedStorage.Vendor
 local Signal = require(Vendor.Signal)
@@ -36,10 +36,19 @@ MonetizationService.GamePassOwned      = Signal.new() :: Types.GamePassOwnedSign
 local NOT_PROCESSED_YET = Enum.ProductPurchaseDecision.NotProcessedYet
 local PURCHASE_GRANTED  = Enum.ProductPurchaseDecision.PurchaseGranted
 
+local ASSET_CATEGORY = {
+    PRODUCT   = 1,
+    GAME_PASS = 2,
+}
+
 
 local categorizedAssets = {} :: CategorizedAssets
-categorizedAssets.GamePass = {}
 categorizedAssets.Product  = {}
+categorizedAssets.GamePass = {}
+
+local categorizedPromptThreads = {}
+categorizedAssetPromptThreads.Product  = {}
+categorizedAssetPromptThreads.GamePass = {}
 
 local gamePassOwnershipCache = {} :: GamePassOwnershipCache
 local assetRegisteredSignals = {} :: {Signal.Signal<Types.Asset>}
@@ -121,6 +130,7 @@ local function ownsGamePassUnofficiallyAsync(userId: number, gamePassId: number)
 		return false
 	end
 
+    -- JSON encodes numerical keys to strings.
 	return gamePassIds[tostring(gamePassId)] ~= nil
 end
 
@@ -135,14 +145,9 @@ end
 Returns whether or not the game-pass is owned Roblox Studio.
 ]]
 local function ownsGamePassInStudio(userId: number, gamePassId: number): boolean
-	if RunService:IsStudio() 
+	return RunService:IsStudio() 
 		and Players:GetPlayerByUserId(userId)
 		and Configuration.OwnGamePassesInStudio.Value 
-	then
-		return true
-	end
-
-	return false
 end
 
 
@@ -164,7 +169,7 @@ end
 
 
 --[[
-@param     AssetData    asset    | The asset whose handler to run.
+@param     Asset    asset    | The asset whose handler to run.
 @param     ...
 @return    void
 
@@ -174,6 +179,25 @@ local function tryRunHandler(asset: Types.Asset, ...)
 	if asset.Handler then
 		asset.Handler(...)
 	end
+end
+
+--[[
+@param     Asset     asset       | The asset to register.
+@param     string    category    | The asset category.
+@return    void
+@throws
+
+Attempts to register the asset to MonetizationService.
+]]
+local function tryResumeAssetPromptThreads(category: SharedTypes.AssetCategory, assetId: number, wasPurchased: boolean)
+    local threads = categorizedPromptThreads[category][assetId]
+    if not threads then
+        return
+    end
+
+    for _, thread in threads do
+        coroutine.resume(thread, wasPurchased)
+    end
 end
 
 
@@ -186,10 +210,6 @@ end
 If purchased, invokes the game-pass' handler function with the player who purchased the game-pass.
 ]]
 local function onGamePassPurchaseFinished(player: Player, gamePassId: number, wasPurchased: boolean)
-	if not wasPurchased then
-		return
-	end
-
 	local gamePass = categorizedAssets.GamePass[gamePassId]
 	if not gamePass then
 		warn(`Unregistered game-pass {gamePassId}.`)
@@ -197,8 +217,16 @@ local function onGamePassPurchaseFinished(player: Player, gamePassId: number, wa
 		return
 	end
 
-	setGamePassOwned(player, gamePassId, true)
-	tryRunHandler(gamePass, player)
+    if wasPurchased then
+        setGamePassOwned(player, gamePassId, true)
+        tryRunHandler(gamePass, player)
+    end
+
+    tryResumeAssetPromptThreads(
+        ASSET_CATEGORY.GAME_PASS, 
+        gamePassId, 
+        wasPurchased
+    )
 end
 
 
@@ -208,22 +236,28 @@ end
 
 Invokes the product's handler function with the player who purchased the product.
 ]]
-local function onProductPurchaseFinished(receipt: Types.ProductReceipt): Enum.ProductPurchaseDecision	
-	local player = Players:GetPlayerByUserId(receipt.PlayerId)
-	if not player then
-		return NOT_PROCESSED_YET
-	end
-
-	local product = categorizedAssets.Product[receipt.ProductId]
+local function onProductPurchaseFinished(receipt: Types.ProductReceipt): Enum.ProductPurchaseDecision
+    local product = categorizedAssets.Product[receipt.ProductId]
 	if not product then
 		warn(`Unregistered product {receipt.ProductId}.`)
 
-		return NOT_PROCESSED_YET
+        return NOT_PROCESSED_YET
 	end
 
-	tryRunHandler(product, player, receipt)
+    local player       = Players:GetPlayerByUserId(receipt.PlayerId)
+    local wasPurchased = player ~= nil
 
-	return PURCHASE_GRANTED
+	if wasPurchased then
+        tryRunHandler(product, player, receipt)
+    end
+
+    tryResumeAssetPromptThreads(
+        ASSET_CATEGORY.PRODUCT, 
+        receipt.ProductId, 
+        wasPurchased
+    )
+
+    return wasPurchased and PURCHASE_GRANTED or NOT_PROCESSED_YET
 end
 
 
@@ -252,15 +286,15 @@ end
 
 
 --[[
-@param     AssetData    asset       | The asset to register.
-@param     string       category    | The asset category.
+@param     Asset     asset       | The asset to register.
+@param     number    category    | The asset category.
 @return    void
 @throws
 @yields
 
 Attempts to register the asset to MonetizationService.
 ]]
-local function tryRegisterAssetAsync(asset: Types.Asset, category: SharedTypes.AssetCategory)
+local function tryRegisterAssetAsync(category: number, asset: Types.Asset)
 	local assets = categorizedAssets[category]
 	if assets[asset.Id] then
 		error(`{category} {asset.Id} has already been implemented.`)
@@ -282,6 +316,39 @@ local function tryRegisterAssetAsync(asset: Types.Asset, category: SharedTypes.A
 	assetRegisteredSignal:Destroy()
 
 	assetRegisteredSignal[asset.Id] = nil
+end
+
+
+--[[
+@param     Asset     asset       | The asset to register.
+@param     string    category    | The asset category.
+@return    void
+@throws
+@yields
+
+Attempts to register the asset to MonetizationService.
+]]
+local function promptAssetPurchaseAsync(category: SharedTypes.AssetCategory, assetId: number): boolean
+    local thread  = coroutine.running()
+    local threads = categorizedPromptThreads[category]
+
+    if not threads[assetId] then
+        threads[assetId] = { thread }
+    else
+        table.insert(threads[assetId], thread)
+    end
+
+    local prompt
+
+    if category == ASSET_CATEGORY.PRODUCT then
+        prompt = MarketplaceService.PromptProductPurchase
+    elseif category == ASSET_CATEGORY.GAME_PASS then
+        prompt = MarketplaceService.PromptGamePassPurchase
+    end
+	
+	prompt(MarketplaceService, player, assetId)
+	
+	return coroutine.yield()
 end
 
 
@@ -316,19 +383,19 @@ function MonetizationService.awaitAssets(assetIds: {number})
 	local thread = coroutine.running()
 	local tasks  = 0
 
+    local function try_resume()
+        tasks -= 1
+        if tasks == 0 then
+            coroutine.resume(thread)
+        end
+    end
+
 	for _, assetId in assetIds do
 		if MonetizationService.isAsset(assetId) then
-			continue
+            MonetizationService.listenForAssetRegistered(assetId, try_resume)
+
+            tasks += 1
 		end
-
-		MonetizationService.listenForAssetRegistered(assetId, function()
-			tasks -= 1
-			if tasks == 0 then
-				coroutine.resume(thread)
-			end
-		end)
-
-		tasks += 1
 	end
 
 	if tasks > 0 then
@@ -338,8 +405,8 @@ end
 
 
 --[[
-@param     Player       player      | The owner of the game-pass.
-@param     AssetData    gamePass    | The game-pass to load.
+@param     Player    player      | The owner of the game-pass.
+@param     Asset     gamePass    | The game-pass to load.
 @return    void
 @throws
 @yields
@@ -348,13 +415,13 @@ Attempts to run the game-pass' handler function on the given player.
 ]]
 function MonetizationService.tryLoadGamePassAsync(player: Player, gamePass: Types.Asset)
 	if MonetizationService.userOwnsGamePassAsync(player.UserId, gamePass.Id) then
-		task.defer(tryRunHandler, gamePass, player)
+		task.spawn(tryRunHandler, gamePass, player)
 	end
 end
 
 
 --[[
-@param     AssetData    gamePass    | The game-pass to load.
+@param     Asset    gamePass    | The game-pass to load.
 @return    void
 @throws
 @yields
@@ -397,34 +464,29 @@ end
 @throws
 @yields
 
-Prompts the player to buy a product. Returns whether or not the product was purchased
+Prompts the player to buy a product. Returns whether or not the product was purchased.
 ]]
 function MonetizationService.promptProductPurchaseAsync(player: Player, productId: number): boolean
-	local connection: RBXScriptConnection
-	local thread = coroutine.running()
-	
-	connection = MarketplaceService.PromptProductPurchaseFinished:Connect(function(userId: number, productId: number, wasPurchased: boolean)
-		if userId ~= player.UserId then
-			return
-		end
-		
-		if productId ~= productId then
-			return
-		end
-
-		connection:Disconnect()
-		
-		coroutine.resume(thread, wasPurchased)
-	end)
-	
-	MarketplaceService:PromptProductPurchase(player, productId)
-	
-	return coroutine.yield()
+    return promptAssetPurchaseAsync(ASSET_CATEGORY.PRODUCT, player, productId)
 end
 
 
 --[[
-@param     AssetData    gamePass    | The game-pass to register.
+@param     Player     player        | The player to prompt.
+@param     number     gamePassId    | The asset ID of the game-pass.
+@return    boolean    
+@throws
+@yields
+
+Prompts the player to buy a game-pass. Returns whether or not the game-pass was purchased.
+]]
+function MonetizationService.promptGamePassPurchaseAsync(player: Player, gamePassId: number): boolean
+    return promptAssetPurchaseAsync(ASSET_CATEGORY.GAME_PASS, player, gamePassId)
+end
+
+
+--[[
+@param     Asset    gamePass    | The game-pass to register.
 @return    void    
 @throws
 @yields
@@ -433,12 +495,12 @@ Attempts to register the game-pass to MonetizationService. If successful, attemp
 load the game-pass for all players.
 ]]
 function MonetizationService.registerGamePassAsync(gamePass: Types.Asset)
-	tryRegisterAssetAsync(gamePass, "GamePass")
+	tryRegisterAssetAsync(ASSET_CATEGORY.GAME_PASS, gamePass)
 end
 
 
 --[[
-@param     AssetData    product    | The product to register.
+@param     Asset    product    | The product to register.
 @return    void    
 @throws
 @yields
@@ -446,12 +508,12 @@ end
 Attempts to register the product to MonetizationService.
 ]]
 function MonetizationService.registerProductAsync(product: Types.Asset)
-	tryRegisterAssetAsync(product, "Product")
+	tryRegisterAssetAsync(ASSET_CATEGORY.PRODUCT, product)
 end
 
 
 --[[
-@return    {AssetData}    
+@return    {Asset}    
 
 Returns a copy of the game-pass assets. 
 ]]
@@ -461,7 +523,7 @@ end
 
 
 --[[
-@return    {AssetData}    
+@return    {Asset}    
 
 Returns a copy of the product. 
 ]]
@@ -472,7 +534,7 @@ end
 
 --[[
 @param     number        gamePassId    | The game-pass ID to query.
-@return    AssetData?    
+@return    Asset?    
 
 Returns a copy of the game-pass.
 ]]
@@ -488,7 +550,7 @@ end
 
 --[[
 @param     number        productId    | The product ID to query.
-@return    AssetData?    
+@return    Asset?    
 
 Returns a copy of the product.
 ]]
@@ -504,7 +566,7 @@ end
 
 --[[
 @param     number         assetId    | The asset ID to query.
-@return    {AssetData}    
+@return    {Asset}    
 
 Returns a copy of the asset. 
 ]]
@@ -561,16 +623,13 @@ end
 Attempts to give the player the game-pass.
 ]]
 function MonetizationService.tryGiveGamePassAsync(userId: number, gamePassId: number)
-	local gamePass = categorizedAssets.GamePass[gamePassId]
-	if not gamePass then
-		error(`Unregistered game-pass {gamePassId}`)
-	end
+    if MonetizationService.userOwnsGamePassAsync(userId) then
+        return
+    end
 
 	local player = Players:GetPlayerByUserId(userId)
 	if player then
-		setGamePassOwned(player, gamePassId, true)
-
-		MonetizationService.tryLoadGamePassAsync(player, gamePass)
+		onGamePassPurchaseFinished(player, gamePassId, true)
 	end
 
 	UnofficialGamePassOwners:UpdateAsync(userId, function(gamePassIds: SharedTypes.GamePassOwnershipMap)
@@ -588,36 +647,34 @@ end
 @return    void    
 @throws
 
-Attempts to give the player the game-pass.
+Attempts to give the player the product.
 ]]
 function MonetizationService.tryGiveProduct(player: Player, productId: number)
-	local product = categorizedAssets.Product[productId]
-	if not product then
-		error(`Unregistered product {product}`)
-	end
-
-	task.defer(tryRunHandler, product, player)
+    onProductPurchaseFinished({
+        PlayerId  = player.UserId,
+        ProductId = productId,
+    })
 end
 
 
 
 Players.PlayerRemoving:Connect(deleteCache)
 
-MarketplaceService.PromptGamePassPurchaseFinished:Connect(onGamePassPurchaseFinished)
 MarketplaceService.ProcessReceipt = onProductPurchaseFinished
+MarketplaceService.PromptGamePassPurchaseFinished:Connect(onGamePassPurchaseFinished)
 
 
 type GamePassOwnershipCache = {
 	[Player]: SharedTypes.GamePassOwnershipMap,
 }
 
-type AssetDataMap = {
+type AssetMap = {
 	[number]: Types.Asset,
 }
 
 type CategorizedAssets = {
-	GamePass : AssetDataMap,
-	Product  : AssetDataMap,
+	Product  : AssetMap,
+	GamePass : AssetMap,
 }
 
 
