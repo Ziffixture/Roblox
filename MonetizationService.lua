@@ -380,7 +380,7 @@ end
 
 Awaits the registration of a series of asset IDs.
 ]]
-function MonetizationService.awaitAssets(assetIds: {number})
+function MonetizationService.awaitAssetsAsync(assetIds: {number})
 	local thread = coroutine.running()
 	local tasks  = 0
 
