@@ -1,7 +1,7 @@
 --[[
 Author     Ziffixture (74087102)
-Date       04/15/2026 (MM/DD/YYYY)
-Version    1.0.0
+Date       06/15/2026 (MM/DD/YYYY)
+Version    1.0.1
 ]]
 
 
@@ -32,11 +32,16 @@ local function up_async(callback: (number) -> (), rate: number, imprecise: boole
 end
 
 local function down_async(seconds: number, callback: (number) -> (), rate: number, imprecise: boolean)
-    repeat
+    while true do
         callback(seconds)
-            
+
+        if seconds <= 0 then
+            break
+        end
+        
         seconds -= wait_async(rate, imprecise)
-    until seconds <= 0
+        seconds  = math.max(seconds, 0)
+    end
 end
 
 
