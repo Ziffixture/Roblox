@@ -15,7 +15,7 @@ local function wait_async(seconds: number, imprecise: boolean): number
     local deltaTime = task.wait(seconds)
 
     if imprecise then
-        deltaTime = math.floor(deltaTime)
+        deltaTime = math.floor(deltaTime / seconds) * seconds
     end
 
     return deltaTime
@@ -46,7 +46,9 @@ end
 
 
 function timer.up_async(callback: (number) -> (), rate: number?)
-    up_async(callback, rate or 1, true)
+    local imprecise = rate ~= nil
+    
+    up_async(callback, rate or 1, imprecise)
 end
 
 function timer.precise_up_async(callback: (number) -> ())
@@ -54,7 +56,9 @@ function timer.precise_up_async(callback: (number) -> ())
 end
 
 function timer.down_async(seconds: number, callback: (number) -> (), rate: number?)
-    down_async(seconds, callback, rate or 1, true)
+    local imprecise = rate ~= nil
+    
+    down_async(seconds, callback, rate or 1, imprecise)
 end
 
 function timer.precise_down_async(seconds: number, callback: (number) -> ())
