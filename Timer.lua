@@ -45,16 +45,16 @@ local function down_async(seconds: number, callback: (number) -> (), rate: numbe
 end
 
 
-function timer.up_async(callback: (number) -> ())
-    up_async(callback, 1, true)
+function timer.up_async(callback: (number) -> (), rate: number?)
+    up_async(callback, rate or 1, true)
 end
 
 function timer.precise_up_async(callback: (number) -> ())
     up_async(callback, 0, false)
 end
 
-function timer.down_async(seconds: number, callback: (number) -> ())
-    down_async(seconds, callback, 1, true)
+function timer.down_async(seconds: number, callback: (number) -> (), rate: number?)
+    down_async(seconds, callback, rate or 1, true)
 end
 
 function timer.precise_down_async(seconds: number, callback: (number) -> ())
