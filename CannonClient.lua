@@ -75,12 +75,13 @@ end
 
 --[[
 @param     Vector3    otherPart    | The origin of the parabolic trajectory.
-@return    void       
+@return    void
+@yields
 
 Filters for a collision with the LocalPlayer's marble instance and ejects
 the player out of the cannon.
 ]]
-local function onTriggerTouched(cannon: Model, otherPart: BasePart)	
+local function onTriggerTouchedAsync(cannon: Model, otherPart: BasePart)	
     if playerInFlight then
         return
     end
@@ -127,10 +128,11 @@ end
 --[[
 @param     Model    cannon    | The cannon instance.
 @return    void
+@yields
 
 Initializes the given cannon.
 ]]
-local function initializeCannon(cannon: Model)
+local function initializeCannonAsync(cannon: Model)
     local barrel  = cannon:WaitForChild("Barrel")
     local trigger = cannon:WaitForChild("Trigger")
 	
@@ -177,7 +179,7 @@ local function initializeCannon(cannon: Model)
     end
 	
     trigger.Touched:Connect(function(otherPart)
-        onTriggerTouched(cannon, otherPart)
+        onTriggerTouchedAsync(cannon, otherPart)
     end)	
 end
 
@@ -189,12 +191,10 @@ Begins an initialization process for all cannons that are and are to be.
 ]]
 local function initializeCannons()
     for _, cannon in CollectionService:GetTagged(CANNON_TAG) do
-        task.defer(initializeCannon, cannon)
+        task.defer(initializeCannonAsync, cannon)
     end
 	
-    CollectionService:GetInstanceAddedSignal(CANNON_TAG):Connect(function(cannon)
-        initializeCannon(cannon)
-    end)
+    CollectionService:GetInstanceAddedSignal(CANNON_TAG):Connect(initializeCannonAsync)
 end
 
 
