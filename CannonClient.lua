@@ -1,7 +1,7 @@
 --[[
 Author     Ziffix (74087102)
-Date       23/10/2
-Version    1.0.b
+Date       02/10/2023 (DD/MM/YYYY)
+Version    1.0.1
 
 Implements cannon physics using projectile motion modelling with manual CFrame-ing,
 https://devforum.roblox.com/t/modeling-a-projectiles-motion/176677
@@ -9,22 +9,23 @@ https://devforum.roblox.com/t/modeling-a-projectiles-motion/176677
 
 
 
-local CollectionService           = game:GetService("CollectionService")
-local ReplicatedStorage           = game:GetService("ReplicatedStorage")
-local RunService                  = game:GetService("RunService")
-local Players                     = game:GetService("Players")
+local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService        = game:GetService("RunService")
+local Players           = game:GetService("Players")
 
-local Marble                      = require(ReplicatedStorage:WaitForChild("Classes"):WaitForChild("Marble"))
 
-local GRAVITY_ACCELERATION        = Vector3.yAxis * -workspace.Gravity
+const GRAVITY_ACCELERATION        = Vector3.yAxis * -workspace.Gravity
+const CANNON_ALIGNMENT_ITERATIONS = 2
+const CANNON_TAG                  = "Cannon"
 
-local CANNON_ALIGNMENT_ITERATIONS = 2
-local CANNON_TAG                  = "Cannon"
 
-local PLAYER                      = Players.LocalPlayer
+local Marble = require(ReplicatedStorage.Classes.Marble)
+local Player = Players.LocalPlayer
 
-local cannonInfo                  = {} :: {[Model]: CannonInfo}
-local playerInFlight              = false
+
+local cannonInfo     = {} :: {[Model]: CannonInfo}
+local playerInFlight = false
 
 
 
@@ -95,7 +96,7 @@ local function onTriggerTouched(cannon: Model, otherPart: BasePart)
     end
 
     local associatedPlayer = Players:GetPlayerFromCharacter(character)
-    if not associatedPlayer or associatedPlayer ~= PLAYER then
+    if not associatedPlayer or associatedPlayer ~= Player then
         return
     end
 	
@@ -140,11 +141,11 @@ local function initializeCannon(cannon: Model)
     local freezeOnLanding = getAttribute(cannon, "FreezeOnLanding")
       
     local info = {
-        Barrel          = barrel,
-        Trigger         = trigger,
+        Barrel  = barrel,
+        Trigger = trigger,
 		
-        LaunchOrigin    = launchOrigin,
-        LaunchEnd       = launchEnd,
+        LaunchOrigin = launchOrigin,
+        LaunchEnd    = launchEnd,
 		
         FlightTime      = flightTime,
         FreezeOnLanding = freezeOnLanding,
@@ -199,6 +200,7 @@ end
 
 
 initializeCannons()
+
 
 
 type CannonInfo = {
