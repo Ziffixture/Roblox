@@ -7,7 +7,6 @@ type Cutscene = {
 
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService  = game:GetService("UserInputService")
 local TweenService      = game:GetService("TweenService")
 local Players           = game:GetService("Players")
 
@@ -16,7 +15,6 @@ local Camera   = workspace.CurrentCamera :: Camera
 local Cutscene = ReplicatedStorage.Cutscene
 
 
-const CUTSCENE_KEY  = Enum.KeyCode.E
 const CUTSCENE_INFO = TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut) 
 
 
