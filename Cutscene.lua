@@ -15,7 +15,7 @@ local Camera   = workspace.CurrentCamera :: Camera
 local Cutscene = ReplicatedStorage.Cutscene
 
 
-const CUTSCENE_INFO = TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut) 
+const CUTSCENE_INFO = TweenInfo.new(5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut) 
 
 
 
