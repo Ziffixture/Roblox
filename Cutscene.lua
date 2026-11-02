@@ -1,4 +1,3 @@
---!strict
 type Cutscene = {
 	Start    : CFrame,
 	Sequence : {Tween},
@@ -13,13 +12,17 @@ local Players           = game:GetService("Players")
 
 local Camera   = workspace.CurrentCamera :: Camera
 local Cutscene = ReplicatedStorage.Cutscene
+local Player   = Players.LocalPlayer
 
 
-const CUTSCENE_INFO = TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut) 
+const CUTSCENE_INFO = TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
+
+
+local cutsceneRunning = false
 
 
 
-local function onLivingPlayerTouched(part: BasePart, callback: (Player) -> ()): RBXScriptConnection
+local function onLivingLocalPlayerTouched(part: BasePart, callback: () -> ()): RBXScriptConnection
 	return part.Touched:Connect(function(otherPart: BasePart)
 		local character = otherPart.Parent :: Model
 
@@ -29,8 +32,8 @@ local function onLivingPlayerTouched(part: BasePart, callback: (Player) -> ()): 
 		end
 
 		local player = Players:GetPlayerFromCharacter(character)
-		if player then
-			callback(player)
+		if player == Player then
+			callback()
 		end
 	end)
 end
@@ -46,7 +49,7 @@ local function processCutscene(): Cutscene
 
 		table.insert(tweens, tween)
 	end
-
+	
 	return {
 		Start    = sequence[1].CFrame,
 		Sequence = tweens,
@@ -54,6 +57,12 @@ local function processCutscene(): Cutscene
 end
 
 local function runCutsceneAsync(cutscene: Cutscene)
+	if cutsceneRunning then
+		return
+	end
+	
+	cutsceneRunning = true
+	
 	Camera.CameraType = Enum.CameraType.Scriptable
 	Camera.CFrame     = cutscene.Start
 
@@ -61,8 +70,10 @@ local function runCutsceneAsync(cutscene: Cutscene)
 		tween:Play()
 		tween.Completed:Wait()
 	end
-
+	
 	Camera.CameraType = Enum.CameraType.Custom
+	
+	cutsceneRunning = false
 end
 
 local function initializeCutsceneAsync()
@@ -73,7 +84,7 @@ local function initializeCutsceneAsync()
 
 	local cutscene = processCutscene()
 
-	onLivingPlayerTouched(trigger :: BasePart, function()
+	onLivingLocalPlayerTouched(trigger :: BasePart, function()
 		runCutsceneAsync(cutscene)
 	end)
 end
