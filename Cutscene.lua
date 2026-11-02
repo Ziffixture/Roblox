@@ -15,7 +15,7 @@ local Camera   = workspace.CurrentCamera :: Camera
 local Cutscene = ReplicatedStorage.Cutscene
 
 
-const CUTSCENE_INFO = TweenInfo.new(5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut) 
+const CUTSCENE_INFO = TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut) 
 
 
 
@@ -56,12 +56,12 @@ end
 local function runCutsceneAsync(cutscene: Cutscene)
 	Camera.CameraType = Enum.CameraType.Scriptable
 	Camera.CFrame     = cutscene.Start
-	
+
 	for _, tween in cutscene.Sequence do
 		tween:Play()
 		tween.Completed:Wait()
 	end
-	
+
 	Camera.CameraType = Enum.CameraType.Custom
 end
 
@@ -70,9 +70,9 @@ local function initializeCutsceneAsync()
 	if not trigger then
 		trigger = Cutscene.Trigger.Changed:Wait()
 	end
-	
+
 	local cutscene = processCutscene()
-	
+
 	onLivingPlayerTouched(trigger :: BasePart, function()
 		runCutsceneAsync(cutscene)
 	end)
