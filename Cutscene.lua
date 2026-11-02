@@ -36,18 +36,19 @@ local function onLivingPlayerTouched(part: BasePart, callback: (Player) -> ()): 
 end
 
 local function processCutscene(): Cutscene
-	local points = Cutscene.Sequence:GetChildren() :: {BasePart}
-	local tweens = table.create(#points - 1) :: {Tween}
-	
-	for index = 2, #points do
-		local point = points[index]
+	local sequence = Cutscene.Sequence
+	local count    = #sequence:GetChildren()
+	local tweens   = table.create(count - 1) :: {Tween}
+
+	for index = 2, count do
+		local point = sequence[index]
 		local tween = TweenService:Create(Camera, CUTSCENE_INFO, { CFrame = point.CFrame })
-		
+
 		table.insert(tweens, tween)
 	end
-	
+
 	return {
-		Start    = points[1].CFrame,
+		Start    = sequence[1].CFrame,
 		Sequence = tweens,
 	}
 end
