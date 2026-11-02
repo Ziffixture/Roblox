@@ -37,7 +37,7 @@ end
 
 local function processCutscene(): Cutscene
 	local points = Cutscene.Sequence:GetChildren() :: {BasePart}
-	local tweens = table.create(#points) :: {Tween}
+	local tweens = table.create(#points - 1) :: {Tween}
 	
 	for index = 2, #points do
 		local point = points[index]
