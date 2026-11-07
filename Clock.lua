@@ -11,36 +11,28 @@ local Clock = {}
 
 
 
-local function waitAsync(seconds: number, imprecise: boolean): number
-	local deltaTime = task.wait(seconds)
-
-	if imprecise then
-		deltaTime = math.floor(deltaTime / seconds) * seconds
-	end
-
-	return deltaTime
-end
-
 local function upAsync(callback: (number) -> (), rate: number, imprecise: boolean)
-	local seconds = 0
+	local elapsed = 0
 
 	while true do
-		callback(seconds)
+		callback(if imprecise then elapsed - elapsed % rate else elapsed)
 
-		seconds += waitAsync(rate, imprecise)
+		elapsed += task.wait(if imprecise then rate - elapsed % rate else rate)
 	end
 end
 
 local function downAsync(seconds: number, callback: (number) -> (), rate: number, imprecise: boolean)
 	while true do
-		callback(seconds)
+		local ticked    = if imprecise then elapsed - elapsed % rate else elapsed
+		local remaining = math.max(seconds - ticked, 0)
 
-		if seconds <= 0 then
+		callback(remaining)
+
+		if remaining <= 0 then
 			break
 		end
 
-		seconds -= waitAsync(rate, imprecise)
-		seconds  = math.max(seconds, 0)
+		elapsed += task.wait(if imprecise then rate - elapsed % rate else rate)
 	end
 end
 
