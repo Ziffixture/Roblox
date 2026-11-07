@@ -48,11 +48,11 @@ end
 function Clock.upAsync(callback: (number) -> (), rate: number?)
     local imprecise = rate ~= nil
     
-    up_async(callback, rate or 1, imprecise)
+    upAsync(callback, rate or 1, imprecise)
 end
 
 function Clock.preciseUpAsync(callback: (number) -> ())
-    up_async(callback, 0, false)
+    upAsync(callback, 0, false)
 end
 
 function Clock.downAsync(seconds: number, callback: (number) -> (), rate: number?)
