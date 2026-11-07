@@ -1,34 +1,17 @@
---[[
-Author     Ziffixture (74087102)
-Date       11/07/2026 (MM/DD/YYYY)
-Version    1.0.2
-]]
-
-
-
 --!strict
 local Clock = {}
 
 
 
-local function upAsync(callback: (number) -> (), rate: number, imprecise: boolean)
+-- Calls `step` with the (possibly whole-number-snapped) elapsed time.
+-- Returning true from `step` ends the loop.
+local function run(rate: number, imprecise: boolean, step: (number) -> boolean)
 	local elapsed = 0
 
 	while true do
-		callback(if imprecise then elapsed - elapsed % rate else elapsed)
+		local ticked = if imprecise then elapsed - elapsed % rate else elapsed
 
-		elapsed += task.wait(if imprecise then rate - elapsed % rate else rate)
-	end
-end
-
-local function downAsync(seconds: number, callback: (number) -> (), rate: number, imprecise: boolean)
-	while true do
-		local ticked    = if imprecise then elapsed - elapsed % rate else elapsed
-		local remaining = math.max(seconds - ticked, 0)
-
-		callback(remaining)
-
-		if remaining <= 0 then
+		if step(ticked) then
 			break
 		end
 
@@ -36,25 +19,40 @@ local function downAsync(seconds: number, callback: (number) -> (), rate: number
 	end
 end
 
+local function countUp(callback: (number) -> ()): (number) -> boolean
+	return function(elapsed)
+		callback(elapsed)
+
+		return false
+	end
+end
+
+local function countDown(seconds: number, callback: (number) -> ()): (number) -> boolean
+	return function(elapsed)
+		local remaining = math.max(seconds - elapsed, 0)
+
+		callback(remaining)
+
+		return remaining <= 0
+	end
+end
+
+
 
 function Clock.upAsync(callback: (number) -> (), rate: number?)
-	local imprecise = rate == nil
-
-	upAsync(callback, rate or 1, imprecise)
+	run(rate or 1, rate == nil, countUp(callback))
 end
 
 function Clock.preciseUpAsync(callback: (number) -> ())
-	upAsync(callback, 0, false)
+	run(0, false, countUp(callback))
 end
 
 function Clock.downAsync(seconds: number, callback: (number) -> (), rate: number?)
-	local imprecise = rate == nil
-
-	downAsync(seconds, callback, rate or 1, imprecise)
+	run(rate or 1, rate == nil, countDown(seconds, callback))
 end
 
 function Clock.preciseDownAsync(seconds: number, callback: (number) -> ())
-	downAsync(seconds, callback, 0, false)
+	run(0, false, countDown(seconds, callback))
 end
 
 
