@@ -7,7 +7,7 @@ Version    1.0.1
 
 
 --!strict
-local timer = {}
+local Clock = {}
 
 
 
@@ -45,26 +45,26 @@ local function downAsync(seconds: number, callback: (number) -> (), rate: number
 end
 
 
-function timer.upAsync(callback: (number) -> (), rate: number?)
+function Clock.upAsync(callback: (number) -> (), rate: number?)
     local imprecise = rate ~= nil
     
     up_async(callback, rate or 1, imprecise)
 end
 
-function timer.preciseUpAsync(callback: (number) -> ())
+function Clock.preciseUpAsync(callback: (number) -> ())
     up_async(callback, 0, false)
 end
 
-function timer.downAsync(seconds: number, callback: (number) -> (), rate: number?)
+function Clock.downAsync(seconds: number, callback: (number) -> (), rate: number?)
     local imprecise = rate ~= nil
     
     downAsync(seconds, callback, rate or 1, imprecise)
 end
 
-function timer.preciseDownAsync(seconds: number, callback: (number) -> ())
+function Clock.preciseDownAsync(seconds: number, callback: (number) -> ())
     downAsync(seconds, callback, 0, false)
 end
 
 
 
-return timer
+return Clock
