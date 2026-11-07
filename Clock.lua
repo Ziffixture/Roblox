@@ -3,8 +3,6 @@ local Clock = {}
 
 
 
--- Calls `step` with the (possibly whole-number-snapped) elapsed time.
--- Returning true from `step` ends the loop.
 local function run(rate: number, imprecise: boolean, step: (number) -> boolean)
 	local elapsed = 0
 
