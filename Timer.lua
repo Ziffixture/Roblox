@@ -11,7 +11,7 @@ local timer = {}
 
 
 
-local function wait_async(seconds: number, imprecise: boolean): number
+local function waitAsync(seconds: number, imprecise: boolean): number
     local deltaTime = task.wait(seconds)
 
     if imprecise then
@@ -21,17 +21,17 @@ local function wait_async(seconds: number, imprecise: boolean): number
     return deltaTime
 end
 
-local function up_async(callback: (number) -> (), rate: number, imprecise: boolean)
+local function upAsync(callback: (number) -> (), rate: number, imprecise: boolean)
     local seconds = 0
 
     while true do
         callback(seconds)
 
-        seconds += wait_async(rate, imprecise)
+        seconds += waitAsync(rate, imprecise)
     end
 end
 
-local function down_async(seconds: number, callback: (number) -> (), rate: number, imprecise: boolean)
+local function downAsync(seconds: number, callback: (number) -> (), rate: number, imprecise: boolean)
     while true do
         callback(seconds)
 
@@ -39,30 +39,30 @@ local function down_async(seconds: number, callback: (number) -> (), rate: numbe
             break
         end
         
-        seconds -= wait_async(rate, imprecise)
+        seconds -= waitAsync(rate, imprecise)
         seconds  = math.max(seconds, 0)
     end
 end
 
 
-function timer.up_async(callback: (number) -> (), rate: number?)
+function timer.upAsync(callback: (number) -> (), rate: number?)
     local imprecise = rate ~= nil
     
     up_async(callback, rate or 1, imprecise)
 end
 
-function timer.precise_up_async(callback: (number) -> ())
+function timer.preciseUpAsync(callback: (number) -> ())
     up_async(callback, 0, false)
 end
 
-function timer.down_async(seconds: number, callback: (number) -> (), rate: number?)
+function timer.downAsync(seconds: number, callback: (number) -> (), rate: number?)
     local imprecise = rate ~= nil
     
-    down_async(seconds, callback, rate or 1, imprecise)
+    downAsync(seconds, callback, rate or 1, imprecise)
 end
 
-function timer.precise_down_async(seconds: number, callback: (number) -> ())
-    down_async(seconds, callback, 0, false)
+function timer.preciseDownAsync(seconds: number, callback: (number) -> ())
+    downAsync(seconds, callback, 0, false)
 end
 
 
